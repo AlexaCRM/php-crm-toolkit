@@ -636,13 +636,16 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		/* Does this Entity have a DisplayName part? */
 		if ($this->entityDisplayName != NULL) {
 			/* Use the magic __get to determine the DisplayName */
-			$displayName = ': '.$this->DisplayName.' ';
+			$displayName = $this->DisplayName;
 		} else {
 			/* No DisplayName */
 			$displayName = '';
 		}
 		/* EntityType: Display Name <GUID> */
-		return $this->entityLogicalName.$displayName.'<'.$this->getID().'>';
+		//return $this->entityLogicalName.$displayName.'<'.$this->getID().'>';
+                
+                /* Display Name */
+                return $displayName;
 	}
 	
 	/**
