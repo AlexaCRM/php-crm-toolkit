@@ -11,7 +11,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	/** @var String entityDisplayName the field to use to display the entity's Name */
 	protected $entityDisplayName = NULL;
 	/* The details of the Entity structure (SimpleXML object) */
-	protected $entityData;
+	public $entityData;
 	/* The details of the Entity structure (as Arrays) */
 	public $properties = Array();
 	public $mandatories = Array();
@@ -20,6 +20,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	protected $localProperties = Array();
 	/* The details of this instance of the Entity - the property Values */
 	public $propertyValues = Array();
+        /* The details of this instance of the Entity - the propery Formatted Values */
+        public $formattedValues = Array();
         
         /* Entity field values validation */
         public $fieldValidation = TRUE;
@@ -962,6 +964,13 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		$keyValueNodes = $formattedValuesNode->getElementsByTagName('KeyValuePairOfstringstring');
 		/* Add the Formatted Values in the Key/Value Pairs of String/String to the Array */
 		self::addFormattedValues($formattedValues, $keyValueNodes);
+                
+                
+                //self::vardump($formattedValues);
+                
+                foreach($formattedValues as $key => $value){
+                    $this->formattedValues[$key] = $value;
+                }
 		
 		/* Identify the Attributes */
 		$keyValueNodes = $attributesNode->getElementsByTagName('KeyValuePairOfstringanyType');
@@ -1341,6 +1350,56 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		/* Property doesn't exist, return empty string */
 		return '';
 	}
+        
+        
+        /**
+	 * Get Formatted value for property
+         * if formatted value doesn't exists, returned propertyValue
+	 * 
+	 * @param String $property
+	 * @return string
+	 */
+        public function getFormattedValue($property){
+                /* Handle special fields */
+		switch (strtoupper($property)) {
+			case 'ID':
+				return $this->getID();
+				break;
+			case 'LOGICALNAME':
+				return $this->entityLogicalName;
+				break;
+			case 'DISPLAYNAME':
+				if ($this->entityDisplayName != NULL) {
+					$property = $this->entityDisplayName;
+				} else {
+					return NULL;
+				}
+				break;
+		}
+            
+                /* Handle dynamic properties... */
+		$property = strtolower($property);
+                
+		/* Only return the value if it exists & is readable */
+		if (array_key_exists($property, $this->formattedValues) && $this->properties[$property]['Read'] === true) {
+			return $this->formattedValues[$property];
+		}
+		/* Only return the value if it exists & is readable */
+		if (array_key_exists($property, $this->properties) && $this->properties[$property]['Read'] === true) {
+			return $this->propertyValues[$property]['Value'];
+		}
+		/* Also check for an AliasedValue */
+		if (array_key_exists($property, $this->localProperties) && $this->localProperties[$property]['Read'] === true) {
+			return $this->propertyValues[$property]['Value'];
+		}
+                
+		/* Property doesn't exist - standard error */
+		$trace = debug_backtrace();
+		trigger_error('Undefined property via __get(): ' . $property 
+				. ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'],
+				E_USER_NOTICE);
+		return NULL;
+        }
         
         
         /**
