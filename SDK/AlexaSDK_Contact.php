@@ -2,13 +2,25 @@
 
 if (!class_exists("AlexaSDK_Contact")) :
     
+    /** 
+    * @ignore
+    * @deprecated Wil be changed soon
+    */
     class AlexaSDK_Contact{
         public $authentication;
         
+        /** 
+        * @ignore
+        * @deprecated Wil be changed soon
+        */
         function __construct($authentication){
             $this->authentication = $authentication;
         }
         
+        /** 
+        * @ignore
+        * @deprecated Wil be changed soon
+        */
         public function Login($username, $password) {
 
             $header = $this->authentication->getHeader('Execute');
@@ -54,7 +66,10 @@ if (!class_exists("AlexaSDK_Contact")) :
             }
         }
         
-       
+        /** 
+        * @ignore
+        * @deprecated Wil be changed soon
+        */
         public function setPassword($id, $password) {
             
             $header = $this->authentication->getHeader('Update');
@@ -96,7 +111,10 @@ if (!class_exists("AlexaSDK_Contact")) :
                 
         }
         
-        
+        /** 
+        * @ignore
+        * @deprecated Wil be changed soon
+        */
         public function SearchContact($username, $email) {
 
             $header = $this->authentication->getHeader('Execute');
@@ -145,7 +163,10 @@ if (!class_exists("AlexaSDK_Contact")) :
             }
         }
         
-        
+        /** 
+        * @ignore
+        * @deprecated Wil be changed soon
+        */
         public function getContact($user_id, $full = false) {
 
             $header = $this->authentication->getHeader('Execute');
@@ -198,7 +219,10 @@ if (!class_exists("AlexaSDK_Contact")) :
             }
         }
         
-        
+        /** 
+        * @ignore
+        * @deprecated Wil be changed soon
+        */
         public function getContactByName($contact_name, $full = false) {
 
             $header = $this->authentication->getHeader('Execute');
@@ -254,6 +278,5 @@ if (!class_exists("AlexaSDK_Contact")) :
         
         
     }
-    
     
 endif;

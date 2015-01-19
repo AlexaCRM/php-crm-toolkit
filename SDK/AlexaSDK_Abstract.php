@@ -35,18 +35,17 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
     
         function __construct(){
             
-            require(ALEXA_WPSDK_DIR.'sdk/AlexaSDK.php');
-            require(ALEXA_WPSDK_DIR.'sdk/AlexaSDK_Settings.php');
-            require(ALEXA_WPSDK_DIR.'sdk/AlexaSDK_Contact.php');
-            require(ALEXA_WPSDK_DIR.'sdk/Authentication/AlexaSDK_Office365.php');
-            require(ALEXA_WPSDK_DIR.'sdk/Authentication/AlexaSDK_Federation.php');
-            require(ALEXA_WPSDK_DIR.'sdk/Authentication/AlexaSDK_LiveID.php');
-            require(ALEXA_WPSDK_DIR.'sdk/Authentication/AlexaSDK_ActiveDirectory.php');
-            require(ALEXA_WPSDK_DIR.'sdk/Helpers/AlexaSDK_Cache.php');
-            require(ALEXA_WPSDK_DIR.'sdk/Helpers/AlexaSDK_FormValidator.php');
-            require(ALEXA_WPSDK_DIR.'sdk/AlexaSDK_Settings.php');
-            require(ALEXA_WPSDK_DIR.'sdk/AlexaSDK_Entity.php');
-            require(ALEXA_WPSDK_DIR.'sdk/AlexaSDK_OptionSetValue.php');
+            require('AlexaSDK.php');
+            require('AlexaSDK_Settings.php');
+            require('Authentication/AlexaSDK_Office365.php');
+            require('Authentication/AlexaSDK_Federation.php');
+            require('Authentication/AlexaSDK_LiveID.php');
+            require('Authentication/AlexaSDK_ActiveDirectory.php');
+            require('Helpers/AlexaSDK_Cache.php');
+            require('Helpers/AlexaSDK_FormValidator.php');
+            require('AlexaSDK_Settings.php');
+            require('AlexaSDK_Entity.php');
+            require('AlexaSDK_OptionSetValue.php');
             
             set_time_limit(self::$timeLimit);
             

@@ -44,17 +44,27 @@ if (!class_exists("AlexaSDK")) :
 	protected static $maximumRecords = self::MAX_CRM_RECORDS;
         
         
-        function __construct($settings) {
-            
+        function __construct($_settings, $_debug = NULL) {
+            /* Construct AlexaCRM_Abstract class to setup includes */
             parent::__construct();
+            /* Enable or disable debug mode */
+            self::$debugMode = $_debug;
             
-            $this->settings = $settings;
+            /* Simple settings check */
+            if ($_settings instanceof AlexaSDK_Settings){
+                $this->settings = $_settings;
+            }
+            
+            /* Check if we're using a cached login */
+            /*if (is_array($discoveryUrl)) {
+                    return $this->loadLoginCache($discoveryUrl);
+            }*/
             
             /* If either mandatory parameter is NULL, throw an Exception */
             if (!$this->checkConnectionSettings()) {
                 switch ($this->settings->authMode){
                     case "OnlineFederation":
-                        throw new BadMethodCallException(get_class($this).' constructor requires Host, Username and Password');
+                        throw new BadMethodCallException(get_class($this).' constructor requires Username and Password');
                     case "Federation":
                         throw new BadMethodCallException(get_class($this).' constructor requires the Discovery URI, Username and Password');
                 }
@@ -62,23 +72,25 @@ if (!class_exists("AlexaSDK")) :
             
             switch ($this->settings->authMode){
                 case "OnlineFederation":
-                    $this->authentication = new AlexaSDK_Office365($settings);
+                    $this->authentication = new AlexaSDK_Office365($this->settings);
                     break;
                 case "Federation":
-                    $this->authentication = new AlexaSDK_Federation($settings);
+                    $this->authentication = new AlexaSDK_Federation($this->settings);
                     break;
             }
             
+            
+            /* Move this section to the separated method : 
+             * 
+             */ 
             $cache = $this->cacheClass = new AlexaSDK_Cache( array('storage' => 'auto'));
-            
             /* Need to Define Clean cache mechanism */
-            //$cache->cleanup();
-            
+            $cache->cleanup();
             $entities = $cache->get('entities');
-            
             if ($entities != null){
                 $this->cachedEntityDefintions = unserialize($entities);
             }
+            /* End */
             
         }
         
@@ -1215,12 +1227,13 @@ if (!class_exists("AlexaSDK")) :
 	/**
 	 * Send the SOAP message, and get the response 
 	 * @ignore
+         * @return string response XML
 	 */
-	protected static function getSoapResponse($soapUrl, $content) {
+	protected static function getSoapResponse($soapUrl, $content, $throwException = true) {
             
 		/* Separate the provided URI into Path & Hostname sections */
 		$urlDetails = parse_url($soapUrl);
-		
+                
 		// setup headers
 		$headers = array(
 				"POST ". $urlDetails['path'] ." HTTP/1.1",
@@ -1269,7 +1282,7 @@ if (!class_exists("AlexaSDK")) :
 		if (self::$debugMode) echo __FUNCTION__.': SOAP Action in returned XML is "'.$actionString.'"'.PHP_EOL;
 		
 		/* Handle known Error Actions */
-		if (in_array($actionString, self::$SOAPFaultActions)) {
+		if (in_array($actionString, self::$SOAPFaultActions) && $throwException) {
 			// Get the Fault Code
 			$faultCode = $responseDOM->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Envelope')->item(0)
 				->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Body')->item(0)
@@ -1481,10 +1494,21 @@ if (!class_exists("AlexaSDK")) :
 	 * @ignore
 	 */
 	private function checkConnectionSettings() {
-		if ($this->settings->discoveryUrl == NULL && $this->settings->domain == NULL) return FALSE;
-		if ($this->settings->username == NULL) return FALSE;
-		if ($this->settings->password == NULL) return FALSE;
-		return TRUE;
+                /* username and password are common for authentication modes */
+                if ($this->settings->username == NULL) return FALSE;
+                if ($this->settings->password == NULL) return FALSE;
+                
+                switch($this->settings->authMode){
+                    case "Federation":
+                        /* Check Discovery Service URL for internet facing deployment */
+                        if ($this->settings->discoveryUrl == NULL) return FALSE;
+                        return TRUE;
+                    case "OnlineFederation":
+                        /* Additional checks  for CRM Online not required */
+                        return TRUE;
+                    default:
+                        return FALSE;
+                }
 	}
         
         
@@ -2484,56 +2508,117 @@ if (!class_exists("AlexaSDK")) :
             
             
             /* HotFix based on MSDN docs, it will be replaced by discovery service parser for FederationOnline */
+            $result = '';
             
             if ($this->settings->authMode == "OnlineFederation"){
                 
-                /* Domain, username and password and authMode already stored in settings */
+                $userRealm = $this->getUserRealm($this->settings->username);
                 
-                if (strpos($this->settings->domain, "dynamics.com")){
-                    
-                    /* Connect with Microsoft Office 365 and Microsoft Dynamics CRM Online */
-                    
-                    $this->settings->organizationName = self::parseOrganizationName($this->settings->domain);
-                    
-                    if (strpos($this->settings->username, "onmicrosoft.com")){
-                        
-                        if (strpos($this->settings->domain, ".crm4.")){
-                            
-                            $this->settings->crmRegion = "crmemea:dynamics.com";
-                            $this->settings->discoveryUrl = "https://disco.crm4.dynamics.com/XRMServices/2011/Discovery.svc";
-                            $this->settings->organizationUrl = "https://".$this->settings->organizationName.".api.crm4.dynamics.com/XrmServices/2011/Organization.svc";
-                            
-                        }elseif(strpos($this->settings->domain, ".crm5.")){
-                            
-                            $this->settings->crmRegion = "crmapac:dynamics.com";
-                            $this->settings->discoveryUrl = "https://disco.crm5.dynamics.com/XRMServices/2011/Discovery.svc";
-                            $this->settings->organizationUrl = "https://".$this->settings->organizationName.".api.crm5.dynamics.com/XrmServices/2011/Organization.svc";
-                            
-                        }else{
-                            
-                            $this->settings->crmRegion = "crmna:dynamics.com";
-                            $this->settings->discoveryUrl = "https://disco.crm.dynamics.com/XRMServices/2011/Discovery.svc";
-                            $this->settings->organizationUrl = "https://".$this->settings->organizationName.".api.crm.dynamics.com/XrmServices/2011/Organization.svc";
-                            
-                        }
-                        
-                    }else{
-                        
-                        $this->IdentityProvider = "Microsoft Account";
-                        
-                        throw new Exception("Unable to connect with this email. Probably you try to login with Microsoft Account( Example some@live.com ) instead Microsoft Office 365 Account( Example: username@organization.dynamics.com))");
-                        
-                    }
-                    
+                if (!$userRealm || $userRealm->NameSpaceType  == "Unknown"){
+                    throw new Exception("Check your organization login");
                 }
                 
-                $settings['region'] = $this->settings->crmRegion;
-                $settings['domain'] = $this->settings->domain;
-                $settings['organization_url'] = $this->settings->organizationUrl;
-                $settings['organizationName'] = $this->settings->organizationName;
                 
-                $this->security['discovery_authendpoint'] = "https://login.microsoftonline.com/RST2.srf";
+                $crmRegionsArray = array("crmna:dynamics.com", "crmemea:dynamics.com", "crmapac:dynamics.com");
                 
+                $result = "";
+                
+                foreach ($crmRegionsArray as $crmRegion){
+                    /* Request a Security Token for the Discovery Service */
+                    
+                    try{
+                        $securityToken = $this->authentication->requestSecurityToken('https://login.microsoftonline.com/RST2.srf', $crmRegion, $this->security['username'], $this->security['password']);
+                    }catch(Exception $ex){
+                        throw new Exception("Authentication failure, check password for specified User Name");
+                    }
+                    
+                    
+                    $source = '<Execute xmlns="http://schemas.microsoft.com/xrm/2011/Contracts/Discovery">
+                                    <request i:type="RetrieveOrganizationsRequest" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+                                        <AccessType>Default</AccessType>
+                                        <Release>Current</Release>
+                                    </request>
+                                </Execute>';
+
+                    $doc = new DOMDocument();
+                    $doc->loadXML($source);
+                    $executeNode = $doc->getElementsByTagName('Execute')->item(0);
+                    
+                    switch($crmRegion){
+                        case 'crmna:dynamics.com':
+                            $discoveryUrl = "https://disco.crm.dynamics.com/XRMServices/2011/Discovery.svc";
+                            $region = 'crmna:dynamics.com';
+                        break;
+                        case 'crmemea:dynamics.com':
+                            $discoveryUrl = "https://disco.crm4.dynamics.com/XRMServices/2011/Discovery.svc";
+                            $region = 'crmemea:dynamics.com';
+                        break;
+                        case 'crmapac:dynamics.com':
+                            $discoveryUrl = "https://disco.crm5.dynamics.com/XRMServices/2011/Discovery.svc";
+                            $region = 'crmapac:dynamics.com';
+                        break;
+                    }
+
+                    try{
+                    
+                        $retrieveEntityRequest = $this->generateSoapRequest($discoveryUrl, 'http://schemas.microsoft.com/xrm/2011/Contracts/Discovery/IDiscoveryService/Execute', $securityToken, $executeNode);
+                        /* Determine the Action in the SOAP Response */
+                        $responseDOM = new DOMDocument();
+                        $responseDOM->loadXML($retrieveEntityRequest);
+                        
+                        $result = $this->getSoapResponse($discoveryUrl, $retrieveEntityRequest, false);
+                    }catch(Exception $ex){
+                        // break;
+                    }
+                     
+                    $responseDOM = new DOMDocument();
+                    $responseDOM->loadXML($result);
+                     
+                    if($responseDOM->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Envelope')->item(0)
+				->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Body')->item(0)
+				->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Fault')->item(0)){
+                        continue;
+			
+                    }
+                    
+                    $this->settings->discoveryUrl = $discoveryUrl;
+                    $this->settings->crmRegion = $region;
+                    
+                    $discovery_data = $result;
+		
+                    /* Parse the returned data to determine the correct EndPoint for the OrganizationService for the selected Organization */
+                    $organizationServiceURI = NULL;
+                    $organizationDomain = NULL;
+                    $discoveryDOM = new DOMDocument(); 
+                    $discoveryDOM->loadXML($discovery_data);
+                    if ($discoveryDOM->getElementsByTagName('OrganizationDetail')->length > 0) {
+                            foreach ($discoveryDOM->getElementsByTagName('OrganizationDetail') as $organizationNode) {
+                                    //if ($organizationNode->getElementsByTagName('UniqueName')->item(0)->textContent == $this->organizationUniqueName) {
+                                            foreach ($organizationNode->getElementsByTagName('Endpoints')->item(0)->getElementsByTagName('KeyValuePairOfEndpointTypestringztYlk6OT') as $endpointDOM) {
+                                                    if ($endpointDOM->getElementsByTagName('key')->item(0)->textContent == 'OrganizationService') {
+                                                            $organizationServiceURI = $endpointDOM->getElementsByTagName('value')->item(0)->textContent;
+                                                    }
+
+                                                    if ($endpointDOM->getElementsByTagName('key')->item(0)->textContent == 'WebApplication') {
+                                                            $organizationDomain = $endpointDOM->getElementsByTagName('value')->item(0)->textContent;
+                                                    }
+                                            }
+                                            break;
+                                    //}
+                            }
+                    } else {
+                            throw new Exception('Error fetching Organization details:'.PHP_EOL.$discovery_data);
+                            return FALSE;
+                    }
+                    if ($organizationServiceURI == NULL) {
+                            throw new Exception('Could not find OrganizationService URI for the Organization <'.$this->organizationUniqueName.'>');
+                            return FALSE;
+                    }
+                    
+                    $settings['region'] = $region;
+                    $settings['organization_url'] = $organizationServiceURI;
+                    $settings['domain'] = $organizationDomain;
+                }
             }
 
             /* Determine the Security used by this Organization */
@@ -2553,6 +2638,7 @@ if (!class_exists("AlexaSDK")) :
                 
                 $settings['organization_url'] = $this->organizationUrl;
                 $settings['domain'] = $this->domain;
+                $settings['region'] = NULL;
                 
             }else if ( in_array("OnlineFederation", $discovery_authmode, true )){
                 
@@ -2560,6 +2646,7 @@ if (!class_exists("AlexaSDK")) :
                  * I'll return for it's rework later
                  */
                 
+                $this->security['discovery_authendpoint'] = 'https://login.microsoftonline.com/RST2.srf';
                 $this->security['discovery_authmode'] = "OnlineFederation";
                 
                 /* Determine the address to send security requests to */
@@ -2607,6 +2694,60 @@ if (!class_exists("AlexaSDK")) :
             $arr = explode(".", $parse["host"]);
             
             return $arr[0];
+        }
+        
+        
+        
+        public function getUserRealm($username, $requestXML = false){
+            /* Constant URL to get User Realm */
+            $url = "https://login.microsoftonline.com/GetUserRealm.srf";
+            /* Configure return type XML or JSON supported */
+            $xmlParam = ($requestXML) ? "&xml=1" : "";
+            /* Build request content */
+            $content = "login=".urlencode($username).$xmlParam;
+            /* Separate the provided URI into Path & Hostname sections */
+            $urlDetails = parse_url($url);
+            // setup headers
+            $headers = array(
+                            "POST ". $urlDetails['path'] ." HTTP/1.1",
+                            "Host: " . $urlDetails['host'],
+                            'Connection: Keep-Alive',
+                            "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
+                            "Content-length: ".strlen($content),
+            );
+		
+            $cURLHandle = curl_init();
+            curl_setopt($cURLHandle, CURLOPT_URL, $url);
+            curl_setopt($cURLHandle, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($cURLHandle, CURLOPT_TIMEOUT, self::$connectorTimeout);
+            curl_setopt($cURLHandle, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+            curl_setopt($cURLHandle, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($cURLHandle, CURLOPT_POST, 1);
+            curl_setopt($cURLHandle, CURLOPT_POSTFIELDS, $content);
+            curl_setopt($cURLHandle, CURLOPT_HEADER, false);
+            /* Execute the cURL request, get the XML response */
+            $response = curl_exec($cURLHandle);
+            /* Check for cURL errors */
+            if (curl_errno($cURLHandle) != CURLE_OK) {
+                    throw new Exception('cURL Error: '.curl_error($cURLHandle));
+            }
+            /* Check for HTTP errors */
+            $httpResponse = curl_getinfo($cURLHandle, CURLINFO_HTTP_CODE);
+            curl_close($cURLHandle);
+
+            if ($requestXML){
+                /* Return XML string */
+                return $response;
+            }else{
+                /* Parse JSON from returned string */
+                $result = json_decode($response);
+                if (json_last_error() == JSON_ERROR_NONE){
+                    return $result;
+                }else{
+                    return FALSE;
+                }
+            }
         }
         
         

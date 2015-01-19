@@ -2,13 +2,24 @@
 
 if (!class_exists("AlexaSDK_Common")) :
     
+    /** 
+    * @ignore
+    * @deprecated Wil be changed soon
+    */
     class AlexaSDK_Common{
         public $authentication;
         
+        /** 
+         * @ignore
+	 * @deprecated Wil be changed soon
+	 */
         function __construct($authentication){
             $this->authentication = $authentication;
         }
-        
+        /** 
+        * @ignore
+        * @deprecated Wil be changed soon
+        */
         public function WhoAmI() {
 
             $header = $this->authentication->getHeader('Execute');
