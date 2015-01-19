@@ -2681,6 +2681,10 @@ if (!class_exists("AlexaSDK")) :
             $settings['crmadmin_login'] = $this->settings->username;
             $settings['crmadmin_password'] = $this->settings->password;
             
+            $settings["port"] = $this->settings->port;
+            $settings['server'] = $this->settings->server;
+            $settings['use_ssl'] = $this->settings->use_ssl;
+            
             return $settings;
         }
         

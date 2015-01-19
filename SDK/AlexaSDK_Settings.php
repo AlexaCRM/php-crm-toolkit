@@ -15,6 +15,11 @@ if (!class_exists("AlexaSDK_Settings")) :
         public $loginUrl = "https://adfs.crm2011.net.au/adfs/services/trust/13/usernamemixed";
         public $organizationName;
         
+        public $use_ssl;
+        public $server;
+        public $port;
+        
+        
         /*
           Select the right region for your CRM
           crmna:dynamics.com - North America
