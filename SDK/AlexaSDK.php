@@ -85,7 +85,6 @@ if (!class_exists("AlexaSDK")) :
              */ 
             $cache = $this->cacheClass = new AlexaSDK_Cache( array('storage' => 'auto'));
             /* Need to Define Clean cache mechanism */
-            $cache->cleanup();
             $entities = $cache->get('entities');
             if ($entities != null){
                 $this->cachedEntityDefintions = unserialize($entities);
@@ -547,6 +546,69 @@ if (!class_exists("AlexaSDK")) :
 				$entityMetadataNode = $node;
 				break;
 			}
+		}
+		unset($node);
+		if ($entityMetadataNode == NULL) {
+			throw new Exception('Could not find returned EntityMetadata in XML provided');
+			return FALSE;
+		}
+                
+		/* Assemble a simpleXML class for the details to return  NOTE: always return false for some reason */
+		//$responseData = simplexml_import_dom($entityMetadataNode);
+                
+                $returnValue = preg_replace('/(<)([a-z]:)/', '<', preg_replace('/(<\/)([a-z]:)/', '</', $soapResponse));
+
+                $simpleXML = simplexml_load_string($returnValue);
+
+                if (!$simpleXML){
+                    throw new Exception('Unable to load metadata simple_xml_class');
+                    return FALSE;
+                }
+                
+                $responseData = $simpleXML->Body->ExecuteResponse->ExecuteResult->Results->KeyValuePairOfstringanyType->value;
+
+                if (!$responseData){
+                    throw new Exception('Unable to load metadata simple_xml_class KeyValuePairOfstringanyType value');
+                    return FALSE;
+                }
+		
+		/* Return the SimpleXML object */
+		return $responseData;
+	}
+        
+        
+        /**
+	 * Parse the results of a RetrieveEntity into a useable PHP object
+	 * @ignore
+	 */
+	public static function parseRetrieveAllEntitiesResponse($soapResponse) {
+            
+		/* Load the XML into a DOMDocument */
+		$soapResponseDOM = new DOMDocument();
+		$soapResponseDOM->loadXML($soapResponse);
+		/* Find the ExecuteResult node with Type b:RetrieveRecordChangeHistoryResponse */
+		$executeResultNode = NULL;
+		foreach ($soapResponseDOM->getElementsByTagName('ExecuteResult') as $node) {
+			if ($node->hasAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'type') && 
+                                (self::stripNS($node->getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'type')) == 'RetrieveEntityResponse'
+                                ) || (self::stripNS($node->getAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'type')) == 'RetrieveAllEntitiesResponse')) {
+				$executeResultNode = $node;
+				break;
+			}
+		}
+		unset($node);
+		if ($executeResultNode == NULL) {
+			throw new Exception('Could not find ExecuteResult for RetrieveEntityResponse in XML provided');
+			return FALSE;
+		}
+		/* Find the Value node with Type d:EntityMetadata */
+		$entityMetadataNode = NULL;
+		foreach ($executeResultNode->getElementsByTagName('value') as $node) {
+                    
+			//if ($node->hasAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'type') ) {
+				$entityMetadataNode = $node;
+				break;
+			//}
 		}
 		unset($node);
 		if ($entityMetadataNode == NULL) {
@@ -2054,8 +2116,12 @@ if (!class_exists("AlexaSDK")) :
 			SimpleXMLElement $entityData, Array $propertiesArray, Array $propertyValuesArray,
 			Array $mandatoriesArray, Array $optionSetsArray, $entityDisplayName) {
 		/* Store the details of the Entity Definition in the Cache */
-		$this->cachedEntityDefintions[$entityLogicalName] = Array(
+		/*$this->cachedEntityDefintions[$entityLogicalName] = Array(
 				$entityData->asXML(), $propertiesArray, $propertyValuesArray, 
+				$mandatoriesArray, $optionSetsArray, $entityDisplayName);*/
+            
+                $this->cachedEntityDefintions[$entityLogicalName] = Array(
+				$propertiesArray, $propertyValuesArray, 
 				$mandatoriesArray, $optionSetsArray, $entityDisplayName);
                 
                 // Write products to Cache in 10 minutes with same keyword
@@ -2087,16 +2153,23 @@ if (!class_exists("AlexaSDK")) :
 			 * localProperties array) - the other data therefore becomes a single reference during
 			 * execution.
 			 */
-			$entityData = $this->cachedEntityDefintions[$entityLogicalName][0];
+			/*$entityData = $this->cachedEntityDefintions[$entityLogicalName][0];
 			$propertiesArray = $this->cachedEntityDefintions[$entityLogicalName][1];
 			$propertyValuesArray = $this->cachedEntityDefintions[$entityLogicalName][2];
 			$mandatoriesArray = $this->cachedEntityDefintions[$entityLogicalName][3];
 			$optionSetsArray = $this->cachedEntityDefintions[$entityLogicalName][4];
-			$entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][5];
+			$entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][5];*/
+                        
+                        //$entityData = $this->cachedEntityDefintions[$entityLogicalName][0];
+			$propertiesArray = $this->cachedEntityDefintions[$entityLogicalName][0];
+			$propertyValuesArray = $this->cachedEntityDefintions[$entityLogicalName][1];
+			$mandatoriesArray = $this->cachedEntityDefintions[$entityLogicalName][2];
+			$optionSetsArray = $this->cachedEntityDefintions[$entityLogicalName][3];
+			$entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][4];
 			return true;
 		} else {
 			/* Not found - clear passed containers and return false */
-			$entityData = NULL;
+			/*$entityData = NULL;*/
 			$propertiesArray = NULL;
 			$propertyValuesArray = NULL;
 			$mandatoriesArray = NULL;
@@ -2493,6 +2566,49 @@ if (!class_exists("AlexaSDK")) :
         }
         
         
+        /** 
+         * @ignore
+	 * @deprecated Wil be changed soon
+         * NEED TO REFACTOR
+	 */
+        function retrieveAllEntities(){
+            
+            $securityToken = $this->authentication->getOrganizationSecurityToken();
+            
+            $request = '<Execute xmlns="http://schemas.microsoft.com/xrm/2011/Contracts/Services">
+                        <request i:type="b:RetrieveAllEntitiesRequest" xmlns:b="http://schemas.microsoft.com/xrm/2011/Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+                            <b:Parameters xmlns:c="http://schemas.datacontract.org/2004/07/System.Collections.Generic">
+                                <b:KeyValuePairOfstringanyType>
+                                    <c:key>EntityFilters</c:key>
+                                    <c:value i:type="d:EntityFilters" xmlns:d="http://schemas.microsoft.com/xrm/2011/Metadata">Entity</c:value>
+                                </b:KeyValuePairOfstringanyType>
+                                <b:KeyValuePairOfstringanyType>
+                                    <c:key>RetrieveAsIfPublished</c:key>
+                                    <c:value i:type="d:boolean" xmlns:d="http://www.w3.org/2001/XMLSchema">false</c:value>
+                                </b:KeyValuePairOfstringanyType>
+                            </b:Parameters>
+                            <b:RequestId i:nil="true"/>
+                            <b:RequestName>RetrieveAllEntities</b:RequestName>
+                        </request>
+                    </Execute>';
+            
+            
+            $doc = new DOMDocument();
+            $doc->loadXML($request);
+            $executeNode = $doc->getElementsByTagName('Execute')->item(0);
+            
+            
+            $retrieveEntityRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationExecuteAction(), $securityToken, $executeNode);
+            /* Determine the Action in the SOAP Response */
+            $responseDOM = new DOMDocument();
+            $responseDOM->loadXML($retrieveEntityRequest);
+
+            $result = $this->getSoapResponse($this->settings->organizationUrl, $retrieveEntityRequest);
+            
+            return self::parseRetrieveAllEntitiesResponse($result);
+        }
+        
+        
         /* NEED TO REFACTOR
          * TODO: Add discovery service methods to CRM Oline
 	 * @ignore
@@ -2753,6 +2869,9 @@ if (!class_exists("AlexaSDK")) :
                 }
             }
         }
+        
+        
+        
         
         
         /**

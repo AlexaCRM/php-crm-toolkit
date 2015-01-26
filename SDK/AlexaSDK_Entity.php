@@ -65,6 +65,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 /* Check if the Definition of this Entity is Cached on the Connector */
 		if ($auth->isEntityDefinitionCached($this->entityLogicalName)) {
                     
+                        //self::vardump("Cached ".$this->entityLogicalName);
+                    
 			/* Use the Cached values */
 			$isDefined = $auth->getCachedEntityDefinition($this->entityLogicalName, 
 					$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
@@ -81,6 +83,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                     /* Get the raw XML data */
                                     $rawSoapResponse = $auth->retrieveRaw($this);
                                     
+                                    //self::vardump($rawSoapResponse);
+                                    
                                     /* NOTE: ParseRetrieveResponse method of AlexaSDK_Entity class, not the AlexaSDK class */
                                     $this->ParseRetrieveResponse($auth, $this->LogicalName, $rawSoapResponse);
                             }
@@ -93,6 +97,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 /* At this point, we assume Entity is not Cached */
 		/* So, get the full details of what an Incident is on this server */
 		$this->entityData = $auth->retrieveEntity($this->entityLogicalName);
+                
+                //self::vardump($this->entityData);
                 
                 /* Check we have a Simple XML Class for the Entity */
 		if (!$this->entityData) {
@@ -119,12 +125,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			/* Check if this field is mandatory */
 			$requiredLevel = (String)$attribute->RequiredLevel->Value;
                         
-                       // self::vardump($attribute);
-                        
-                        //self::vardump($attribute->RequiredLevel);
-                        
-                        //self::vardump($requiredLevel);
-                        
 			/* If this is an OptionSet, determine the OptionSet details */
 			if (!empty($attribute->OptionSet) && !empty($attribute->OptionSet->Name)) {
 				/* Determine the Name of the OptionSet */
@@ -147,6 +147,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				/* Handle the different types of OptionSet */
 				switch ($optionSetType) {
 					case 'Boolean':
+                                                //self::vardump($attribute);
+                                            
 						/* Parse the FalseOption */
 						$value = (int)$attribute->OptionSet->FalseOption->Value;
 						$label = (String)$attribute->OptionSet->FalseOption->Label->UserLocalizedLabel->Label[0];
@@ -287,6 +289,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			$this->setID($_ID);
                         /* Get the raw XML data */
                         $rawSoapResponse = $auth->retrieveRaw($this);
+                        
+                        //self::vardump($rawSoapResponse);
                         
                         /* NOTE: ParseRetrieveResponse method of AlexaSDK_Entity class, not the AlexaSDK class */
                         $this->ParseRetrieveResponse($auth, $this->LogicalName, $rawSoapResponse);
