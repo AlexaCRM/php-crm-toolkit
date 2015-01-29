@@ -30,7 +30,7 @@ if (!class_exists("AlexaSDK")) :
         private $cacheClass;
         
         /* Security Details */
-	private $security = Array();
+	public $security = Array();
 	/* Cached Discovery data */
 	private $discoveryDOM;
 	private $discoverySoapActions;
@@ -227,6 +227,89 @@ if (!class_exists("AlexaSDK")) :
                     $authAddress = self::getOnlineFederationSecurityAddress($this->discoverySecurityPolicy);
                 }
 		return $authAddress;
+	}
+        
+        
+        /**
+	 * Return the Authentication Address used by the Organization service 
+	 * @ignore
+	 */
+	public function getOrganizationAuthenticationAddress() {
+		/* If it's set, return the details from the Security array */
+		if (isset($this->security['organization_authuri'])) 
+			return $this->security['organization_authuri'];
+		
+		/* If we don't already have a Security Policy, get it */
+		if ($this->organizationSecurityPolicy == NULL) {
+			/* Get the Organization DOM */
+			$organizationDOM = $this->getOrganizationDOM();
+			/* Get the Security Policy for the Organization Service from the WSDL */
+			$this->organizationSecurityPolicy = self::findSecurityPolicy($organizationDOM, 'OrganizationService');
+		}
+		/* Find the Authentication type used */
+		$authAddress = self::getFederatedSecurityAddress($this->organizationSecurityPolicy);
+		return $authAddress;
+	}
+        
+        public function getSecurityTokenServiceIdentifier($service){
+                /* If it's set, return the details from the Security array */
+		if (isset($this->security[$service.'_sts_identifier'])) 
+			return $this->security[$service.'_sts_identifier'];
+                
+                /* If we don't already have a Security Policy, get it */
+		if ($this->organizationSecurityPolicy == NULL) {
+			/* Get the Organization DOM */
+			$organizationDOM = $this->getOrganizationDOM();
+			/* Get the Security Policy for the Organization Service from the WSDL */
+			$this->organizationSecurityPolicy = self::findSecurityPolicy($organizationDOM, 'OrganizationService');
+		}
+                /* Find the Identifier node value */
+                $this->security[$service.'_sts_identifier'] = self::getSTSidentifier($this->organizationSecurityPolicy);
+                return $this->security[$service.'_sts_identifier'];
+        }
+        
+        protected static function getSTSidentifier(DOMNode $securityPolicyNode){
+                $stsIdentifier = NULL;
+		/* Find the EndorsingSupportingTokens tag */
+		if ($securityPolicyNode->getElementsByTagName('SecureTokenService')->length == 0) {
+			throw new Exception('Could not find SecureTokenService tag in provided security policy XML');
+			return FALSE;
+		}
+		$stsNode = $securityPolicyNode->getElementsByTagName('SecureTokenService')->item(0);
+		/* Find the Policy tag */
+		if ($stsNode->getElementsByTagName('Identifier')->length == 0) {
+			throw new Exception('Could not find SecureTokenService/Identifier tag in provided security policy XML');
+			return FALSE;
+		}
+		$stsIdentifierNode = $stsNode->getElementsByTagName('Identifier')->item(0);
+                
+                $stsIdentifier = $stsIdentifierNode->textContent;
+                
+		if ($stsIdentifier == NULL) {
+			throw new Exception('Could not find SecurityTokenServiceIdentifier in provided security policy WSDL');
+			return FALSE;
+		}
+                
+		return $stsIdentifier;
+        }
+        
+        
+        /**
+	 * Return the Authentication Mode used by the Organization service 
+	 * @ignore
+	 */
+	public function getOrganizationAuthenticationMode() {
+		/* If it's set, return the details from the Security array */
+		if (isset($this->security['organization_authmode'])) 
+			return $this->security['organization_authmode'];
+		
+		/* Get the Organization DOM */
+		$organizationDOM = $this->getOrganizationDOM();
+		/* Get the Security Policy for the Organization Service from the WSDL */
+		$this->organizationSecurityPolicy = self::findSecurityPolicy($organizationDOM, 'OrganizationService');
+		/* Find the Authentication type used */
+		$authType = $this->organizationSecurityPolicy->getElementsByTagName('Authentication')->item(0)->textContent;
+		return $authType;
 	}
         
         
@@ -739,7 +822,7 @@ if (!class_exists("AlexaSDK")) :
 	 * Get the SOAP Endpoint for the Federation Security service 
 	 * @ignore
 	 */
-	protected function getFederationSecurityURI($service) {
+	public function getFederationSecurityURI($service) {
 		/* If it's set, return the details from the Security array */
 		if (isset($this->security[$service.'_authendpoint'])) 
 			return $this->security[$service.'_authendpoint'];
@@ -896,7 +979,7 @@ if (!class_exists("AlexaSDK")) :
 	 * Fetch and flatten the Organization Service WSDL as a DOM
 	 * @ignore
 	 */
-	protected function getOrganizationDOM() {
+	public function getOrganizationDOM() {
 		/* If it's already been fetched, use the one we have */
 		if ($this->organizationDOM != NULL) return $this->organizationDOM;
 		if ($this->settings->organizationUrl == NULL) {
@@ -2622,8 +2705,6 @@ if (!class_exists("AlexaSDK")) :
             $this->security['username'] = $this->settings->username;
             $this->security['password'] = $this->settings->password;
             
-            
-            /* HotFix based on MSDN docs, it will be replaced by discovery service parser for FederationOnline */
             $result = '';
             
             if ($this->settings->authMode == "OnlineFederation"){
@@ -2635,7 +2716,7 @@ if (!class_exists("AlexaSDK")) :
                 }
                 
                 
-                $crmRegionsArray = array("crmna:dynamics.com", "crmemea:dynamics.com", "crmapac:dynamics.com");
+                $crmRegionsArray = array("crmna:dynamics.com", "crmsam:dynamics.com", "crmemea:dynamics.com", "crmapac:dynamics.com");
                 
                 $result = "";
                 
@@ -2665,10 +2746,15 @@ if (!class_exists("AlexaSDK")) :
                             $discoveryUrl = "https://disco.crm.dynamics.com/XRMServices/2011/Discovery.svc";
                             $region = 'crmna:dynamics.com';
                         break;
+                        case 'crmsa:dynamics.com':
+                            $discoveryUrl = "https://disco.crm2.dynamics.com/XRMServices/2011/Discovery.svc";
+                            $region = 'crmsa:dynamics.com';
+                        break;
                         case 'crmemea:dynamics.com':
                             $discoveryUrl = "https://disco.crm4.dynamics.com/XRMServices/2011/Discovery.svc";
                             $region = 'crmemea:dynamics.com';
                         break;
+                    
                         case 'crmapac:dynamics.com':
                             $discoveryUrl = "https://disco.crm5.dynamics.com/XRMServices/2011/Discovery.svc";
                             $region = 'crmapac:dynamics.com';
@@ -2701,7 +2787,7 @@ if (!class_exists("AlexaSDK")) :
                     $this->settings->crmRegion = $region;
                     
                     $discovery_data = $result;
-		
+                    
                     /* Parse the returned data to determine the correct EndPoint for the OrganizationService for the selected Organization */
                     $organizationServiceURI = NULL;
                     $organizationDomain = NULL;
@@ -2734,6 +2820,7 @@ if (!class_exists("AlexaSDK")) :
                     $settings['region'] = $region;
                     $settings['organization_url'] = $organizationServiceURI;
                     $settings['domain'] = $organizationDomain;
+                    $settings['server'] = $organizationDomain;
                 }
             }
 
@@ -2868,6 +2955,50 @@ if (!class_exists("AlexaSDK")) :
                     return FALSE;
                 }
             }
+        }
+        
+        public function whoAmI(){
+                /* Send the sequrity request and get a security token */
+		$securityToken = $this->authentication->getOrganizationSecurityToken();
+		/* Generate the XML for the Body of a WhoAmI request */
+		$executeNode = self::generateWhoAmIRequest();
+		/* Turn this into a SOAP request, and send it */
+		$retrieveEntityRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationExecuteAction(), $securityToken, $executeNode);
+                self::vardump($retrieveEntityRequest);
+                
+		$soapResponse = self::getSoapResponse($this->settings->organizationUrl, $retrieveEntityRequest);
+		
+		return $soapResponse;
+        }
+        
+        /* Debug it later */
+        protected static function generateWhoAmIRequest(){
+                $req = '<Execute xmlns="http://schemas.microsoft.com/xrm/2011/Contracts/Services">
+                            <request i:type="c:WhoAmIRequest" xmlns:b="http://schemas.microsoft.com/xrm/2011/Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://schemas.microsoft.com/crm/2011/Contracts">
+                                <b:Parameters xmlns:d="http://schemas.datacontract.org/2004/07/System.Collections.Generic"/>
+                                <b:RequestId i:nil="true"/>
+                                <b:RequestName>WhoAmI</b:RequestName>
+                            </request>
+                        </Execute>';
+            
+            
+                /* Generate the DeleteRequest message */
+		$whoamiRequestDOM = new DOMDocument();
+                
+                $executeNode = $whoamiRequestDOM->appendChild($whoamiRequestDOM->createElementNS('http://schemas.microsoft.com/xrm/2011/Contracts/Services', 'Execute'));
+		$requestNode = $executeNode->appendChild($whoamiRequestDOM->createElement('request'));
+		$requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:b', 'http://schemas.microsoft.com/xrm/2011/Contracts');
+                $requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.microsoft.com/xrm/2011/Contracts');
+                $requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:i', 'http://www.w3.org/2001/XMLSchema-instance');
+                $requestNode->setAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'i:type', 'c:WhoAmIRequest');
+                $parametersNode = $requestNode->appendChild($whoamiRequestDOM->createElement('b:Parameters'));
+		$parametersNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic');
+                
+                $requiestIdNode = $requestNode->appendChild($whoamiRequestDOM->createElement('b:RequestId'));
+                $requiestIdNode->setAttribute('i:nil', 'true');
+                $requestNode->appendChild($whoamiRequestDOM->createElement('b:RequestName', 'WhoAmI'));
+                
+                return $executeNode;
         }
         
         
