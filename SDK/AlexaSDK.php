@@ -248,9 +248,16 @@ if (!class_exists("AlexaSDK")) :
 		}
 		/* Find the Authentication type used */
 		$authAddress = self::getFederatedSecurityAddress($this->organizationSecurityPolicy);
+                
+                $this->security['organization_authuri'] = $authAddress;
+                
 		return $authAddress;
 	}
         
+        /**
+         * Not needed any more
+         * @deprecated
+         */
         public function getSecurityTokenServiceIdentifier($service){
                 /* If it's set, return the details from the Security array */
 		if (isset($this->security[$service.'_sts_identifier'])) 
@@ -314,7 +321,7 @@ if (!class_exists("AlexaSDK")) :
         
         
         /**
-	 * Search a Microsoft Dynamics CRM 2011 Security Policy for the Address for the Federated Security 
+	 * Search a Microsoft Dynamics CRM Security Policy for the Address for the Federated Security 
 	 * @ignore
 	 */
 	protected static function getFederatedSecurityAddress(DOMNode $securityPolicyNode) {
@@ -426,14 +433,6 @@ if (!class_exists("AlexaSDK")) :
 	 * @ignore
 	 */
 	protected static function getTrust13UsernameAddress(DOMDocument $authenticationDOM) {
-		return self::getTrustAddress($authenticationDOM, 'UserNameWSTrustBinding_IWSTrust13Async');
-	}
-        
-        /**
-	 * Get the Trust Address for the Trust13UsernameMixed authentication method 
-	 * @ignore
-	 */
-	protected static function getLoginOnmicrosoftAddress(DOMDocument $authenticationDOM) {
 		return self::getTrustAddress($authenticationDOM, 'UserNameWSTrustBinding_IWSTrust13Async');
 	}
         
