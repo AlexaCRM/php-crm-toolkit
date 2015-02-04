@@ -2963,8 +2963,6 @@ if (!class_exists("AlexaSDK")) :
 		$executeNode = self::generateWhoAmIRequest();
 		/* Turn this into a SOAP request, and send it */
 		$retrieveEntityRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationExecuteAction(), $securityToken, $executeNode);
-                self::vardump($retrieveEntityRequest);
-                
 		$soapResponse = self::getSoapResponse($this->settings->organizationUrl, $retrieveEntityRequest);
 		
 		return $soapResponse;
