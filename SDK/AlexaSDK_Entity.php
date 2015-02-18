@@ -8,10 +8,33 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	 * @var String entityLogicalName this is how Dynamics refers to this Entity
 	 */
 	protected $entityLogicalName = NULL;
-	/** @var String entityDisplayName the field to use to display the entity's Name */
+        
+        /** 
+         * @var String entityName, display name of Entity object record 
+         */
+        protected $displayName = NULL;
+        
+	/** 
+         * @var String DisplayName of Entity the field to use to display the entity's Name (Example: Contact, Account) 
+         */
 	protected $entityDisplayName = NULL;
+        
+        /** 
+         * @var String DisplayCollectionName of Entity, field that displays multiple entities name of one type (Example: Contacts, Accounts) 
+         */
+        protected $entityDisplayCollectionName = NULL;
+        
+        /** 
+         * @var String EntityDescription description of specified Entity 
+         */
+        protected $entityDescription = NULL;
+        
+        /* @var String EntityTypeCode, ObjectTypeCode is the same */
+        private $entitytypecode = NULL;
+        
 	/* The details of the Entity structure (SimpleXML object) */
 	public $entityData;
+        
 	/* The details of the Entity structure (as Arrays) */
 	public $properties = Array();
 	public $mandatories = Array();
@@ -70,11 +93,22 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			/* Use the Cached values */
 			$isDefined = $auth->getCachedEntityDefinition($this->entityLogicalName, 
 					$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
-					$this->optionSets, $this->entityDisplayName);
+					$this->optionSets, $this->displayName, $this->entitytypecode, $this->entityDisplayName, 
+                                        $this->entityDisplayCollectionName, $this->entityDescription);
                         
                         if (self::$debugMode){ echo "Cached ". $this->entityLogicalName; }
                         
                         if ($isDefined){ 
+                            
+                            /* TODO: Add checkings */
+                           /* $this->entityDescription = (String)$this->entityData->Description->LocalizedLabels->LocalizedLabel->Label;
+
+                            $this->entityDisplayName = (String)$this->entityData->DisplayName->LocalizedLabels->LocalizedLabel->Label;
+
+                            $this->entityDisplayCollectionName = (String)$this->entityData->DisplayCollectionName->LocalizedLabels->LocalizedLabel->Label;
+
+                            $this->entitytypecode = (String)$this->entityData->ObjectTypeCode;*/
+                            
                             
                             /* Set EntityValues if specified Entity ID */
                             if ($_ID != NULL) {
@@ -98,12 +132,21 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		/* So, get the full details of what an Incident is on this server */
 		$this->entityData = $auth->retrieveEntity($this->entityLogicalName);
                 
-                //self::vardump($this->entityData);
-                
                 /* Check we have a Simple XML Class for the Entity */
 		if (!$this->entityData) {
 			throw new Execption('Unable to load metadata simple_xml_class'.$this->entityData);
 		}
+                
+                //self::vardump("Load ".$this->entityLogicalName);
+                
+                /* TODO: Add checkings */
+                $this->entityDescription = (String)$this->entityData->Description->LocalizedLabels->LocalizedLabel->Label;
+                
+                $this->entityDisplayName = (String)$this->entityData->DisplayName->LocalizedLabels->LocalizedLabel->Label;
+                
+                $this->entityDisplayCollectionName = (String)$this->entityData->DisplayCollectionName->LocalizedLabels->LocalizedLabel->Label;
+                
+                $this->entitytypecode = (String)$this->entityData->ObjectTypeCode;
                 
                 /* Next, we analyse this data and determine what Properties this Entity has */
 		foreach ($this->entityData->Attributes[0]->AttributeMetadata as $attribute) {
@@ -147,8 +190,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				/* Handle the different types of OptionSet */
 				switch ($optionSetType) {
 					case 'Boolean':
-                                                //self::vardump($attribute);
-                                            
 						/* Parse the FalseOption */
 						$value = (int)$attribute->OptionSet->FalseOption->Value;
 						$label = (String)$attribute->OptionSet->FalseOption->Label->UserLocalizedLabel->Label[0];
@@ -235,7 +276,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			}
 			/* If this is the Primary Name of the Entity, set the Display Name to match */
 			if ((String)$attribute->IsPrimaryName === 'true') {
-				$this->entityDisplayName = strtolower((String)$attribute->LogicalName);
+				$this->displayName = strtolower((String)$attribute->LogicalName);
 			}
 
 			/* Add this property to the Object's Property array */
@@ -281,7 +322,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 /* Ensure that this Entity Definition is Cached for next time */
 		$auth->setCachedEntityDefinition($this->entityLogicalName, 
 				$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
-				$this->optionSets, $this->entityDisplayName);
+				$this->optionSets, $this->displayName, $this->entitytypecode, $this->entityDisplayName, 
+                                $this->entityDisplayCollectionName, $this->entityDescription);
+                
                 
                 /* Set EntityValues if specified Entity ID */
                 if ($_ID != NULL) {
@@ -289,9 +332,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			$this->setID($_ID);
                         /* Get the raw XML data */
                         $rawSoapResponse = $auth->retrieveRaw($this);
-                        
-                        //self::vardump($rawSoapResponse);
-                        
                         /* NOTE: ParseRetrieveResponse method of AlexaSDK_Entity class, not the AlexaSDK class */
                         $this->ParseRetrieveResponse($auth, $this->LogicalName, $rawSoapResponse);
 		}
@@ -316,12 +356,43 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				return $this->entityLogicalName;
 				break;
 			case 'DISPLAYNAME':
-				if ($this->entityDisplayName != NULL) {
-					$property = $this->entityDisplayName;
+				if ($this->displayName != NULL) {
+					$property = $this->displayName;
 				} else {
 					return NULL;
 				}
 				break;
+                        case 'OBJECTTYPECODE':
+                        case 'ENTITYTYPECODE':
+                                if ($this->entitytypecode != NULL) {
+					return $this->entitytypecode;
+				} else {
+					return NULL;
+				}
+				break;
+                        /*case 'ENTITYNAME':
+				if ($this->entityDisplayName != NULL) {
+					return $this->entityDisplayName;
+				} else {
+					return NULL;
+				}
+				break;
+                        case 'ENTITYDESCRIPTION':
+				if ($this->entityDescription != NULL) {
+					return $this->entityDescription;
+				} else {
+					return NULL;
+				}
+				break;
+                        case 'ENTITIESNAMES':
+                        case 'ENTITYCOLLECTIONNAME':
+				if ($this->entityDisplayCollectionName != NULL) {
+					return $this->entityDisplayCollectionName;
+				} else {
+					return NULL;
+				}
+				break;*/
+                        
 		}
 		/* Handle dynamic properties... */
 		$property = strtolower($property);
@@ -361,8 +432,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				$this->setID($value);
 				return;
 			case 'DISPLAYNAME':
-				if ($this->entityDisplayName != NULL) {
-					$property = $this->entityDisplayName;
+				if ($this->displayName != NULL) {
+					$property = $this->displayName;
 				} else {
 					return;
 				}
@@ -599,8 +670,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				return true;
 				break;
 			case 'DISPLAYNAME':
-				if ($this->entityDisplayName != NULL) {
-					$property = $this->entityDisplayName;
+				if ($this->displayName != NULL) {
+					$property = $this->displayName;
 				} else {
 					return false;
 				}
@@ -640,7 +711,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	 */
 	public function __toString() {
 		/* Does this Entity have a DisplayName part? */
-		if ($this->entityDisplayName != NULL) {
+		if ($this->displayName != NULL) {
 			/* Use the magic __get to determine the DisplayName */
 			$displayName = $this->DisplayName;
 		} else {
@@ -969,9 +1040,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		/* Add the Formatted Values in the Key/Value Pairs of String/String to the Array */
 		self::addFormattedValues($formattedValues, $keyValueNodes);
                 
-                
-                //self::vardump($formattedValues);
-                
                 foreach($formattedValues as $key => $value){
                     $this->formattedValues[$key] = $value;
                 }
@@ -1044,8 +1112,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 							$this->propertyValues[$attributeKey.'name']['Value'] = $entityReferenceName;
 						}
 						/* If the Entity has a defined way to get the Display Name, use it too */
-						if ($storedValue->entityDisplayName != NULL) {
-							$storedValue->propertyValues[$storedValue->entityDisplayName]['Value'] = $entityReferenceName;
+						if ($storedValue->displayName != NULL) {
+							$storedValue->propertyValues[$storedValue->displayName]['Value'] = $entityReferenceName;
 						}
 					}
 					break;
@@ -1194,7 +1262,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	 */
 	public function printDetails($recursive = false, $tabLevel = 0, $printEmpty = true) {
 		/* Print the Entity Summary at current Tab level */
-		echo str_repeat("\t", $tabLevel).$this->entityDisplayName.' ('.$this->getURL(true).')'.PHP_EOL;
+		echo str_repeat("\t", $tabLevel).$this->displayName.' ('.$this->getURL(true).')'.PHP_EOL;
 		/* Increment the tabbing level */
 		$tabLevel++;
 		$linePrefix = str_repeat("\t", $tabLevel);
@@ -1274,6 +1342,10 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         public function getEntityFields(){
                 return $this->properties;
+        }
+        
+        public function getPropertyValues(){
+                return $this->propertyValues;
         }
         
         
@@ -1373,8 +1445,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				return $this->entityLogicalName;
 				break;
 			case 'DISPLAYNAME':
-				if ($this->entityDisplayName != NULL) {
-					$property = $this->entityDisplayName;
+				if ($this->displayName != NULL) {
+					$property = $this->displayName;
 				} else {
 					return NULL;
 				}

@@ -13,13 +13,13 @@ if (!class_exists("AlexaSDK_Form")) :
     
         /**  @var String entityLogicalName this is how Dynamics refers to this Form */
 	protected $formLogicalName = NULL;
-	/** @var String entityDisplayName the field to use to display the entity's Name */
-	protected $formDisplayName = NULL;
+
+        protected $formDisplayName = NULL;
         
         /**  @var String entityLogicalName this is how Dynamics refers to this Entity */
         protected $entityLogicalName = NULL;
-	/** @var String entityDisplayName the field to use to display the entity's Name */
-	protected $entityDisplayName = NULL;
+        
+	protected $displayName = NULL;
     
         /**
 	 * 

@@ -84,13 +84,13 @@ if (!class_exists("AlexaSDK")) :
              * 
              */ 
             $cache = $this->cacheClass = new AlexaSDK_Cache( array('storage' => 'auto'));
+            //$this->clearCache();
             /* Need to Define Clean cache mechanism */
             $entities = $cache->get('entities');
             if ($entities != null){
                 $this->cachedEntityDefintions = unserialize($entities);
             }
             /* End */
-            
         }
         
         /**
@@ -1091,8 +1091,19 @@ if (!class_exists("AlexaSDK")) :
 		return $soapResponse;
 	}
         
-        
-        public function retrieveMultipleEntities($entityType){
+        /**
+	 * Send a RetrieveMultipleEntities request to the Dynamics CRM server
+	 * and return the results as a structured Object
+	 * Each Entity returned is processed into an appropriate AlexaSDK_Entity object
+	 *
+	 * @param string $entityType logical name of entities to retrieve
+	 * @param boolean $allPages indicates if the query should be resent until all possible data is retrieved
+	 * @param string $pagingCookie if multiple pages are returned, send the paging cookie to get pages 2 and onwards.  Use NULL to get the first page.  Ignored if $allPages is specified.
+	 * @param integer $limitCount maximum number of records to be returned per page
+	 * @param boolean $simpleMode indicates if we should just use stdClass, instead of creating Entities
+	 * @return stdClass a PHP Object containing all the data retrieved.
+	 */
+        public function retrieveMultipleEntities($entityType, $allPages = TRUE, $pagingCookie = NULL, $limitCount = NULL, $pageNumber = NULL, $simpleMode = FALSE){
                 $queryXML = new DOMDocument();
                 $fetch = $queryXML->appendChild($queryXML->createElement('fetch'));
                 $fetch->setAttribute('version', '1.0');
@@ -1104,7 +1115,7 @@ if (!class_exists("AlexaSDK")) :
                 $entity->appendChild($queryXML->createElement('all-attributes'));
                 $queryXML->saveXML($fetch);
 
-                return $this->retrieveMultiple($queryXML->C14N());
+                return $this->retrieveMultiple($queryXML->C14N(), $allPages, $pagingCookie, $limitCount, $pageNumber, $simpleMode);
         }
         
         
@@ -1668,14 +1679,14 @@ if (!class_exists("AlexaSDK")) :
 	 * @param boolean $simpleMode indicates if we should just use stdClass, instead of creating Entities
 	 * @return stdClass a PHP Object containing all the data retrieved.
 	 */
-	public function retrieveMultiple($queryXML, $allPages = TRUE, $pagingCookie = NULL, $limitCount = NULL, $simpleMode = FALSE) {
+	public function retrieveMultiple($queryXML, $allPages = TRUE, $pagingCookie = NULL, $limitCount = NULL, $pageNumber = NULL, $simpleMode = FALSE) {
 		/* Prepare an Object to hold the returned data */
 		$soapData = NULL;
 		/* If we need all pages, ignore any supplied paging cookie */
 		if ($allPages) $pagingCookie = NULL;
 		do {
 			/* Get the raw XML data */
-			$rawSoapResponse = $this->retrieveMultipleRaw($queryXML, $pagingCookie, $limitCount);
+			$rawSoapResponse = $this->retrieveMultipleRaw($queryXML, $pagingCookie, $limitCount, $pageNumber);
 			/* Parse the raw XML data into an Object */
 			$tmpSoapData = self::parseRetrieveMultipleResponse($this, $rawSoapResponse, $simpleMode);
 			/* If we already had some data, add the old Entities */
@@ -1713,7 +1724,7 @@ if (!class_exists("AlexaSDK")) :
 	}
         
         /**
-	 * Send a RetrieveMultiple request to the Dynamics CRM 2011 server
+	 * Send a RetrieveMultiple request to the Dynamics CRM server
 	 * and return the results as a structured Object
 	 * Each Entity returned is processed into a simple stdClass
 	 * 
@@ -1726,8 +1737,8 @@ if (!class_exists("AlexaSDK")) :
 	 * @param integer $limitCount maximum number of records to be returned per page
 	 * @return stdClass a PHP Object containing all the data retrieved.
 	 */
-	public function retrieveMultipleSimple($queryXML, $allPages = TRUE, $pagingCookie = NULL, $limitCount = NULL) {
-		return $this->retrieveMultiple($queryXML, $allPages, $pagingCookie, $limitCount, true);
+	public function retrieveMultipleSimple($queryXML, $allPages = TRUE, $pagingCookie = NULL, $pageNumber = NULL, $limitCount = NULL) {
+		return $this->retrieveMultiple($queryXML, $allPages, $pagingCookie, $limitCount, $pageNumber, true);
 	}
         
         /**
@@ -1737,14 +1748,14 @@ if (!class_exists("AlexaSDK")) :
          * @return AlexaSDK_Entity a PHP Object containing all the data retrieved.
          */
         public function retrieveSingle($queryXML){
-            $result = $this->retrieveMultiple($queryXML, FALSE, NULL, 1, false);
+            $result = $this->retrieveMultiple($queryXML, FALSE, NULL, 1, NULL, false);
             
             return ($result->Count) ? $result->Entities[0] : NULL;
         }
         
         
         /**
-	 * Send a RetrieveMultiple request to the Dynamics CRM 2011 server
+	 * Send a RetrieveMultiple request to the Dynamics CRM server
 	 * and return the results as raw XML
 	 *
 	 * This is particularly useful when debugging the responses from the server
@@ -1754,11 +1765,11 @@ if (!class_exists("AlexaSDK")) :
 	 * @param integer $limitCount maximum number of records to be returned per page
 	 * @return string the raw XML returned by the server, including all SOAP Envelope, Header and Body data.
 	 */
-	public function retrieveMultipleRaw($queryXML, $pagingCookie = NULL, $limitCount = NULL) {
+	public function retrieveMultipleRaw($queryXML, $pagingCookie = NULL, $limitCount = NULL, $pageNumber = NULL) {
 		/* Send the sequrity request and get a security token */
 		$securityToken = $this->authentication->getOrganizationSecurityToken();
 		/* Generate the XML for the Body of a RetrieveMulitple request */
-		$executeNode = self::generateRetrieveMultipleRequest($queryXML, $pagingCookie, $limitCount);
+		$executeNode = self::generateRetrieveMultipleRequest($queryXML, $pagingCookie, $limitCount, $pageNumber);
 		/* Turn this into a SOAP request, and send it */
 		$retrieveMultipleSoapRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationRetrieveMultipleAction(), $securityToken, $executeNode);
 		$soapResponse = self::getSoapResponse($this->settings->organizationUrl, $retrieveMultipleSoapRequest);
@@ -1771,12 +1782,16 @@ if (!class_exists("AlexaSDK")) :
 	 * Generate a Retrieve Multiple Request
 	 * @ignore
 	 */
-	protected static function generateRetrieveMultipleRequest($queryXML, $pagingCookie = NULL, $limitCount = NULL) {
+	protected static function generateRetrieveMultipleRequest($queryXML, $pagingCookie = NULL, $limitCount = NULL, $pageNumber = NULL) {
 		if ($pagingCookie != NULL) {
 			/* Turn the queryXML into a DOMDocument so we can manipulate it */
 			$queryDOM = new DOMDocument(); $queryDOM->loadXML($queryXML);
-			$newPage = self::getPageNo($pagingCookie) + 1;
-			//echo 'Doing paging - Asking for page: '.$newPage.PHP_EOL;
+                        if ($pageNumber == NULL){
+                            $newPage = self::getPageNo($pagingCookie) + 1;
+                            //echo 'Doing paging - Asking for page: '.$newPage.PHP_EOL;
+                        }else{
+                            $newPage = $pageNumber;
+                        }
 			/* Modify the query that we send: Add the Page number */
 			$queryDOM->documentElement->setAttribute('page', $newPage);
 			/* Modify the query that we send: Add the Paging-Cookie (note - HTMLENTITIES automatically applied by DOMDocument!) */
@@ -1786,7 +1801,8 @@ if (!class_exists("AlexaSDK")) :
 			//echo PHP_EOL.PHP_EOL.$queryXML.PHP_EOL.PHP_EOL;
 		}
 		/* Turn the queryXML into a DOMDocument so we can manipulate it */
-		$queryDOM = new DOMDocument(); $queryDOM->loadXML($queryXML);
+		$queryDOM = new DOMDocument(); 
+                $queryDOM->loadXML($queryXML);
 		/* Find the current limit, if there is one */
 		$currentLimit = self::$maximumRecords+1;
 		if ($queryDOM->documentElement->hasAttribute('count')) {
@@ -2192,19 +2208,19 @@ if (!class_exists("AlexaSDK")) :
 	 * @param Array $propertyValuesArray
 	 * @param Array $mandatoriesArray
 	 * @param Array $optionSetsArray
-	 * @param String $entityDisplayName
+	 * @param String $displayName
 	 */
 	public function setCachedEntityDefinition($entityLogicalName, 
 			SimpleXMLElement $entityData, Array $propertiesArray, Array $propertyValuesArray,
-			Array $mandatoriesArray, Array $optionSetsArray, $entityDisplayName) {
+			Array $mandatoriesArray, Array $optionSetsArray, $displayName, $entitytypecode, $entityDisplayName, $entityDisplayCollectionName, $entityDescription ) {
 		/* Store the details of the Entity Definition in the Cache */
-		/*$this->cachedEntityDefintions[$entityLogicalName] = Array(
-				$entityData->asXML(), $propertiesArray, $propertyValuesArray, 
-				$mandatoriesArray, $optionSetsArray, $entityDisplayName);*/
+		$this->cachedEntityDefintions[$entityLogicalName] = Array(
+				/*$entityData->asXML(),*/ $propertiesArray, $propertyValuesArray, 
+				$mandatoriesArray, $optionSetsArray, $displayName, $entitytypecode, $entityDisplayName, $entityDisplayCollectionName, $entityDescription);
             
-                $this->cachedEntityDefintions[$entityLogicalName] = Array(
+                /*$this->cachedEntityDefintions[$entityLogicalName] = Array(
 				$propertiesArray, $propertyValuesArray, 
-				$mandatoriesArray, $optionSetsArray, $entityDisplayName);
+				$mandatoriesArray, $optionSetsArray, $displayName);*/
                 
                 // Write products to Cache in 10 minutes with same keyword
                 $this->cacheClass->set("entities", serialize($this->cachedEntityDefintions) , self::$cacheTime);
@@ -2221,12 +2237,12 @@ if (!class_exists("AlexaSDK")) :
 	 * @param Array $propertyValuesArray
 	 * @param Array $mandatoriesArray
 	 * @param Array $optionSetsArray
-	 * @param String $entityDisplayName
+	 * @param String $displayName
 	 * @return boolean true if the Cache was retrieved
 	 */
 	public function getCachedEntityDefinition($entityLogicalName, 
 			&$entityData, Array &$propertiesArray, Array &$propertyValuesArray, Array &$mandatoriesArray,
-			Array &$optionSetsArray, &$entityDisplayName) {
+			Array &$optionSetsArray, &$displayName, &$entitytypecode, &$entityDisplayName, &$entityDisplayCollectionName, &$entityDescription) {
 		/* Check that this Entity Definition has been Cached */
 		if ($this->isEntityDefinitionCached($entityLogicalName)) {
 			/* Populate the containers and return true
@@ -2240,23 +2256,35 @@ if (!class_exists("AlexaSDK")) :
 			$propertyValuesArray = $this->cachedEntityDefintions[$entityLogicalName][2];
 			$mandatoriesArray = $this->cachedEntityDefintions[$entityLogicalName][3];
 			$optionSetsArray = $this->cachedEntityDefintions[$entityLogicalName][4];
-			$entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][5];*/
+			$displayName = $this->cachedEntityDefintions[$entityLogicalName][5];
+                        $entitytypecode = $this->cachedEntityDefintions[$entityLogicalName][6];
+                        $entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][7];
+                        $entityDisplayCollectionName = $this->cachedEntityDefintions[$entityLogicalName][8];
+                        $entityDescription = $this->cachedEntityDefintions[$entityLogicalName][9];*/
                         
-                        //$entityData = $this->cachedEntityDefintions[$entityLogicalName][0];
 			$propertiesArray = $this->cachedEntityDefintions[$entityLogicalName][0];
 			$propertyValuesArray = $this->cachedEntityDefintions[$entityLogicalName][1];
 			$mandatoriesArray = $this->cachedEntityDefintions[$entityLogicalName][2];
 			$optionSetsArray = $this->cachedEntityDefintions[$entityLogicalName][3];
-			$entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][4];
+			$displayName = $this->cachedEntityDefintions[$entityLogicalName][4];
+                        $entitytypecode = $this->cachedEntityDefintions[$entityLogicalName][5];
+                        $entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][6];
+                        $entityDisplayCollectionName = $this->cachedEntityDefintions[$entityLogicalName][7];
+                        $entityDescription = $this->cachedEntityDefintions[$entityLogicalName][8];
+                        
 			return true;
 		} else {
 			/* Not found - clear passed containers and return false */
-			/*$entityData = NULL;*/
+			$entityData = NULL;
 			$propertiesArray = NULL;
 			$propertyValuesArray = NULL;
 			$mandatoriesArray = NULL;
 			$optionSetsArray = NULL;
-			$entityDisplayName = NULL;
+			$displayName = NULL;
+                        $entitytypecode = NULL;
+                        $entityDisplayName = NULL;
+                        $entityDisplayCollectionName = NULL;
+                        $entityDescription = NULL;
 			return false;
 		}
 	}
