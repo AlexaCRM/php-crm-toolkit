@@ -1384,7 +1384,7 @@ if (!class_exists("AlexaSDK")) :
 	 * @ignore
          * @return string response XML
 	 */
-	protected static function getSoapResponse($soapUrl, $content, $throwException = true) {
+	public static function getSoapResponse($soapUrl, $content, $throwException = true) {
             
 		/* Separate the provided URI into Path & Hostname sections */
 		$urlDetails = parse_url($soapUrl);
@@ -2680,6 +2680,7 @@ if (!class_exists("AlexaSDK")) :
          * @ignore
 	 * @deprecated Wil be changed soon
          * NEED TO REFACTOR
+         * ADD cache definition to retrieved entities
 	 */
         function retrieveAllEntities(){
             

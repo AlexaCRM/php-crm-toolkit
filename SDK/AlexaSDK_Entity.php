@@ -88,8 +88,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 /* Check if the Definition of this Entity is Cached on the Connector */
 		if ($auth->isEntityDefinitionCached($this->entityLogicalName)) {
                     
-                        //self::vardump("Cached ".$this->entityLogicalName);
-                    
 			/* Use the Cached values */
 			$isDefined = $auth->getCachedEntityDefinition($this->entityLogicalName, 
 					$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
@@ -117,8 +115,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                     /* Get the raw XML data */
                                     $rawSoapResponse = $auth->retrieveRaw($this);
                                     
-                                    //self::vardump($rawSoapResponse);
-                                    
                                     /* NOTE: ParseRetrieveResponse method of AlexaSDK_Entity class, not the AlexaSDK class */
                                     $this->ParseRetrieveResponse($auth, $this->LogicalName, $rawSoapResponse);
                             }
@@ -136,8 +132,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		if (!$this->entityData) {
 			throw new Execption('Unable to load metadata simple_xml_class'.$this->entityData);
 		}
-                
-                //self::vardump("Load ".$this->entityLogicalName);
                 
                 /* TODO: Add checkings */
                 $this->entityDescription = (String)$this->entityData->Description->LocalizedLabels->LocalizedLabel->Label;
@@ -460,10 +454,10 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 if ($this->fieldValidation == TRUE){
                     $this->validate($property, $value);
                 }
-                
+                /*
                 if ($this->properties[$property]['Type'] == "DateTime"){
                     $value = strtotime($value);
-                }
+                }*/
                 
                 /*
                  * NOTE: For fast work set STRING value with ENTITY ID
@@ -607,12 +601,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                         break;
                                 }
                         break;
-                        case "DateTime":
+                        /*case "DateTime":
                             if ($value && !$this->validator->validateItem($value, 'date')){
                                 $this->errors[$property] = "Incorrect date";
                                 echo "DateTime validation for field ".$property." <br />";
                             }
-                        break;
+                        break;*/
                         case "Boolean":
                         break;
                         case "Picklist":
@@ -834,7 +828,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				/* Set the Property Name */
 				$propertyNode->appendChild($entityDOM->createElement('c:key', $property));
 				/* Check the Type of the Value */
-                                
 				if ($propertyDetails['isLookup']) {
                                         
 					/* Special handling for Lookups - use an EntityReference, not the AttributeType */
@@ -849,13 +842,24 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                         }else{
                                             $valueNode->setAttribute('i:nil', 'true');
                                         }
-                                }else if(strtolower($propertyDetails['Type'] == "Money")) {
+                                }else if(strtolower($propertyDetails['Type']) == "money") {
                                     
                                     $valueNode = $propertyNode->appendChild($entityDOM->createElement('c:value'));
                                     
                                     if ($this->propertyValues[$property]['Value']){
                                         $valueNode->setAttribute('i:type', 'b:Money');
                                         $valueNode->appendChild($entityDOM->createElement('b:Value', $this->propertyValues[$property]['Value']));
+                                    }else{
+                                        $valueNode->setAttribute('i:nil', 'true');
+                                    }
+                                }else if (strtolower($propertyDetails['Type']) == "datetime") {
+                                    
+                                    $valueNode = $propertyNode->appendChild($entityDOM->createElement('c:value'));
+                                    
+                                    if ($this->propertyValues[$property]['Value']){
+                                        $valueNode->setAttribute('i:type', 'd:dateTime');
+                                        $valueNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://www.w3.org/2001/XMLSchema');
+                                        $valueNode->appendChild(new DOMText(gmdate("Y-m-d\TH:i:s\Z",$this->propertyValues[$property]['Value'])));
                                     }else{
                                         $valueNode->setAttribute('i:nil', 'true');
                                     }
@@ -874,11 +878,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 						case 'integer':
 							/* Integer - This gets treated as an "int" */
 							$xmlType = 'int';
-							break;
-						case 'datetime':
-							/* Date/Time - Stored in the Entity as a PHP Date, needs to be XML format. Type is also mixed-case */
-							$xmlValue = gmdate("Y-m-d\TH:i:s\Z", $xmlValue);
-							$xmlType = 'dateTime';
 							break;
 						case 'uniqueidentifier':
 							/* Uniqueidentifier - This gets treated as a guid */
@@ -939,7 +938,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		/* Related Entities */
 		$relatedEntitiesNode = $entityNode->appendChild($entityDOM->createElement('b:RelatedEntities'));
 		$relatedEntitiesNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic');
-		/* Return the root node for the Entity */
+		/* Return the root node for the Entity */                
 		return $entityNode;
 	}
         
@@ -1433,9 +1432,10 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
          * if formatted value doesn't exists, returned propertyValue
 	 * 
 	 * @param String $property
+         * @param Int $timezoneoffset offset in minutes to correct DateTime value
 	 * @return string
 	 */
-        public function getFormattedValue($property){
+        public function getFormattedValue($property, $timezoneoffset = NULL){
                 /* Handle special fields */
 		switch (strtoupper($property)) {
 			case 'ID':
@@ -1455,6 +1455,16 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
             
                 /* Handle dynamic properties... */
 		$property = strtolower($property);
+                
+                if ($timezoneoffset != NULL && array_key_exists($property, $this->properties) && $this->properties[$property]['Type'] == "DateTime" && $this->properties[$property]['Read'] === true){
+                        if($this->propertyValues[$property]['Value'] == NULL){
+                            return "";
+                        }else if ($this->properties[$property]['Format'] == "DateAndTime"){
+                            return date("n/j/Y H:i", $this->propertyValues[$property]['Value'] - $timezoneoffset * 60);
+                        }else if($this->properties[$property]['Format'] == "DateOnly"){
+                            return date("n/j/Y", $this->propertyValues[$property]['Value'] - $timezoneoffset * 60);
+                        }
+                }
                 
 		/* Only return the value if it exists & is readable */
 		if (array_key_exists($property, $this->formattedValues) && $this->properties[$property]['Read'] === true) {
