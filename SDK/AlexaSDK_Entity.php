@@ -413,6 +413,11 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		return NULL;
 	}
         
+        /*
+        public function getPropertyDefinition($property) { 
+            
+        }*/
+        
         
         /**
 	 * 
@@ -597,7 +602,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                              }
                                         break;
                                         default:
-                                            echo "No text validation for field ".$property." <br />";
+                                           // echo "No text validation for field ".$property." ".$this->properties[$property]["Format"]." <br />";
                                         break;
                                 }
                         break;
@@ -1075,6 +1080,10 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 					/* Decimal - Cast the String to a Float */
 					$storedValue = (float)$attributeValue;
 					break;
+                                case 'double':
+					/* Decimal - Cast the String to a Float */
+					$storedValue = (float)$attributeValue;
+					break;
 				case 'int':
 					/* Int - Cast the String to an Int */
 					$storedValue = (int)$attributeValue;
@@ -1301,12 +1310,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				continue;
 			}
 			/* Any other Property Type - depending on its Type */
-			switch ($propertyDetails['Type']) {
-				case 'DateTime':
+			switch (strtolower($propertyDetails['Type'])) {
+				case 'datetime':
 					/* Date/Time - Print this as a formatted Date/Time */
 					echo $linePrefix."\t".date('Y-m-d H:i:s P', $this->propertyValues[$property]['Value']).PHP_EOL;
 					break;
-				case 'Boolean':
+				case 'boolean':
 					/* Boolean - Print as TRUE or FALSE */
 					if ($this->propertyValues[$property]['Value']) {
 						echo $linePrefix."\t".'('.$propertyDetails['Type'].') TRUE'.PHP_EOL;
@@ -1314,16 +1323,18 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 						echo $linePrefix."\t".'('.$propertyDetails['Type'].') FALSE'.PHP_EOL;
 					}
 					break;
-				case 'Picklist':
-				case 'State':
-				case 'Status':
-				case 'Decimal':
-				case 'Uniqueidentifier':
-				case 'Memo':
-				case 'String':
-				case 'Virtual':
-				case 'EntityName':
-				case 'Integer':
+				case 'picklist':
+				case 'state':
+				case 'status':
+				case 'decimal':
+                                case 'double':
+				case 'uniqueidentifier':
+				case 'memo':
+				case 'string':
+				case 'virtual':
+				case 'entityname':
+				case 'integer':
+                                 
 					/* Just cast it to a String to display */
 					echo $linePrefix."\t".'('.$propertyDetails['Type'].') '. $this->propertyValues[$property]['Value'].PHP_EOL;
 					break;
@@ -1345,6 +1356,10 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         public function getPropertyValues(){
                 return $this->propertyValues;
+        }
+        
+        public function getPropertyKeys(){
+                return array_keys($this->propertyValues);
         }
         
         
