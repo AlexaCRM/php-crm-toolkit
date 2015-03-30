@@ -27,6 +27,8 @@ if (!class_exists("AlexaSDK_Office365")) :
             $this->discoveryUrl = $settings->discoveryUrl;
             $this->region = $settings->crmRegion;
             $this->settings = $settings;
+            
+            return $this;
         }
         
         function BuildAuthSoap() {
@@ -353,6 +355,62 @@ if (!class_exists("AlexaSDK_Office365")) :
             </s:Header>';
 
             return $header;
+        }
+        
+        
+        /**
+         * NEED FOR Office 365 authentication
+         */
+        public function getUserRealm($username, $requestXML = false){
+            /* Constant URL to get User Realm */
+            $url = "https://login.microsoftonline.com/GetUserRealm.srf";
+            /* Configure return type XML or JSON supported */
+            $xmlParam = ($requestXML) ? "&xml=1" : "";
+            /* Build request content */
+            $content = "login=".urlencode($username).$xmlParam;
+            /* Separate the provided URI into Path & Hostname sections */
+            $urlDetails = parse_url($url);
+            // setup headers
+            $headers = array(
+                            "POST ". $urlDetails['path'] ." HTTP/1.1",
+                            "Host: " . $urlDetails['host'],
+                            'Connection: Keep-Alive',
+                            "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
+                            "Content-length: ".strlen($content),
+            );
+		
+            $cURLHandle = curl_init();
+            curl_setopt($cURLHandle, CURLOPT_URL, $url);
+            curl_setopt($cURLHandle, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($cURLHandle, CURLOPT_TIMEOUT, self::$connectorTimeout);
+            curl_setopt($cURLHandle, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+            curl_setopt($cURLHandle, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($cURLHandle, CURLOPT_POST, 1);
+            curl_setopt($cURLHandle, CURLOPT_POSTFIELDS, $content);
+            curl_setopt($cURLHandle, CURLOPT_HEADER, false);
+            /* Execute the cURL request, get the XML response */
+            $response = curl_exec($cURLHandle);
+            /* Check for cURL errors */
+            if (curl_errno($cURLHandle) != CURLE_OK) {
+                    throw new Exception('cURL Error: '.curl_error($cURLHandle));
+            }
+            /* Check for HTTP errors */
+            $httpResponse = curl_getinfo($cURLHandle, CURLINFO_HTTP_CODE);
+            curl_close($cURLHandle);
+
+            if ($requestXML){
+                /* Return XML string */
+                return $response;
+            }else{
+                /* Parse JSON from returned string */
+                $result = json_decode($response);
+                if (json_last_error() == JSON_ERROR_NONE){
+                    return $result;
+                }else{
+                    return FALSE;
+                }
+            }
         }
         
         

@@ -40,7 +40,7 @@ if (!class_exists("AlexaSDK")) :
         /* Connection Details */
 	protected static $connectorTimeout = 6000;
         /* Cache lifetime in seconds */
-        protected static $cacheTime = 6000;
+        protected static $cacheTime = 28800;
 	protected static $maximumRecords = self::MAX_CRM_RECORDS;
         
         
@@ -53,6 +53,8 @@ if (!class_exists("AlexaSDK")) :
             /* Simple settings check */
             if ($_settings instanceof AlexaSDK_Settings){
                 $this->settings = $_settings;
+            }else{
+                throw new Exception("Settings must be instacne of AlexaSDK_Settings class");
             }
             
             /* Check if we're using a cached login */
@@ -2212,11 +2214,15 @@ if (!class_exists("AlexaSDK")) :
 	 */
 	public function setCachedEntityDefinition($entityLogicalName, 
 			SimpleXMLElement $entityData, Array $propertiesArray, Array $propertyValuesArray,
-			Array $mandatoriesArray, Array $optionSetsArray, $displayName, $entitytypecode, $entityDisplayName, $entityDisplayCollectionName, $entityDescription ) {
+			Array $mandatoriesArray, Array $optionSetsArray, $displayName, $entitytypecode, 
+                        $entityDisplayName, $entityDisplayCollectionName, $entityDescription,
+                        Array $manyToManyRelationships, Array $manyToOneRelationships, Array $oneToManyRelationships) {
 		/* Store the details of the Entity Definition in the Cache */
 		$this->cachedEntityDefintions[$entityLogicalName] = Array(
 				/*$entityData->asXML(),*/ $propertiesArray, $propertyValuesArray, 
-				$mandatoriesArray, $optionSetsArray, $displayName, $entitytypecode, $entityDisplayName, $entityDisplayCollectionName, $entityDescription);
+				$mandatoriesArray, $optionSetsArray, $displayName, 
+                                $entitytypecode, $entityDisplayName, $entityDisplayCollectionName, 
+                                $entityDescription, $manyToManyRelationships, $manyToOneRelationships, $oneToManyRelationships);
             
                 /*$this->cachedEntityDefintions[$entityLogicalName] = Array(
 				$propertiesArray, $propertyValuesArray, 
@@ -2242,7 +2248,9 @@ if (!class_exists("AlexaSDK")) :
 	 */
 	public function getCachedEntityDefinition($entityLogicalName, 
 			&$entityData, Array &$propertiesArray, Array &$propertyValuesArray, Array &$mandatoriesArray,
-			Array &$optionSetsArray, &$displayName, &$entitytypecode, &$entityDisplayName, &$entityDisplayCollectionName, &$entityDescription) {
+			Array &$optionSetsArray, &$displayName, &$entitytypecode, &$entityDisplayName, 
+                        &$entityDisplayCollectionName, &$entityDescription, Array &$manyToManyRelationships,
+                        Array &$manyToOneRelationships, Array &$oneToManyRelationships) {
 		/* Check that this Entity Definition has been Cached */
 		if ($this->isEntityDefinitionCached($entityLogicalName)) {
 			/* Populate the containers and return true
@@ -2271,6 +2279,9 @@ if (!class_exists("AlexaSDK")) :
                         $entityDisplayName = $this->cachedEntityDefintions[$entityLogicalName][6];
                         $entityDisplayCollectionName = $this->cachedEntityDefintions[$entityLogicalName][7];
                         $entityDescription = $this->cachedEntityDefintions[$entityLogicalName][8];
+                        $manyToManyRelationships = $this->cachedEntityDefintions[$entityLogicalName][9];
+                        $manyToOneRelationships = $this->cachedEntityDefintions[$entityLogicalName][10];
+                        $oneToManyRelationships = $this->cachedEntityDefintions[$entityLogicalName][11];
                         
 			return true;
 		} else {
@@ -2285,6 +2296,9 @@ if (!class_exists("AlexaSDK")) :
                         $entityDisplayName = NULL;
                         $entityDisplayCollectionName = NULL;
                         $entityDescription = NULL;
+                        $manyToManyRelationships = NULL;
+                        $manyToOneRelationships = NULL;
+                        $oneToManyRelationships = NULL;
 			return false;
 		}
 	}
@@ -2567,6 +2581,161 @@ if (!class_exists("AlexaSDK")) :
 	}
         
         
+        /**
+	 * Generate a ExecuteAction Request
+         * 
+         * @param string $requestName name of Action to request
+         * @param Array(optional)
+	 * @ignore
+	 */
+        protected static function generateExecuteActionRequest($requestName, $parameters = NULL){
+                /* Generate the ExecuteAction message */
+		$executeActionRequestDOM = new DOMDocument();
+                
+                $executeActionNode = $executeActionRequestDOM->appendChild($executeActionRequestDOM->createElementNS('http://schemas.microsoft.com/xrm/2011/Contracts/Services', 'Execute'));
+                $executeActionNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:i', 'http://www.w3.org/2001/XMLSchema-instance');
+                
+                $requestNode = $executeActionNode->appendChild($executeActionRequestDOM->createElement('request'));
+                $requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:b', 'http://schemas.microsoft.com/xrm/2011/Contracts');
+               
+                $parametersNode = $requestNode->appendChild($executeActionRequestDOM->createElement('b:Parameters'));
+                $parametersNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic');
+                
+                if ($parameters != NULL && is_array($parameters)){
+                    
+                    foreach ($parameters as $parameter){
+                            /* Create a Key/Value Pair of String/Any Type */
+                            $propertyNode = $parametersNode->appendChild($executeActionRequestDOM->createElement('b:KeyValuePairOfstringanyType'));
+                            /* Set the Property Name */
+                            $propertyNode->appendChild($executeActionRequestDOM->createElement('c:key', $parameter["key"]));
+
+                            /* Determine the Type, Value and XML Namespace for this field */
+                            $xmlValue = $parameter["value"];
+                            $xmlValueChild = NULL;
+                            $xmlType = strtolower($parameter["type"]);
+                            $xmlTypeNS = 'http://www.w3.org/2001/XMLSchema';
+                            /* Special Handing for certain types of field */
+                            switch ($xmlType) {
+                                    case 'memo':
+                                            /* Memo - This gets treated as a normal String */
+                                            $xmlType = 'string';
+                                            break;
+                                    case 'integer':
+                                            /* Integer - This gets treated as an "int" */
+                                            $xmlType = 'int';
+                                            break;
+                                    case 'uniqueidentifier':
+                                            /* Uniqueidentifier - This gets treated as a guid */
+                                            $xmlType = 'guid';
+                                            break;
+                                    case 'money':
+                                            $xmlType = 'Money';
+                                            //$xmlTypeNS = NULL;
+                                            $xmlValue = $executeActionRequestDOM->createElement('c:Value', $parameter["value"]);
+                                            break;
+                                    case 'picklist':
+                                    case 'state':
+                                    case 'status':
+                                            /* OptionSetValue - Just get the numerical value, but as an XML structure */
+                                            $xmlType = 'OptionSetValue';
+                                            $xmlTypeNS = 'http://schemas.microsoft.com/xrm/2011/Contracts';
+                                            $xmlValue = NULL;
+                                            $xmlValueChild = $executeActionRequestDOM->createElement('b:Value', $parameter["value"]);
+                                            break;
+                                    case 'boolean':
+                                            /* Boolean - Just get the numerical value */
+                                            $xmlValue = $parameter["value"];
+                                            break;
+
+                                    case 'string':
+                                    case 'int':
+                                    case 'decimal':
+                                    case 'double':
+                                    case 'guid':
+                                            /* No special handling for these types */
+                                            break;
+                                    default:
+                                            /* If we're using Default, Warn user that the XML handling is not defined */
+                                            trigger_error('No Create/Update handling implemented for type '.$propertyDetails['Type'].' used by field '.$property,
+                                                            E_USER_WARNING);
+                            }
+                            /* Now create the XML Node for the Value */
+                            $valueNode = $propertyNode->appendChild($executeActionRequestDOM->createElement('c:value'));
+                            /* Set the Type of the Value */
+                            $valueNode->setAttribute('i:type', 'd:'.$xmlType);
+                            $valueNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:d', $xmlTypeNS);
+                            /* If there is a child node needed, append it */
+                            if ($xmlValueChild != NULL) {
+                                $valueNode->appendChild($xmlValueChild);
+                            }
+                            /* If there is a value, set it */
+                            if ($xmlValue != NULL) {
+                                $valueNode->appendChild(new DOMText($xmlValue));
+                            }
+
+                    }
+                    
+                }
+                
+                $requiestIdNode = $requestNode->appendChild($executeActionRequestDOM->createElement('b:RequestId'));
+                $requiestIdNode->setAttribute('i:nil', 'true');
+                $requestNode->appendChild($executeActionRequestDOM->createElement('b:RequestName', $requestName));
+                
+                return $executeActionNode;
+        }
+        
+        
+        
+        
+        /**
+	 * ExecuteAction Request
+         * 
+         * @param string $requestName name of Action to request
+         * @param Array(optional)
+	 * @ignore
+	 */
+        public function executeAction($requestName, $parameters = NULL){
+            /* Send the sequrity request and get a security token */
+            $securityToken = $this->authentication->getOrganizationSecurityToken();
+            /* Generate the XML for the Body of a Execute Action request */
+            $executeActionNode = self::generateExecuteActionRequest($requestName, $parameters);
+            
+            if (self::$debugMode) echo PHP_EOL.'ExecuteAction Request: '.PHP_EOL.$executeActionNode->C14N().PHP_EOL.PHP_EOL;
+            
+            /* Turn this into a SOAP request, and send it */
+            $executeActionRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationExecuteAction(), $securityToken, $executeActionNode);
+            
+            $soapResponse = self::getSoapResponse($this->settings->organizationUrl, $executeActionRequest);
+	
+            if (self::$debugMode) echo PHP_EOL.'ExecuteAction Response: '.PHP_EOL.$soapResponse.PHP_EOL.PHP_EOL;
+            
+            /* Load the XML into a DOMDocument */
+            $soapResponseDOM = new DOMDocument();
+            $soapResponseDOM->loadXML($soapResponse);
+
+            /* Find the UpdateResponse */
+            $executeResultNode = NULL;
+            foreach ($soapResponseDOM->getElementsByTagName('ExecuteResult') as $node) {
+                    $executeResultNode = $node;
+                    break;
+            }
+            unset($node);
+            if ($executeResultNode == NULL) {
+                    throw new Exception('Could not find ExecuteResult node in XML returned from Server');
+                    return FALSE;
+            }
+            
+            $keyValuesArray = Array();
+            
+            foreach( $executeResultNode->getElementsByTagName('KeyValuePairOfstringanyType') as $keyValueNode){
+                $keyValuesArray[$keyValueNode->getElementsByTagName('key')->item(0)->textContent] = $keyValueNode->getElementsByTagName('value')->item(0)->textContent;
+            }
+            /* Add the Entity to the KeyValues Array as a stdClass Object */
+            $responseDataArray = (Object)$keyValuesArray;
+            
+            /* Return structured Key/Value object */
+            return $responseDataArray;
+        }
         
         
         /*
@@ -2718,361 +2887,7 @@ if (!class_exists("AlexaSDK")) :
             
             return self::parseRetrieveAllEntitiesResponse($result);
         }
-        
-        
-        /* NEED TO REFACTOR
-         * TODO: Add discovery service methods to CRM Oline
-	 * @ignore
-	 * @deprecated Wil be changed soon
-	 */
-        public function discover(){
-            
-            $settings = null;
-            
-            /* Store the security details */
-            $this->security['username'] = $this->settings->username;
-            $this->security['password'] = $this->settings->password;
-            
-            $result = '';
-            
-            if ($this->settings->authMode == "OnlineFederation"){
-                
-                $userRealm = $this->getUserRealm($this->settings->username);
-                
-                if (!$userRealm || $userRealm->NameSpaceType  == "Unknown"){
-                    throw new Exception("Check your organization login");
-                }
-                
-                
-                $crmRegionsArray = array("crmna:dynamics.com", "crmsam:dynamics.com", "crmemea:dynamics.com", "crmapac:dynamics.com");
-                
-                $result = "";
-                
-                foreach ($crmRegionsArray as $crmRegion){
-                    /* Request a Security Token for the Discovery Service */
-                    
-                    try{
-                        $securityToken = $this->authentication->requestSecurityToken('https://login.microsoftonline.com/RST2.srf', $crmRegion, $this->security['username'], $this->security['password']);
-                    }catch(Exception $ex){
-                        throw new Exception("Authentication failure, check password for specified User Name");
-                    }
-                    
-                    
-                    $source = '<Execute xmlns="http://schemas.microsoft.com/xrm/2011/Contracts/Discovery">
-                                    <request i:type="RetrieveOrganizationsRequest" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-                                        <AccessType>Default</AccessType>
-                                        <Release>Current</Release>
-                                    </request>
-                                </Execute>';
-
-                    $doc = new DOMDocument();
-                    $doc->loadXML($source);
-                    $executeNode = $doc->getElementsByTagName('Execute')->item(0);
-                    
-                    switch($crmRegion){
-                        case 'crmna:dynamics.com':
-                            $discoveryUrl = "https://disco.crm.dynamics.com/XRMServices/2011/Discovery.svc";
-                            $region = 'crmna:dynamics.com';
-                        break;
-                        case 'crmsa:dynamics.com':
-                            $discoveryUrl = "https://disco.crm2.dynamics.com/XRMServices/2011/Discovery.svc";
-                            $region = 'crmsa:dynamics.com';
-                        break;
-                        case 'crmemea:dynamics.com':
-                            $discoveryUrl = "https://disco.crm4.dynamics.com/XRMServices/2011/Discovery.svc";
-                            $region = 'crmemea:dynamics.com';
-                        break;
-                    
-                        case 'crmapac:dynamics.com':
-                            $discoveryUrl = "https://disco.crm5.dynamics.com/XRMServices/2011/Discovery.svc";
-                            $region = 'crmapac:dynamics.com';
-                        break;
-                    }
-
-                    try{
-                    
-                        $retrieveEntityRequest = $this->generateSoapRequest($discoveryUrl, 'http://schemas.microsoft.com/xrm/2011/Contracts/Discovery/IDiscoveryService/Execute', $securityToken, $executeNode);
-                        /* Determine the Action in the SOAP Response */
-                        $responseDOM = new DOMDocument();
-                        $responseDOM->loadXML($retrieveEntityRequest);
-                        
-                        $result = $this->getSoapResponse($discoveryUrl, $retrieveEntityRequest, false);
-                    }catch(Exception $ex){
-                        // break;
-                    }
-                     
-                    $responseDOM = new DOMDocument();
-                    $responseDOM->loadXML($result);
-                     
-                    if($responseDOM->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Envelope')->item(0)
-				->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Body')->item(0)
-				->getElementsByTagNameNS('http://www.w3.org/2003/05/soap-envelope', 'Fault')->item(0)){
-                        continue;
-			
-                    }
-                    
-                    $this->settings->discoveryUrl = $discoveryUrl;
-                    $this->settings->crmRegion = $region;
-                    
-                    $discovery_data = $result;
-                    
-                    /* Parse the returned data to determine the correct EndPoint for the OrganizationService for the selected Organization */
-                    $organizationServiceURI = NULL;
-                    $organizationDomain = NULL;
-                    $discoveryDOM = new DOMDocument(); 
-                    $discoveryDOM->loadXML($discovery_data);
-                    if ($discoveryDOM->getElementsByTagName('OrganizationDetail')->length > 0) {
-                            foreach ($discoveryDOM->getElementsByTagName('OrganizationDetail') as $organizationNode) {
-                                    //if ($organizationNode->getElementsByTagName('UniqueName')->item(0)->textContent == $this->organizationUniqueName) {
-                                            foreach ($organizationNode->getElementsByTagName('Endpoints')->item(0)->getElementsByTagName('KeyValuePairOfEndpointTypestringztYlk6OT') as $endpointDOM) {
-                                                    if ($endpointDOM->getElementsByTagName('key')->item(0)->textContent == 'OrganizationService') {
-                                                            $organizationServiceURI = $endpointDOM->getElementsByTagName('value')->item(0)->textContent;
-                                                    }
-
-                                                    if ($endpointDOM->getElementsByTagName('key')->item(0)->textContent == 'WebApplication') {
-                                                            $organizationDomain = $endpointDOM->getElementsByTagName('value')->item(0)->textContent;
-                                                    }
-                                            }
-                                            break;
-                                    //}
-                            }
-                    } else {
-                            throw new Exception('Error fetching Organization details:'.PHP_EOL.$discovery_data);
-                            return FALSE;
-                    }
-                    if ($organizationServiceURI == NULL) {
-                            throw new Exception('Could not find OrganizationService URI for the Organization <'.$this->organizationUniqueName.'>');
-                            return FALSE;
-                    }
-                    
-                    $settings['region'] = $region;
-                    $settings['organization_url'] = $organizationServiceURI;
-                    $settings['domain'] = $organizationDomain;
-                    $settings['server'] = $organizationDomain;
-                }
-            }
-
-            /* Determine the Security used by this Organization */
-            $discovery_authmode = $this->getDiscoveryAuthenticationMode();
-            
-            if (in_array("Federation", $discovery_authmode, true )){
-                
-                $this->security['discovery_authmode'] = "Federation";
-                
-                /* Determine the address to send security requests to */
-                $this->security['discovery_authuri'] = $this->getDiscoveryAuthenticationAddress($this->security['discovery_authmode']);
-                
-                 /* Store the Security Service Endpoint for future use */
-                $this->security['discovery_authendpoint'] = $this->getFederationSecurityURI('discovery');
-                
-                $this->organizationUrl = $this->getOrganizationURI();
-                
-                $settings['organization_url'] = $this->organizationUrl;
-                $settings['domain'] = $this->domain;
-                $settings['region'] = NULL;
-                
-            }else if ( in_array("OnlineFederation", $discovery_authmode, true )){
-                
-                /* Parse discovery methods for Online Federation sometimes works bad, 
-                 * I'll return for it's rework later
-                 */
-                
-                $this->security['discovery_authendpoint'] = 'https://login.microsoftonline.com/RST2.srf';
-                $this->security['discovery_authmode'] = "OnlineFederation";
-                
-                /* Determine the address to send security requests to */
-                
-                /*
-                $this->security['discovery_authuri'] = $this->getDiscoveryAuthenticationAddress($this->security['discovery_authmode']);
-                
-                
-                $this->authentication = new AlexaSDK_Office365($this->settings);
-                
-                $this->Authenticate();
-                
-                $this->security['discovery_authendpoint'] = $this->getOnlineFederationOrganizationURI();
-                
-                $settings['organization_url'] = $this->organizationUrl;
-                $settings['domain'] = $this->domain;
-                 */
-                
-            }else if (in_array("LiveId", $discovery_authmode, true )){
-                
-                $this->security['discovery_authmode'] = "LiveId";
-                
-                /* LiveId authentication method is not supported */
-                throw new UnexpectedValueException(get_class($this).' does not support "'.$this->security['discovery_authmode'].'" authentication mode used by Discovery Service');
-           
-            }
-            
-            
-            $settings['crm_loginurl'] = $this->security['discovery_authendpoint'];
-            $settings["authMode"] = $this->security["discovery_authmode"];
-            $settings["discovery_url"] = $this->settings->discoveryUrl;
-            $settings['crmadmin_login'] = $this->settings->username;
-            $settings['crmadmin_password'] = $this->settings->password;
-            
-            $settings["port"] = $this->settings->port;
-            $settings['server'] = $this->settings->server;
-            $settings['use_ssl'] = $this->settings->use_ssl;
-            
-            return $settings;
-        }
-        
-        /**
-	 * @ignore
-	 * @deprecated Wil be changed soon
-	 */
-        private static function parseOrganizationName($domain){
-            $parse = parse_url($domain);
-            
-            $arr = explode(".", $parse["host"]);
-            
-            return $arr[0];
-        }
-        
-        
-        
-        public function getUserRealm($username, $requestXML = false){
-            /* Constant URL to get User Realm */
-            $url = "https://login.microsoftonline.com/GetUserRealm.srf";
-            /* Configure return type XML or JSON supported */
-            $xmlParam = ($requestXML) ? "&xml=1" : "";
-            /* Build request content */
-            $content = "login=".urlencode($username).$xmlParam;
-            /* Separate the provided URI into Path & Hostname sections */
-            $urlDetails = parse_url($url);
-            // setup headers
-            $headers = array(
-                            "POST ". $urlDetails['path'] ." HTTP/1.1",
-                            "Host: " . $urlDetails['host'],
-                            'Connection: Keep-Alive',
-                            "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
-                            "Content-length: ".strlen($content),
-            );
-		
-            $cURLHandle = curl_init();
-            curl_setopt($cURLHandle, CURLOPT_URL, $url);
-            curl_setopt($cURLHandle, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($cURLHandle, CURLOPT_TIMEOUT, self::$connectorTimeout);
-            curl_setopt($cURLHandle, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-            curl_setopt($cURLHandle, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($cURLHandle, CURLOPT_POST, 1);
-            curl_setopt($cURLHandle, CURLOPT_POSTFIELDS, $content);
-            curl_setopt($cURLHandle, CURLOPT_HEADER, false);
-            /* Execute the cURL request, get the XML response */
-            $response = curl_exec($cURLHandle);
-            /* Check for cURL errors */
-            if (curl_errno($cURLHandle) != CURLE_OK) {
-                    throw new Exception('cURL Error: '.curl_error($cURLHandle));
-            }
-            /* Check for HTTP errors */
-            $httpResponse = curl_getinfo($cURLHandle, CURLINFO_HTTP_CODE);
-            curl_close($cURLHandle);
-
-            if ($requestXML){
-                /* Return XML string */
-                return $response;
-            }else{
-                /* Parse JSON from returned string */
-                $result = json_decode($response);
-                if (json_last_error() == JSON_ERROR_NONE){
-                    return $result;
-                }else{
-                    return FALSE;
-                }
-            }
-        }
-        
-        public function whoAmI(){
-                /* Send the sequrity request and get a security token */
-		$securityToken = $this->authentication->getOrganizationSecurityToken();
-		/* Generate the XML for the Body of a WhoAmI request */
-		$executeNode = self::generateWhoAmIRequest();
-		/* Turn this into a SOAP request, and send it */
-		$retrieveEntityRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationExecuteAction(), $securityToken, $executeNode);
-		$soapResponse = self::getSoapResponse($this->settings->organizationUrl, $retrieveEntityRequest);
-		
-		return $soapResponse;
-        }
-        
-        /* Debug it later */
-        protected static function generateWhoAmIRequest(){
-                $req = '<Execute xmlns="http://schemas.microsoft.com/xrm/2011/Contracts/Services">
-                            <request i:type="c:WhoAmIRequest" xmlns:b="http://schemas.microsoft.com/xrm/2011/Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://schemas.microsoft.com/crm/2011/Contracts">
-                                <b:Parameters xmlns:d="http://schemas.datacontract.org/2004/07/System.Collections.Generic"/>
-                                <b:RequestId i:nil="true"/>
-                                <b:RequestName>WhoAmI</b:RequestName>
-                            </request>
-                        </Execute>';
-            
-            
-                /* Generate the DeleteRequest message */
-		$whoamiRequestDOM = new DOMDocument();
-                
-                $executeNode = $whoamiRequestDOM->appendChild($whoamiRequestDOM->createElementNS('http://schemas.microsoft.com/xrm/2011/Contracts/Services', 'Execute'));
-		$requestNode = $executeNode->appendChild($whoamiRequestDOM->createElement('request'));
-		$requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:b', 'http://schemas.microsoft.com/xrm/2011/Contracts');
-                $requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.microsoft.com/xrm/2011/Contracts');
-                $requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:i', 'http://www.w3.org/2001/XMLSchema-instance');
-                $requestNode->setAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'i:type', 'c:WhoAmIRequest');
-                $parametersNode = $requestNode->appendChild($whoamiRequestDOM->createElement('b:Parameters'));
-		$parametersNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic');
-                
-                $requiestIdNode = $requestNode->appendChild($whoamiRequestDOM->createElement('b:RequestId'));
-                $requiestIdNode->setAttribute('i:nil', 'true');
-                $requestNode->appendChild($whoamiRequestDOM->createElement('b:RequestName', 'WhoAmI'));
-                
-                return $executeNode;
-        }
-        
-        
-        
-        
-        
-        /**
-	 * @ignore
-	 * @deprecated Wil be changed soon
-	 */
-        public function sandbox(){
-            
-            $this->security['username'] = $this->settings->username;
-            $this->security['password'] = $this->settings->password;
-            
-            $discovery_authmode = $this->getDiscoveryAuthenticationMode();
-            
-            if ( in_array("OnlineFederation", $discovery_authmode, true )){
-                
-                $this->security['discovery_authmode'] = "OnlineFederation";
-                
-                /* Determine the address to send security requests to */
-                $this->security['discovery_authuri'] = $this->getDiscoveryAuthenticationAddress($this->security['discovery_authmode']);
-                
-                $this->authentication->region = "crmemea:dynamics.com";
-                
-                $this->Authenticate();
-                
-                $this->security['discovery_authendpoint'] = $this->getOnlineFederationSecurityURI('discovery');
-                
-                
-                self::GetSOAPResponse($this->settings->discoveryUrl, $this->authentication->requestRetrieveOrganization());
-                
-                /*
-                $this->authentication = new AlexaSDK_Office365($this->settings);
-                
-                $this->Authenticate();
-                
-                $this->security['discovery_authendpoint'] = $this->getOnlineFederationOrganizationURI();
-                
-                $settings['organization_url'] = $this->organizationUrl;
-                $settings['domain'] = $this->domain;*/
-                
-            }
-        }
-        
-        
+       
     }
-    
     
 endif;

@@ -46,6 +46,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         /* The details of this instance of the Entity - the propery Formatted Values */
         public $formattedValues = Array();
         
+        public $manyToManyRelationships = Array();
+        
+        public $manyToOneRelationships = Array();
+        
+        public $oneToManyRelationships = Array();
+        
         /* Entity field values validation */
         public $fieldValidation = TRUE;
         
@@ -92,7 +98,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			$isDefined = $auth->getCachedEntityDefinition($this->entityLogicalName, 
 					$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
 					$this->optionSets, $this->displayName, $this->entitytypecode, $this->entityDisplayName, 
-                                        $this->entityDisplayCollectionName, $this->entityDescription);
+                                        $this->entityDisplayCollectionName, $this->entityDescription, $this->manyToManyRelationships, 
+                                        $this->manyToOneRelationships, $this->oneToManyRelationships);
                         
                         if (self::$debugMode){ echo "Cached ". $this->entityLogicalName; }
                         
@@ -313,11 +320,23 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			}
 		}
                 
+                /* Store manytomanyrelationships */
+                
+                /* Store manytoonerelationships */
+                
+                /* Store OneToManyRelationships */
+                foreach($this->entityData->OneToManyRelationships->OneToManyRelationshipMetadata as $OneToManyRelationship){
+                    
+                    $this->oneToManyRelationships[(string)$OneToManyRelationship->ReferencingEntity] = "";
+                    
+                }
+                
                 /* Ensure that this Entity Definition is Cached for next time */
 		$auth->setCachedEntityDefinition($this->entityLogicalName, 
 				$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
 				$this->optionSets, $this->displayName, $this->entitytypecode, $this->entityDisplayName, 
-                                $this->entityDisplayCollectionName, $this->entityDescription);
+                                $this->entityDisplayCollectionName, $this->entityDescription, $this->manyToManyRelationships, 
+                                $this->manyToOneRelationships, $this->oneToManyRelationships);
                 
                 
                 /* Set EntityValues if specified Entity ID */
@@ -539,6 +558,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 					$optionSetValue = $value;
 				}
 			}
+                        
+                        /* Handle passing an Boolean value */
+                        //if (is_bool($value)) {
+                            //TODO: Add boolean OptionSet handling 
+                          //  $value = ($value) ? true : false;
+                        //}
 			
 			/* Check we found a valid OptionSetValue */
 			if ($optionSetValue != NULL) {
