@@ -2656,7 +2656,7 @@ if (!class_exists("AlexaSDK")) :
                                             break;
                                     default:
                                             /* If we're using Default, Warn user that the XML handling is not defined */
-                                            trigger_error('No Create/Update handling implemented for type '.$propertyDetails['Type'].' used by field '.$property,
+                                            trigger_error('No Create/Update handling implemented for type '.$xmlType.' used by field '.$property,
                                                             E_USER_WARNING);
                             }
                             /* Now create the XML Node for the Value */
@@ -2692,7 +2692,7 @@ if (!class_exists("AlexaSDK")) :
          * 
          * @param string $requestName name of Action to request
          * @param Array(optional)
-	 * @ignore
+         * @return stdClass returns std class object of responsed data
 	 */
         public function executeAction($requestName, $parameters = NULL){
             /* Send the sequrity request and get a security token */
