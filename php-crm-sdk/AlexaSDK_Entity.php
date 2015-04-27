@@ -305,7 +305,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                         if (self::$debugMode) {
                             /*
                             echo "<pre>";
-                            var_dump($this->properties);
+                            print_r($this->properties);
                             echo "</pre>";*/
                         }
                         
@@ -571,7 +571,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				$value = $optionSetValue;
 				/* Clear any AttributeOf related to this field */
 				$this->clearAttributesOf($property);
-			} else {
+                        } elseif($value == "" || $value == NULL) {
+                                $value = NULL;
+                        }else {
 				$trace = debug_backtrace();
 				trigger_error('Property '.$property.' of the '.$this->entityLogicalName
 						.' entity must be a valid OptionSetValue of type '.$optionSetName
@@ -883,16 +885,26 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                         $valueNode->setAttribute('i:nil', 'true');
                                     }
                                 }else if (strtolower($propertyDetails['Type']) == "datetime") {
-                                    
-                                    $valueNode = $propertyNode->appendChild($entityDOM->createElement('c:value'));
-                                    
-                                    if ($this->propertyValues[$property]['Value']){
-                                        $valueNode->setAttribute('i:type', 'd:dateTime');
-                                        $valueNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://www.w3.org/2001/XMLSchema');
-                                        $valueNode->appendChild(new DOMText(gmdate("Y-m-d\TH:i:s\Z",$this->propertyValues[$property]['Value'])));
-                                    }else{
-                                        $valueNode->setAttribute('i:nil', 'true');
-                                    }
+
+                                        $valueNode = $propertyNode->appendChild($entityDOM->createElement('c:value'));
+
+                                        if ($this->propertyValues[$property]['Value']){
+                                            $valueNode->setAttribute('i:type', 'd:dateTime');
+                                            $valueNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://www.w3.org/2001/XMLSchema');
+                                            $valueNode->appendChild(new DOMText(gmdate("Y-m-d\TH:i:s\Z",$this->propertyValues[$property]['Value'])));
+                                        }else{
+                                            $valueNode->setAttribute('i:nil', 'true');
+                                        }
+                                }else if (strtolower($propertyDetails['Type']) == "picklist"){
+                                        $valueNode = $propertyNode->appendChild($entityDOM->createElement('c:value'));
+
+                                        if ($this->propertyValues[$property]['Value']){
+                                            $valueNode->setAttribute('i:type', 'd:OptionSetValue');
+                                            $valueNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://schemas.microsoft.com/xrm/2011/Contracts');
+                                            $valueNode->appendChild($entityDOM->createElement('b:Value', $this->propertyValues[$property]['Value']));
+                                        }else{
+                                            $valueNode->setAttribute('i:nil', 'true');
+                                        }
                                 }else {
 					/* Determine the Type, Value and XML Namespace for this field */
 					$xmlValue = $this->propertyValues[$property]['Value'];
@@ -913,12 +925,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 							/* Uniqueidentifier - This gets treated as a guid */
 							$xmlType = 'guid';
 							break;
-                                                case 'money':
-                                                        $xmlType = 'Money';
-                                                        //$xmlTypeNS = NULL;
-                                                        $xmlValue = $entityDOM->createElement('b:Value', $this->propertyValues[$property]['Value']);
-                                                        break;
-						case 'picklist':
 						case 'state':
 						case 'status':
 							/* OptionSetValue - Just get the numerical value, but as an XML structure */
