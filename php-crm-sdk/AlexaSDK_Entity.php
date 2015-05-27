@@ -780,6 +780,18 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		return $this->propertyValues[$property]['Changed'];
 	}
         
+        
+        public function getChangedProperties(){
+                $changedPropertyValues = array();
+            
+                foreach($this->propertyValues as $propertyKey => $propertyValue){
+                    if ($propertyValue['Changed']){
+                        $changedPropertyValues[$propertyKey] = $propertyValue;
+                    }
+                }
+                return $changedPropertyValues;
+        }
+        
         /**
 	 * Private utility function to get the ID field; enforces NULL --> EmptyGUID
 	 * @ignore

@@ -2402,6 +2402,7 @@ if (!class_exists("AlexaSDK")) :
 	 * Send a Create request to the Dynamics CRM server, and return the ID of the newly created Entity
 	 * 
 	 * @param AlexaSDK_Entity $entity the Entity to create
+         * @return mixed EntityId on success, FALSE on failure
 	 */
 	public function create(AlexaSDK_Entity &$entity) {
 		/* Only allow "Create" for an Entity with no ID */
