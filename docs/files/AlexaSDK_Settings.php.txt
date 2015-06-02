@@ -1,9 +1,14 @@
 <?php
+/**
+ * AlexaSDK_Settings.php
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
 
-if (!class_exists("AlexaSDK_Settings")) :
     
-    
-    class AlexaSDK_Settings{
+class AlexaSDK_Settings{
     
         public $authMode;
         public $username;
@@ -77,6 +82,4 @@ if (!class_exists("AlexaSDK_Settings")) :
             return ($this->discoveryUrl && $this->username && $this->password && $this->organizationUrl && $this->loginUrl && $this->domain && (($this->authMode == "OnlineFederation") ? $this->crmRegion : true));
         }
     
-    }
-    
-endif;
+}

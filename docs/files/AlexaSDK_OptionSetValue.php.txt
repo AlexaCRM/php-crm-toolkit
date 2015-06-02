@@ -1,6 +1,11 @@
 <?php
-
-if (!class_exists("AlexaSDK_OptionSetValue")) :
+/**
+ * AlexaSDK_OptionSetValue.php
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
 
 class AlexaSDK_OptionSetValue extends AlexaSDK_Abstract {
 	/* Value */
@@ -23,7 +28,7 @@ class AlexaSDK_OptionSetValue extends AlexaSDK_Abstract {
 	/**
 	 * Handle the retrieval of properties 
 	 * 
-	 * @param String $name
+	 * @param String $property
 	 */
 	public function __get($property) {
 		/* Allow case-insensitive fields */
@@ -50,5 +55,3 @@ class AlexaSDK_OptionSetValue extends AlexaSDK_Abstract {
 		return (string)$this->label;
 	}
 }
-
-endif;

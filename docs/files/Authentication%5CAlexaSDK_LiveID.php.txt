@@ -1,17 +1,20 @@
 <?php
+/**
+ * AlexaSDK_LiveID.php
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
 
-/* LiveID authentication class is not supported */
 
-if (!class_exists("AlexaSDK_LiveID")) :
-    
-    
-    class AlexaSDK_LiveID extends AlexaSDK{
-    
-       function __construct(){
-            
-        }
-        
+/**
+ * @deprecated LiveID authentication class is not supported 
+ */
+class AlexaSDK_LiveID extends AlexaSDK{
+
+   function __construct(){
+       
     }
-    
-    
-endif;
+
+}

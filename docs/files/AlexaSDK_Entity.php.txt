@@ -1,103 +1,215 @@
 <?php
+/**
+ * AlexaSDK_Entity.php
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
 
-if (!class_exists("AlexaSDK_Entity")) :
 
+/**
+ * This class works with Dynamics CRM entites
+ */
 class AlexaSDK_Entity extends AlexaSDK_Abstract {
+    
         /**
 	 * Overridden in each child class
 	 * @var String entityLogicalName this is how Dynamics refers to this Entity
 	 */
 	protected $entityLogicalName = NULL;
         
+        /**
+         * The ID of the Entity 
+         * 
+         * @var String corresponds GUID structure in Dynamics CRM
+         */
+	private $entityID;
+        
         /** 
-         * @var String entityName, display name of Entity object record 
+         * entityName, display name of Entity object record 
+         * 
+         * @var String 
          */
         protected $displayName = NULL;
         
 	/** 
-         * @var String DisplayName of Entity the field to use to display the entity's Name (Example: Contact, Account) 
+         * DisplayName of Entity the field to use to display the entity's Name (Example: Contact, Account) 
+         * 
+         * @var String 
          */
 	protected $entityDisplayName = NULL;
         
         /** 
-         * @var String DisplayCollectionName of Entity, field that displays multiple entities name of one type (Example: Contacts, Accounts) 
+         * DisplayCollectionName of Entity, field that displays multiple entities name of one type (Example: Contacts, Accounts) 
+         * 
+         * @var String 
          */
         protected $entityDisplayCollectionName = NULL;
         
         /** 
-         * @var String EntityDescription description of specified Entity 
+         * EntityDescription description of specified Entity 
+         * 
+         * @var String 
          */
         protected $entityDescription = NULL;
         
-        /* @var String EntityTypeCode, ObjectTypeCode is the same */
-        private $entitytypecode = NULL;
+        /**
+         * EntityTypeCode, ObjectTypeCode is the same 
+         * 
+         * @var String 
+         */
+        protected $entitytypecode = NULL;
         
-	/* The details of the Entity structure (SimpleXML object) */
+	/** 
+         * The details of the Entity structure (SimpleXML object) 
+         * 
+         * @var SimpleXML
+         */
 	public $entityData;
         
-	/* The details of the Entity structure (as Arrays) */
+	/** 
+         * The details of the Entity structure (as Arrays) 
+         * 
+         * Describes entity fields
+         * 
+         * @var Array
+         */
 	public $properties = Array();
-	public $mandatories = Array();
-	public $optionSets = Array();
-	/* The details of this instance of the Entity - the added AliasedValue properites */
-	protected $localProperties = Array();
-	/* The details of this instance of the Entity - the property Values */
-	public $propertyValues = Array();
-        /* The details of this instance of the Entity - the propery Formatted Values */
-        public $formattedValues = Array();
-        
-        public $manyToManyRelationships = Array();
-        
-        public $manyToOneRelationships = Array();
-        
-        public $oneToManyRelationships = Array();
-        
-        /* Entity field values validation */
-        public $fieldValidation = TRUE;
-        
-        protected $validator = NULL;
-        
-        /* The errors in the property Values */
-        public $errors = Array();
-	/* The ID of the Entity */
-	private $entityID;
-	/* The Domain/URL of the Dynamics CRM Server where this is stored */
-	private $entityDomain = NULL;
-        
-        private $auth;
-        
         
         /**
-	 * 
+         * The details of mandatary entity fields, contains field keys that are mandatory
+         * 
+         * @var Array
+         */
+	public $mandatories = Array();
+        
+        /**
+         * 
+         * @var Array of AlexaSDK_OptionSetValue objects
+         */
+	public $optionSets = Array();
+        
+	/**
+         * The details of this instance of the Entity - the added AliasedValue properites 
+         * 
+         * @var Array
+         */
+	protected $localProperties = Array();
+        
+	/**
+         * The details of this instance of the Entity - the property Values 
+         * 
+         * @var Array contains values of properties (Entity field values)
+         */
+	public $propertyValues = Array();
+        
+        /**
+         * The details of this instance of the Entity - the propery Formatted Values 
+         * 
+         * @var Array same as $propertyValues, but contains nicenames of values
+         */
+        public $formattedValues = Array();
+        
+        /**
+         * The details of many to many relationships
+         * 
+         * @var Array
+         */
+        public $manyToManyRelationships = Array();
+        
+        /**
+         * The details of many to one relationships
+         * 
+         * @var Array
+         */
+        public $manyToOneRelationships = Array();
+        
+        /**
+         * The details of one to many relationships
+         * 
+         * @var Array
+         */
+        public $oneToManyRelationships = Array();
+        
+        /**
+         * Entity field values validation 
+         * 
+         * @var Boolean set TRUE if fields needs to be validated on __set with AlexaSDK_FormValidator
+         */
+        public $fieldValidation = TRUE;
+        
+        /**
+         * Instanse of AlexaSDK_FormValidator class
+         * 
+         * @var AlexaSDK_FormValidator
+         */
+        protected $validator = NULL;
+        
+        /**
+         * The errors in the property Values
+         * 
+         * @var Array contains field validation errors  
+         */
+        public $errors = Array();
+	
+        
+	/**
+         * The Domain/URL of the Dynamics CRM Server where this is stored 
+         * 
+         * @var String
+         */
+	private $entityDomain = NULL;
+        
+        /**
+         * Object of AlexaSDK class
+         * 
+         * @var AlexaSDK
+         */
+        private $auth;
+
+        
+        /**
+	 * Create a new usable Dynamics CRM Entity object
+         *          
 	 * @param AlexaSDK $auth Connection to the Dynamics CRM server - should be active already.
 	 * @param String $_logicalName Allows constructing arbritrary Entities by setting the EntityLogicalName directly
          * @param String $_ID Allows constructing arbritrary Entities by setting the EntityLogicalName directly
 	 */
-	function __construct(AlexaSDK $auth, $_logicalName = NULL, $_ID = NULL) {
+	function __construct(AlexaSDK $_auth, $_logicalName = NULL, $_ID = NULL) {
+            
+                /* Store AlexaSDK object */
+                $this->auth = $_auth;
+                
 		/* If a new LogicalName was passed, set it in this Entity */
 		if ($_logicalName != NULL && $_logicalName != $this->entityLogicalName) {
+                    
 			/* If this value was already set, don't allow changing it. */
 			/* - otherwise, you could have a AlexaSDK_Incident that was actually an Account! */
 			if ($this->entityLogicalName != NULL) {
 				throw new Exception('Cannot override the Entity Logical Name on a strongly typed Entity');
 			}
+                        
 			/* Set the Logical Name */
 			$this->entityLogicalName = $_logicalName;
 		}
+                
 		/* Check we have a Logical Name for the Entity */
 		if ($this->entityLogicalName == NULL) {
 			throw new Execption('Cannot instantiate an abstract Entity - specify the Logical Name');
 		}
-		/* Set the Domain that this Entity is associated with */
-		$this->setEntityDomain($auth);
                 
+		/* Set the Domain that this Entity is associated with */
+		$this->setEntityDomain($this->auth);
+                
+                /* Initilize Field validation class */
                 $this->validator = new AlexaSDK_FormValidator();
                 
                 /* Check if the Definition of this Entity is Cached on the Connector */
-		if ($auth->isEntityDefinitionCached($this->entityLogicalName)) {
+		if ($this->auth->isEntityDefinitionCached($this->entityLogicalName)) {
                     
 			/* Use the Cached values */
-			$isDefined = $auth->getCachedEntityDefinition($this->entityLogicalName, 
+			$isDefined = $this->auth->getCachedEntityDefinition($this->entityLogicalName, 
 					$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
 					$this->optionSets, $this->displayName, $this->entitytypecode, $this->entityDisplayName, 
                                         $this->entityDisplayCollectionName, $this->entityDescription, $this->manyToManyRelationships, 
@@ -111,7 +223,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                     /* Set the ID of Entity record */
                                     $this->setID($_ID);
                                     /* Get the raw XML data */
-                                    $rawSoapResponse = $auth->retrieveRaw($this);
+                                    $rawSoapResponse = $this->auth->retrieveRaw($this);
                                     
                                     /* NOTE: ParseRetrieveResponse method of AlexaSDK_Entity class, not the AlexaSDK class */
                                     $this->ParseRetrieveResponse($auth, $this->LogicalName, $rawSoapResponse);
@@ -122,7 +234,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 
                 /* At this point, we assume Entity is not Cached */
 		/* So, get the full details of what an Incident is on this server */
-		$this->entityData = $auth->retrieveEntity($this->entityLogicalName);
+		$this->entityData = $this->auth->retrieveEntity($this->entityLogicalName);
                 
                 /* Check we have a Simple XML Class for the Entity */
 		if (!$this->entityData) {
@@ -315,7 +427,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 }
                 
                 /* Ensure that this Entity Definition is Cached for next time */
-		$auth->setCachedEntityDefinition($this->entityLogicalName, 
+		$this->auth->setCachedEntityDefinition($this->entityLogicalName, 
 				$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
 				$this->optionSets, $this->displayName, $this->entitytypecode, $this->entityDisplayName, 
                                 $this->entityDisplayCollectionName, $this->entityDescription, $this->manyToManyRelationships, 
@@ -327,9 +439,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                         /* Set the ID of Entity record */
 			$this->setID($_ID);
                         /* Get the raw XML data */
-                        $rawSoapResponse = $auth->retrieveRaw($this);
+                        $rawSoapResponse = $this->auth->retrieveRaw($this);
                         /* NOTE: ParseRetrieveResponse method of AlexaSDK_Entity class, not the AlexaSDK class */
-                        $this->ParseRetrieveResponse($auth, $this->LogicalName, $rawSoapResponse);
+                        $this->ParseRetrieveResponse($this->auth, $this->LogicalName, $rawSoapResponse);
 		}
                 
 		return;
@@ -652,7 +764,6 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                     
                 }
                 
-                
                 if (!isset($this->errors[$property])){
                     $errorsFound = true;
                 }
@@ -702,7 +813,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	
 	/**
 	 * Utility function to clear all "AttributeOf" fields relating to the base field
+         * 
 	 * @param String $baseProperty
+         * @retrun void
 	 */
 	private function clearAttributesOf($baseProperty) {
 		/* Loop through all the properties */
@@ -736,6 +849,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	
 	/**
 	 * Reset all changed values to unchanged
+         * If property value setted to Changed FALSE, it will not be updated on creating and updating
+         * 
+         * @return void
 	 */
 	public function reset() {
 		/* Loop through all the properties */
@@ -746,6 +862,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	
 	/**
 	 * Check if a property has been changed since creation of the Entity
+         * 
 	 * @param String $property
 	 * @return boolean
 	 */
@@ -764,7 +881,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	}
         
         
-        public function getChangedProperties(){
+        /**
+         * Return all changed propery values
+         * 
+         * @return Array of changed property values
+         */
+        public function getChangedPropertyValues(){
                 $changedPropertyValues = array();
             
                 foreach($this->propertyValues as $propertyKey => $propertyValue){
@@ -777,7 +899,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         /**
 	 * Private utility function to get the ID field; enforces NULL --> EmptyGUID
+         * 
 	 * @ignore
+         * @return String GUID if it's existing recodr, empty GUID othervise
 	 */
 	private function getID() {
 		if ($this->entityID == NULL) return self::EmptyGUID;
@@ -788,6 +912,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	 * Private utility function to set the ID field; enforces "Set Once" logic
 	 * @param String $value
 	 * @throws Exception if the ID is already set
+         * @return void
 	 */
 	private function setID($value) {
 		/* Only allow setting the ID once */
@@ -799,6 +924,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         /**
 	 * Utility function to check all mandatory fields are filled
+         * 
 	 * @param Array $details populated with any failures found
 	 * @return boolean true if all mandatories are filled
 	 */
@@ -838,6 +964,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	 * request to the CRM server
 	 * 
 	 * @param boolean $allFields indicates if we should include all fields, or only changed fields
+         * @return DOMNode that represents this Entity
 	 */
 	public function getEntityDOM($allFields = false) {
 		/* Generate the Entity XML */
@@ -1375,20 +1502,26 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	}
         
         
-        
-        public function getEntityFields(){
+        /**
+         * @return Array of entity properties definition
+         */
+        public function getProperties(){
                 return $this->properties;
         }
         
+        /**
+         * @return Array of entity properties values
+         */
         public function getPropertyValues(){
                 return $this->propertyValues;
         }
         
+        /**
+         * @return Array of entity property keys
+         */
         public function getPropertyKeys(){
                 return array_keys($this->propertyValues);
         }
-        
-        
         
         /**
 	 * Get a URL that can be used to directly open the Entity Details on the CRM
@@ -1625,5 +1758,3 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	}
         
 }
-
-endif;

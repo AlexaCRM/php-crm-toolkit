@@ -1,6 +1,13 @@
 <?php
 
-if (!interface_exists("AlexaSDK_Interface")) :
+/**
+ * AlexaSDK_Abstract.php
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
+
 
 interface AlexaSDK_Interface {
 	/** Default GUID for "not known" or new Entities */
@@ -9,11 +16,8 @@ interface AlexaSDK_Interface {
 	const MAX_CRM_RECORDS = 5000;
 }
 
-endif;
 
 
-if (!class_exists("AlexaSDK_Abstract")) :
-    
 abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
         /* Internal details */
 	protected static $debugMode = FALSE;
@@ -253,7 +257,6 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	}
         
         
-        
         protected static function vardump($variable){
                 echo "<pre>";
                 var_dump($variable);
@@ -261,5 +264,3 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
         }
     
 }
-    
-endif;

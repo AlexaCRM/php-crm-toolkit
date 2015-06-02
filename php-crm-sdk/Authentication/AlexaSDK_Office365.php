@@ -1,9 +1,14 @@
 <?php
+/**
+ * AlexaSDK_Office365.php
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
 
-if (!class_exists("AlexaSDK_Office365")) :
     
-    
-    class AlexaSDK_Office365 extends AlexaSDK{
+class AlexaSDK_Office365 extends AlexaSDK{
     
         public $username;
         public $password;
@@ -413,8 +418,4 @@ if (!class_exists("AlexaSDK_Office365")) :
             }
         }
         
-        
-    }
-    
-    
-endif;
+}

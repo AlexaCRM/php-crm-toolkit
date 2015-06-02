@@ -1,8 +1,14 @@
 <?php
+/**
+ * AlexaSDK_Federation.php
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
 
-if (!class_exists("AlexaSDK_Federation")) :
-    
-    class AlexaSDK_Federation extends AlexaSDK{
+
+class AlexaSDK_Federation extends AlexaSDK{
     
         public $username;
         public $password;
@@ -272,8 +278,4 @@ if (!class_exists("AlexaSDK_Federation")) :
 		return $loginSoapRequest->saveXML($loginEnvelope);
 	}
     
-    
-    }
-    
-    
-endif;
+}

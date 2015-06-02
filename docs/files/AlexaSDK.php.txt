@@ -1,20 +1,34 @@
 <?php
 /**
- * Sample File 2, phpDocumentor Quickstart
+ * AlexaSDK.php
  * 
- * This file demonstrates the rich information that can be included in
- * in-code documentation through DocBlocks and tags.
+ * This file defines the AlexaSDK class that can be used to access
+ * the Microsoft Dynamics CRM system through SOAP calls from PHP.
  * 
+ * @author alexacrm.com.au
  * @version 1.0
  * @package AlexaSDK
  */
-    
+
+
+/**
+ * This class creates and manages SOAP connections to a Microsoft Dynamics CRM server
+ */
 class AlexaSDK extends AlexaSDK_Abstract{
     
         /**
          * Object of authentication class
+         * 
+         * @var mixed
 	 */
         private $authentication;
+        
+        /**
+         * Object of settings class
+         * 
+         * @var AlexaSDK_Settings
+	 */
+        private $settings;
         
         /**
          * Unique name of organization to connect
@@ -31,13 +45,26 @@ class AlexaSDK extends AlexaSDK_Abstract{
         private $domain;
         
         /**
-         * Organization domain
+         * Organization Service url
+         * 
+         * This refers to the organization that you specify in the URL when you access the web application.
+         * For example, for Contoso.crm.dynamics.com, the OrganizationName is Contoso. 
+         * ServerName refers to the name of the server, including the port number, for example, myserver or myserver:5555.
          * 
 	 * @var string
 	 */
         private $organizationUrl;
+        
+        /**
+         * Discovery service url
+         * The IDiscoveryService web service provides information about the organizations available 
+         * on the Microsoft Dynamics CRM server using the SOAP protocol. This information includes 
+         * the web address (URL) for each organization. 
+         * 
+	 * @var string
+	 */
         private $discoveryUrl;
-        private $settings;
+        
         
         /* Cached Organization data */
 	private $organizationDOM;
@@ -51,10 +78,18 @@ class AlexaSDK extends AlexaSDK_Abstract{
 	private $organizationSecurityPolicy;
 	private $organizationSecurityToken;
         
-        /* Cached Entity Definitions */
+        /** 
+         * Cached Entity Definitions 
+         * 
+         * @var Array associative array of cached entities
+         */
 	private $cachedEntityDefintions = Array();
         
-        /* AlexaSDK_Cache object */
+        /** 
+         * Instance of AlexaSDK_Cache object 
+         * 
+         * @var AlexaSDK_Cache 
+         */
         private $cacheClass;
         
         /* Security Details */
@@ -79,15 +114,15 @@ class AlexaSDK extends AlexaSDK_Abstract{
          * Create a new instance of the AlexaSDK
          * 
          * @param AlexaSDK_Settings $_settings
-         * @param type $_debug
-         * @throws Exception
-         * @throws BadMethodCallException
-         * 
+         * @param boolean $_debug Enable debug mode TRUE or FALSE
+         * @throws Exception if provided $_settings not instance of AlexaSDK_Settings class
+         * @throws BadMethodCallException if $_settings doesn't contains Discovery URI, Username and Password
          * @return AlexaSDK
          */
-        function __construct($_settings, $_debug = NULL) {
+        function __construct(AlexaSDK_Settings $_settings, $_debug = NULL) {
             /* Construct AlexaCRM_Abstract class to setup includes */
             parent::__construct();
+           
             /* Enable or disable debug mode */
             self::$debugMode = $_debug;
             
@@ -113,6 +148,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
                 }
             }
             
+            /* Create authentication class to connect to CRM Online or Internet facing deployment via ADFS */
             switch ($this->settings->authMode){
                 case "OnlineFederation":
                     $this->authentication = new AlexaSDK_Office365($this->settings);
@@ -122,8 +158,10 @@ class AlexaSDK extends AlexaSDK_Abstract{
                     break;
             }
             
+            /* Create new object of Cache classe */
             $this->cacheClass = new AlexaSDK_Cache( array('storage' => 'auto'));
             
+            /* Load cahced data if it exists */
             $this->loadEntityDefinitionCache();
             
         }
