@@ -1,18 +1,14 @@
 <?php
 /**
- * AlexaSDK.php
+ * Sample File 2, phpDocumentor Quickstart
  * 
- * This file defines the AlexaSDK class that can be used to access
- * the Microsoft Dynamics CRM system through SOAP calls from PHP.
+ * This file demonstrates the rich information that can be included in
+ * in-code documentation through DocBlocks and tags.
  * 
  * @version 1.0
  * @package AlexaSDK
  */
-
-
-/**
- * This class creates and manages SOAP connections to a Microsoft Dynamics CRM server
- */
+    
 class AlexaSDK extends AlexaSDK_Abstract{
     
         /**
