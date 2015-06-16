@@ -15,6 +15,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
     
         /**
 	 * Overridden in each child class
+         * 
 	 * @var String entityLogicalName this is how Dynamics refers to this Entity
 	 */
 	protected $entityLogicalName = NULL;
@@ -172,7 +173,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         /**
 	 * Create a new usable Dynamics CRM Entity object
          *          
-	 * @param AlexaSDK $auth Connection to the Dynamics CRM server - should be active already.
+	 * @param AlexaSDK $_auth Connection to the Dynamics CRM server - should be active already.
 	 * @param String $_logicalName Allows constructing arbritrary Entities by setting the EntityLogicalName directly
          * @param String $_ID Allows constructing arbritrary Entities by setting the EntityLogicalName directly
 	 */
@@ -226,7 +227,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                     $rawSoapResponse = $this->auth->retrieveRaw($this);
                                     
                                     /* NOTE: ParseRetrieveResponse method of AlexaSDK_Entity class, not the AlexaSDK class */
-                                    $this->ParseRetrieveResponse($auth, $this->LogicalName, $rawSoapResponse);
+                                    $this->ParseRetrieveResponse($this->auth, $this->LogicalName, $rawSoapResponse);
                             }
                             return;
                         }	
@@ -241,7 +242,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			throw new Execption('Unable to load metadata simple_xml_class'.$this->entityData);
 		}
                 
-                /* TODO: Add checkings */
+                /**
+                 *  TODO: Add checkings 
+                 */
                 $this->entityDescription = (String)$this->entityData->Description->LocalizedLabels->LocalizedLabel->Label;
                 
                 $this->entityDisplayName = (String)$this->entityData->DisplayName->LocalizedLabels->LocalizedLabel->Label;
@@ -450,8 +453,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         
         /**
-	 * 
-	 * @param String $property to be fetched
+	 * Method to access AlexaSDK_Entity field values 
+         * 
+         * User to access entity field values and some predefiend system fields such as 
+         * (ID, Logicalname, Displayname, Entitytype)
+         * 
+	 * @param string $property to be fetched
 	 * @return value of the property, if it exists & is readable
 	 */
 	public function __get($property) {
@@ -535,8 +542,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         /**
 	 * 
-	 * @param String $property to be changed
+	 * @param string $property to be changed
 	 * @param mixed $value new value for the property
+         * @return void
 	 */
 	public function __set($property, $value) {
 		/* Handle special fields */
@@ -1104,11 +1112,11 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         /**
 	 * Generate an Entity based on a particular Logical Name - will try to be as Strongly Typed as possible
 	 * 
-	 * @param AlexaSDK $conn
+	 * @param AlexaSDK $auth instanse of AlexaSDK class object
 	 * @param String $entityLogicalName
 	 * @return AlexaSDK_Entity of the specified type, or a generic Entity if no Class exists
 	 */
-	public static function fromLogicalName(AlexaSDK $conn, $entityLogicalName) {
+	public static function fromLogicalName(AlexaSDK $auth, $entityLogicalName) {
 		/* Determine which Class we will create */
 		$entityClassName = self::getClassName($entityLogicalName);
 		/* If a specific class for this Entity doesn't exist, use the Entity class */
@@ -1116,21 +1124,21 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			$entityClassName = 'AlexaSDK_Entity';
 		}
 		/* Create a new instance of the Class */
-		return new $entityClassName($conn, $entityLogicalName);
+		return new $entityClassName($auth, $entityLogicalName);
 	}
         
         
         /**
 	 * Generate an Entity from the DOM object that describes its properties
 	 * 
-	 * @param AlexaSDK $conn
+	 * @param AlexaSDK $auth instanse of AlexaSDK class object
 	 * @param String $entityLogicalName
 	 * @param DOMElement $domNode
 	 * @return AlexaSDK_Entity of the specified type, with the properties found in the DOMNode
 	 */
-	public static function fromDOM(AlexaSDK $conn, $entityLogicalName, DOMElement $domNode) {
+	public static function fromDOM(AlexaSDK $auth, $entityLogicalName, DOMElement $domNode) {
 		/* Create a new instance of the appropriate Class */
-		$entity = self::fromLogicalName($conn, $entityLogicalName);
+		$entity = self::fromLogicalName($auth, $entityLogicalName);
 		
 		/* Store values from the main RetrieveResult node */
 		$relatedEntitiesNode = NULL;
@@ -1174,7 +1182,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
  		//if (self::$debugMode) echo 'Entity <'.$entity->ID.'> has EntityState: '.$entityState.PHP_EOL;
  		
  		/* Parse the Attributes & FormattedValues to set the properties of the Entity */
- 		$entity->setAttributesFromDOM($conn, $attributesNode, $formattedValuesNode);
+ 		$entity->setAttributesFromDOM($auth, $attributesNode, $formattedValuesNode);
  		
 		/* Before returning the Entity, reset it so all fields are marked unchanged */
 		$entity->reset();
@@ -1184,12 +1192,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         /**
 	 * 
-	 * @param AlexaSDK $conn
+	 * @param AlexaSDK $auth
 	 * @param DOMElement $attributesNode
 	 * @param DOMElement $formattedValuesNode
 	 * @ignore
 	 */
-	private function setAttributesFromDOM(AlexaSDK $conn, DOMElement $attributesNode, DOMElement $formattedValuesNode) {
+	private function setAttributesFromDOM(AlexaSDK $auth, DOMElement $attributesNode, DOMElement $formattedValuesNode) {
 		/* First, parse out the FormattedValues - these will be required when analysing Attributes */
 		$formattedValues = Array();
 		/* Identify the FormattedValues */
@@ -1264,7 +1272,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 					/* Also get the Name of the Entity - might be able to store this for View */
 					$entityReferenceName = $keyValueNode->getElementsByTagName('value')->item(0)->getElementsByTagName('Name')->item(0)->textContent;
 					/* Create the Placeholder Entity */
-					$storedValue = self::fromLogicalName($conn, $entityReferenceType);
+					$storedValue = self::fromLogicalName($auth, $entityReferenceType);
 					$storedValue->ID = $entityReferenceId;
 					/* Check if we have a matching "xxxName" property, and set that too */
 					if (array_key_exists($attributeKey.'name', $this->properties)) {
@@ -1322,7 +1330,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 							/* Check if the existing Entity is NULL */
 							if ($storedValue == NULL) {
 								/* Create a new Entity of the appropriate type */
-								$storedValue = self::fromLogicalName($conn, $aliasEntityName);
+								$storedValue = self::fromLogicalName($auth, $aliasEntityName);
 								/* Alias overlaps with normal field - check this is allowed */
 								if (!in_array($aliasEntityName, $this->properties[$aliasName]['lookupTypes'])) {
 									trigger_error('Alias '.$aliasName.' overlaps and existing field of type '.implode(' or ', $this->properties[$aliasName]['lookupTypes'])
@@ -1338,7 +1346,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 							}
 						} else {
 							/* Create a new Entity of the appropriate type */
-							$storedValue = self::fromLogicalName($conn, $aliasEntityName);
+							$storedValue = self::fromLogicalName($auth, $aliasEntityName);
 							/* Create a new Attribute on this Entity for the Alias */
 							$this->localProperties[$aliasName] = Array(
 									'Label' => 'AliasedValue: '.$aliasName,
@@ -1384,7 +1392,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 							$aliasFormattedValueNode->appendChild($aliasDoc->createElementNS('http://schemas.datacontract.org/2004/07/System.Collections.Generic', 'c:value', $formattedValues[$attributeKey]));
 						}
 						/* Now set the DOM values on the Entity */
-						$storedValue->setAttributesFromDOM($conn, $aliasAttributesNode, $aliasFormattedValuesNode);
+						$storedValue->setAttributesFromDOM($auth, $aliasAttributesNode, $aliasFormattedValuesNode);
 						/* Finally, ensure that this is stored on the Entity using the Alias */
 						$attributeKey = $aliasName;
 					}
@@ -1664,12 +1672,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         /**
 	 * Parse the results of a RetrieveRequest into a useable PHP object
-	 * @param AlexaSDK $conn
+	 * @param AlexaSDK $auth
 	 * @param String $entityLogicalName
 	 * @param String $soapResponse
 	 * @ignore
 	 */
-	private function parseRetrieveResponse(AlexaSDK $conn, $entityLogicalName, $soapResponse) {
+	private function parseRetrieveResponse(AlexaSDK $auth, $entityLogicalName, $soapResponse) {
 		/* Load the XML into a DOMDocument */
 		$soapResponseDOM = new DOMDocument();
 		$soapResponseDOM->loadXML($soapResponse);
@@ -1697,17 +1705,17 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		}
                 		
 		/* Generate a new Entity from the DOMNode */
-		$this->setValuesFromDom($conn, $entityLogicalName, $retrieveResultNode);
+		$this->setValuesFromDom($auth, $entityLogicalName, $retrieveResultNode);
 	}
         
         /**
 	 * Generate an Entity from the DOM object that describes its properties
 	 * 
-	 * @param AlexaSDK $conn
+	 * @param AlexaSDK $auth
 	 * @param String $entityLogicalName
 	 * @param DOMElement $domNode
 	 */
-        private function setValuesFromDom(AlexaSDK $conn, $entityLogicalName, DOMElement $domNode) {
+        private function setValuesFromDom(AlexaSDK $auth, $entityLogicalName, DOMElement $domNode) {
 		/* Store values from the main RetrieveResult node */
 		$relatedEntitiesNode = NULL;
 		$attributesNode = NULL;
@@ -1751,7 +1759,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
  		if (self::$debugMode) echo 'Entity <'.$entity->ID.'> has EntityState: '.$entityState.PHP_EOL;
  		
  		/* Parse the Attributes & FormattedValues to set the properties of the Entity */
- 		$this->setAttributesFromDOM($conn, $attributesNode, $formattedValuesNode);
+ 		$this->setAttributesFromDOM($auth, $attributesNode, $formattedValuesNode);
  		
 		/* Before returning the Entity, reset it so all fields are marked unchanged */
 		$this->reset();

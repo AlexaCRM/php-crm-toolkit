@@ -19,13 +19,25 @@ interface AlexaSDK_Interface {
 
 
 abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
-        /* Internal details */
+        /**
+         * Internal details 
+         * 
+         * @var Boolean $debugMode if TRUE will outputs debug information, default FALSE
+         */
 	protected static $debugMode = FALSE;
         
-        /* Limits the maximum execution time */
+        /**
+         *  Limits the maximum execution time
+         * 
+         * @var Integer 
+         */
         protected static $timeLimit = 240;
         
-         /** List of recognised SOAP Faults that can be returned by MS Dynamics CRM */
+         /** 
+          * List of recognised SOAP Faults that can be returned by MS Dynamics CRM 
+          * 
+          * @var Array $SOAPFaultActions List of SOAP Fault actions
+          */
 	public static $SOAPFaultActions = Array(
                     'http://www.w3.org/2005/08/addressing/soap/fault',
                     'http://schemas.microsoft.com/net/2005/12/windowscommunicationfoundation/dispatcher/fault',

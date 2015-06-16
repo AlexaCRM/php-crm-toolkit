@@ -106,7 +106,7 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">438</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">422</span>
                                 </a>
                             </li>
                             <li>
@@ -136,10 +136,10 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1543870324"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-936711648"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-1543870324" class="accordion-body collapse in">
+            <div id="namespace-936711648" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                     
@@ -174,7 +174,7 @@
                     <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
 
                     <h1><small>\</small>AlexaSDK_OptionSetValue</h1>
-                    <p><em>AlexaSDK_OptionSetValue.php</em></p>
+                    <p><em>This class represents ket/value (or label/value) object for Entities selectboxes and boolean</em></p>
                     
                     
                                         
@@ -255,22 +255,7 @@
                                                                         </dl>
                     <h2>Tags</h2>
                     <table class="table table-condensed">
-                                            <tr>
-                            <th>
-                                author
-                            </th>
-                            <td>
-                                                                    <p>alexacrm.com.au</p>
-                                                            </td>
-                        </tr>
-                                            <tr>
-                            <th>
-                                version
-                            </th>
-                            <td>
-                                                                    
-                                                            </td>
-                        </tr>
+                                            <tr><td colspan="2"><em>None found</em></td></tr>
                                         </table>
                 </aside>
             </div>
@@ -289,13 +274,13 @@
             <a id="property_SOAPFaultActions" name="property_SOAPFaultActions" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$SOAPFaultActions</h3>
-                <pre class="signature">$SOAPFaultActions : </pre>
+                <pre class="signature">$SOAPFaultActions : Array</pre>
                 <p><em>List of recognised SOAP Faults that can be returned by MS Dynamics CRM</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                Array
+                &mdash; List of SOAP Fault actions                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -315,13 +300,13 @@
             <a id="property_debugMode" name="property_debugMode" class="anchor"></a>
             <article class="property">
                 <h3 class="protected ">$debugMode</h3>
-                <pre class="signature">$debugMode : </pre>
-                <p><em></em></p>
+                <pre class="signature">$debugMode : Boolean</pre>
+                <p><em>Internal details</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                Boolean
+                &mdash; if TRUE will outputs debug information, default FALSE                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -341,12 +326,12 @@
             <a id="property_timeLimit" name="property_timeLimit" class="anchor"></a>
             <article class="property">
                 <h3 class="protected ">$timeLimit</h3>
-                <pre class="signature">$timeLimit : </pre>
-                <p><em></em></p>
+                <pre class="signature">$timeLimit : Integer</pre>
+                <p><em>Limits the maximum execution time</em></p>
                 
 
                                 <h4>Type</h4>
-                
+                Integer
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -367,13 +352,13 @@
             <a id="property_value" name="property_value" class="anchor"></a>
             <article class="property">
                 <h3 class="protected ">$value</h3>
-                <pre class="signature">$value : </pre>
-                <p><em></em></p>
+                <pre class="signature">$value : string</pre>
+                <p><em>Value of the option set element</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                string
+                &mdash; (0,1,2,3 for selects and 0,1 for boolean type)                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -391,13 +376,13 @@
             <a id="property_label" name="property_label" class="anchor"></a>
             <article class="property">
                 <h3 class="protected ">$label</h3>
-                <pre class="signature">$label : </pre>
-                <p><em></em></p>
-                
+                <pre class="signature">$label : string</pre>
+                <p><em>Label of the option set element</em></p>
+                <p>Text description of the option set</p>
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                string
+                &mdash; (0,1,2,3 for selects and 0,1 for boolean type)                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -540,14 +525,14 @@ e.g. AlexaSDK_Incident, or AlexaSDK_Account</p>
                 <h3 class="public ">__toString()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
                 <pre class="signature" style="margin-right: 54px;">__toString() : String</pre>
-                <p><em></em></p>
+                <p><em>Returns label of the option set value</em></p>
                 
 
                 
                 
                                     <h4>Returns</h4>
                     String
-                                            &mdash; <p>description of the OptionSetValue including Value and Label</p>
+                                            &mdash; <p>Label of the option set value</p>
                                     				
                             </article>
         </div>
@@ -732,7 +717,7 @@ e.g. AlexaSDK_Incident, or AlexaSDK_Account</p>
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
                     on 
 Warning: date_default_timezone_get(): It is not safe to rely on the system's timezone settings. You are *required* to use the date.timezone setting or the date_default_timezone_set() function. In case you used any of those methods and you are still getting this warning, you most likely misspelled the timezone identifier. We selected the timezone 'UTC' for now, but please set date.timezone to select your timezone. in C:\Program Files (x86)\Ampps\php\vendor\twig\twig\lib\Twig\Extension\Core.php on line 89
-June 2nd, 2015 at 18:42.
+June 11th, 2015 at 16:25.
                 </section>
             </section>
         </section>

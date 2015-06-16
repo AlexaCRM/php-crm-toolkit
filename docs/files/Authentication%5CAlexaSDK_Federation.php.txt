@@ -4,7 +4,7 @@
  * 
  * @author alexacrm.com.au
  * @version 1.0
- * @package AlexaSDK
+ * @package AlexaSDK\Authentication
  */
 
 
@@ -35,102 +35,6 @@ class AlexaSDK_Federation extends AlexaSDK{
             $this->discoveryUrl = $settings->discoveryUrl;
             $this->loginUrl = $settings->loginUrl;
             $this->settings = $settings;
-        }
-        
-        function BuildAuthSoap(){
-            
-            $request = '
-            <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing" xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
-                <s:Header>
-                    <a:Action s:mustUnderstand="1">http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue</a:Action>
-                    <a:MessageID>urn:uuid:' . parent::getUuid() . '</a:MessageID>
-                    <a:ReplyTo>
-                        <a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
-                    </a:ReplyTo>
-                    <a:To s:mustUnderstand="1">' . $this->loginUrl . '</a:To>
-                    <o:Security s:mustUnderstand="1" xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
-                        <u:Timestamp u:Id="_0">
-                            <u:Created>' . parent::getCurrentTime() . 'Z</u:Created>
-                            <u:Expires>' . parent::getExpiryTime() . 'Z</u:Expires>
-                        </u:Timestamp>
-                        <o:UsernameToken u:Id="uuid-0978ded4-79ce-4226-97ac-fab2c8893423-8"> 
-                            <o:Username>' . $this->username . '</o:Username>
-                            <o:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">' . $this->password . '</o:Password>
-                        </o:UsernameToken>
-                    </o:Security>
-                </s:Header>
-                <s:Body>
-                    <trust:RequestSecurityToken xmlns:trust="http://docs.oasis-open.org/ws-sx/ws-trust/200512">
-                        <wsp:AppliesTo xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy">
-                            <a:EndpointReference>
-                                <a:Address>' . $this->organizationUrl . '</a:Address>
-                            </a:EndpointReference>
-                        </wsp:AppliesTo>
-                        <trust:RequestType>http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue</trust:RequestType>
-                    </trust:RequestSecurityToken>
-                </s:Body>
-            </s:Envelope>';
-            
-            return $request;
-        }
-        
-        public function Authenticate(){
-            try{
-                $response = parent::GetSOAPResponse($this->loginUrl, $this->BuildAuthSoap());
-
-                $responsedom = new DomDocument();
-                $responsedom->loadXML($response);
-
-                $cipherValues = $responsedom->getElementsbyTagName("CipherValue");
-
-                if (isset($cipherValues) && $cipherValues->length > 0) {
-                    $this->chipperValue = $cipherValues->item(0)->textContent;
-                    $this->chipperValue2 = $cipherValues->item(1)->textContent;
-                    $this->X509IssuerName = $responsedom->getElementsbyTagName("X509IssuerName")->item(0)->textContent;
-                    $this->X509SerialNumber = $responsedom->getElementsbyTagName("X509SerialNumber")->item(0)->textContent;
-                    $this->BinarySecret = $responsedom->getElementsbyTagName("BinarySecret")->item(0)->textContent;
-
-                    $response = str_replace("o:KeyIdentifier", "KeyInfo1", $response);
-
-                    $responsedom = new DomDocument();
-                    $responsedom->loadXML($response);
-
-                    $this->keyInfo = $responsedom->getElementsbyTagName("KeyInfo1")->item(0)->textContent;
-                    
-                    return true;
-                } else {
-                    return false;
-                }
-            }  catch (Exception $e) {
-                return false;
-            }
-        }
-        
-        
-        public function getHeader($soapAction)
-        {
-            $created = parent::getCurrentTime();
-            $expires = parent::getExpiryTime();
-
-            $timestamp = '<u:Timestamp xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" u:Id="_0"><u:Created>' . $created . 'Z</u:Created><u:Expires>' . $expires . 'Z</u:Expires></u:Timestamp>';
-
-            $t = new DOMDocument();
-            $t->loadXML($timestamp);
-            $canonicalTime = $t->documentElement->C14N(TRUE, FALSE);
-
-            $digestValue = base64_encode(sha1($canonicalTime, true));
-
-            $signedInfo = '<SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#"><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></CanonicalizationMethod><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1"></SignatureMethod><Reference URI="#_0"><Transforms><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></Transform></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></DigestMethod><DigestValue>' . $digestValue . '</DigestValue></Reference></SignedInfo>';
-
-            $d = new DOMDocument();
-            $d->loadXML($signedInfo);
-            $canonicalXml = $d->documentElement->C14N(TRUE, FALSE);
-
-            $signatureValue = base64_encode(hash_hmac("sha1", $canonicalXml, base64_decode($this->BinarySecret), true));
-
-            $header = '<s:Header><a:Action s:mustUnderstand="1">http://schemas.microsoft.com/xrm/2011/Contracts/Services/IOrganizationService/'.$soapAction.'</a:Action><SdkClientVersion xmlns="http://schemas.microsoft.com/xrm/2011/Contracts">6.1.0000.0542</SdkClientVersion><a:MessageID>urn:uuid:1f53e235-607c-4361-950b-6c28cec3bee2</a:MessageID><a:ReplyTo><a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address></a:ReplyTo><a:To s:mustUnderstand="1">' . $this->organizationUrl . '</a:To><o:Security s:mustUnderstand="1" xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"><u:Timestamp u:Id="_0"><u:Created>' . $created . 'Z</u:Created><u:Expires>' . $expires . 'Z</u:Expires></u:Timestamp><xenc:EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"><xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc"/><KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#"><e:EncryptedKey xmlns:e="http://www.w3.org/2001/04/xmlenc#"><e:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p"><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/></e:EncryptionMethod><KeyInfo><o:SecurityTokenReference><X509Data><X509IssuerSerial><X509IssuerName>CN=StartCom Class 2 Primary Intermediate Server CA, OU=Secure Digital Certificate Signing, O=StartCom Ltd., C=IL</X509IssuerName><X509SerialNumber>139034</X509SerialNumber></X509IssuerSerial></X509Data></o:SecurityTokenReference></KeyInfo><e:CipherData><e:CipherValue>' . $this->chipperValue . '</e:CipherValue></e:CipherData></e:EncryptedKey></KeyInfo><xenc:CipherData><xenc:CipherValue>' . $this->chipperValue2 . '</xenc:CipherValue></xenc:CipherData></xenc:EncryptedData><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#hmac-sha1"/><Reference URI="#_0"><Transforms><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>' . $digestValue . '</DigestValue></Reference></SignedInfo><SignatureValue>' . $signatureValue . '</SignatureValue><KeyInfo><o:SecurityTokenReference k:TokenType="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1" xmlns:k="http://docs.oasis-open.org/wss/oasis-wss-wssecurity-secext-1.1.xsd"><o:KeyIdentifier ValueType="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.0#SAMLAssertionID">' . $this->keyInfo . '</o:KeyIdentifier></o:SecurityTokenReference></KeyInfo></Signature></o:Security></s:Header>';
-            
-            return $header;
         }
         
         /**

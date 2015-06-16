@@ -1,4 +1,8 @@
 <?php
+/**
+ * @package AlexaSDK
+ * @subpackage Helpers 
+ */
 
 if (!class_exists("AlexaSDK_Cache")) :
     

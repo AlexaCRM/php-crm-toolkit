@@ -1,7 +1,13 @@
 <?php
+/**
+ * @package AlexaSDK
+ * @subpackage Helpers 
+ * @ignore
+ */
 
-if (!class_exists("AlexaSDK_Cache")) :
-    
+/**
+ * @ignore
+ */    
 class AlexaSDK_Cache {
 
     // Public OPTIONS
@@ -1792,5 +1798,3 @@ allow from 127.0.0.1";
     }
 
 }
-
-endif;

@@ -939,47 +939,6 @@ class AlexaSDK extends AlexaSDK_Abstract{
 	}
         
         
-        public function getOnlineFederationOrganizationURI(){
-            
-            $request = $this->authentication->requestRetrieveOrganization();
-            
-            $discovery_data = self::GetSOAPResponse($this->settings->discoveryUrl, $request);
-            
-            /* Parse the returned data to determine the correct EndPoint for the OrganizationService for the selected Organization */
-            $organizationServiceURI = NULL;
-            $organizationDomain = NULL;
-            $discoveryDOM = new DOMDocument(); $discoveryDOM->loadXML($discovery_data);
-            if ($discoveryDOM->getElementsByTagName('OrganizationDetail')->length > 0) {
-                    foreach ($discoveryDOM->getElementsByTagName('OrganizationDetail') as $organizationNode) {
-                            //if ($organizationNode->getElementsByTagName('UniqueName')->item(0)->textContent == $this->organizationUniqueName) {
-                                    foreach ($organizationNode->getElementsByTagName('Endpoints')->item(0)->getElementsByTagName('KeyValuePairOfEndpointTypestringztYlk6OT') as $endpointDOM) {
-                                            if ($endpointDOM->getElementsByTagName('key')->item(0)->textContent == 'OrganizationService') {
-                                                    $organizationServiceURI = $endpointDOM->getElementsByTagName('value')->item(0)->textContent;
-                                            }
-
-                                            if ($endpointDOM->getElementsByTagName('key')->item(0)->textContent == 'WebApplication') {
-                                                    $organizationDomain = $endpointDOM->getElementsByTagName('value')->item(0)->textContent;
-                                            }
-                                    }
-                                    break;
-                            //}
-                    }
-            } else {
-                    throw new Exception('Error fetching Organization details:'.PHP_EOL.$discovery_data);
-                    return FALSE;
-            }
-            if ($organizationServiceURI == NULL) {
-                    throw new Exception('Could not find OrganizationService URI for the Organization <'.$this->organizationUniqueName.'>');
-                    return FALSE;
-            }
-            
-            $this->domain = $organizationDomain;
-            $this->organizationUrl = $organizationServiceURI;
-            //$this->cacheOrganizationDetails();
-            return $organizationServiceURI;
-        }
-        
-        
         /**
 	 * Fetch and flatten the Organization Service WSDL as a DOM
 	 * @ignore

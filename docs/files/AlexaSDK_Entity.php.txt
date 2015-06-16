@@ -15,6 +15,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
     
         /**
 	 * Overridden in each child class
+         * 
 	 * @var String entityLogicalName this is how Dynamics refers to this Entity
 	 */
 	protected $entityLogicalName = NULL;
@@ -172,7 +173,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         /**
 	 * Create a new usable Dynamics CRM Entity object
          *          
-	 * @param AlexaSDK $auth Connection to the Dynamics CRM server - should be active already.
+	 * @param AlexaSDK $_auth Connection to the Dynamics CRM server - should be active already.
 	 * @param String $_logicalName Allows constructing arbritrary Entities by setting the EntityLogicalName directly
          * @param String $_ID Allows constructing arbritrary Entities by setting the EntityLogicalName directly
 	 */
@@ -241,7 +242,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			throw new Execption('Unable to load metadata simple_xml_class'.$this->entityData);
 		}
                 
-                /* TODO: Add checkings */
+                /**
+                 *  TODO: Add checkings 
+                 */
                 $this->entityDescription = (String)$this->entityData->Description->LocalizedLabels->LocalizedLabel->Label;
                 
                 $this->entityDisplayName = (String)$this->entityData->DisplayName->LocalizedLabels->LocalizedLabel->Label;
@@ -450,8 +453,12 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         
         /**
-	 * 
-	 * @param String $property to be fetched
+	 * Method to access AlexaSDK_Entity field values 
+         * 
+         * User to access entity field values and some predefiend system fields such as 
+         * (ID, Logicalname, Displayname, Entitytype)
+         * 
+	 * @param string $property to be fetched
 	 * @return value of the property, if it exists & is readable
 	 */
 	public function __get($property) {
@@ -535,8 +542,9 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         /**
 	 * 
-	 * @param String $property to be changed
+	 * @param string $property to be changed
 	 * @param mixed $value new value for the property
+         * @return void
 	 */
 	public function __set($property, $value) {
 		/* Handle special fields */
@@ -1104,11 +1112,11 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         /**
 	 * Generate an Entity based on a particular Logical Name - will try to be as Strongly Typed as possible
 	 * 
-	 * @param AlexaSDK $conn
+	 * @param AlexaSDK $auth instanse of AlexaSDK class object
 	 * @param String $entityLogicalName
 	 * @return AlexaSDK_Entity of the specified type, or a generic Entity if no Class exists
 	 */
-	public static function fromLogicalName(AlexaSDK $conn, $entityLogicalName) {
+	public static function fromLogicalName(AlexaSDK $auth, $entityLogicalName) {
 		/* Determine which Class we will create */
 		$entityClassName = self::getClassName($entityLogicalName);
 		/* If a specific class for this Entity doesn't exist, use the Entity class */
@@ -1116,21 +1124,21 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 			$entityClassName = 'AlexaSDK_Entity';
 		}
 		/* Create a new instance of the Class */
-		return new $entityClassName($conn, $entityLogicalName);
+		return new $entityClassName($auth, $entityLogicalName);
 	}
         
         
         /**
 	 * Generate an Entity from the DOM object that describes its properties
 	 * 
-	 * @param AlexaSDK $conn
+	 * @param AlexaSDK $auth instanse of AlexaSDK class object
 	 * @param String $entityLogicalName
 	 * @param DOMElement $domNode
 	 * @return AlexaSDK_Entity of the specified type, with the properties found in the DOMNode
 	 */
-	public static function fromDOM(AlexaSDK $conn, $entityLogicalName, DOMElement $domNode) {
+	public static function fromDOM(AlexaSDK $auth, $entityLogicalName, DOMElement $domNode) {
 		/* Create a new instance of the appropriate Class */
-		$entity = self::fromLogicalName($conn, $entityLogicalName);
+		$entity = self::fromLogicalName($auth, $entityLogicalName);
 		
 		/* Store values from the main RetrieveResult node */
 		$relatedEntitiesNode = NULL;

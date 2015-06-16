@@ -2,15 +2,32 @@
 /**
  * AlexaSDK_OptionSetValue.php
  * 
+ * This file defines AlexaSDK_OptionSetValue class 
+ * object for option sets that is used for working with entities
+ * 
  * @author alexacrm.com.au
  * @version 1.0
  * @package AlexaSDK
  */
 
+
+/**
+ * This class represents ket/value (or label/value) object for Entities selectboxes and boolean
+ */
 class AlexaSDK_OptionSetValue extends AlexaSDK_Abstract {
-	/* Value */
+	/** 
+         * Value of the option set element
+         * 
+         * @var string $value (0,1,2,3 for selects and 0,1 for boolean type)
+         */
 	protected $value = NULL;
-	/* Label */
+	/** 
+         * Label of the option set element
+         * 
+         * Text description of the option set
+         * 
+         * @var string $value (0,1,2,3 for selects and 0,1 for boolean type)
+         */
 	protected $label = NULL;
 	
 	/**
@@ -49,7 +66,9 @@ class AlexaSDK_OptionSetValue extends AlexaSDK_Abstract {
 	}
 	
 	/**
-	 * @return String description of the OptionSetValue including Value and Label
+         * Returns label of the option set value
+         * 
+	 * @return String Label of the option set value
 	 */
 	public function __toString() {
 		return (string)$this->label;

@@ -106,7 +106,7 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">438</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">422</span>
                                 </a>
                             </li>
                             <li>
@@ -136,10 +136,10 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-329152637"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1846991099"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-329152637" class="accordion-body collapse in">
+            <div id="namespace-1846991099" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                     
@@ -175,7 +175,9 @@
 
                     <h1><small>\</small>AlexaSDK_Office365</h1>
                     <p><em>AlexaSDK_Office365.php</em></p>
-                    
+                    <p>This file defines the AlexaSDK_Office365 class that used to authenticate and
+request SOAP headers for Microsoft Dynamics CRM Online from Microsoft Office and
+Portal services through SOAP calls from PHP.</p>
                     
                                         
                     <section id="summary">
@@ -196,7 +198,6 @@
                                                                     <a href="../classes/AlexaSDK_Office365.html#method___construct" class="">__construct()</a><br />
                                                                     <a href="../classes/AlexaSDK.html#method_clearCache" class="">clearCache()</a><br />
                                                                     <a href="../classes/AlexaSDK.html#method_getSecurityTokenServiceIdentifier" class="deprecated">getSecurityTokenServiceIdentifier()</a><br />
-                                                                    <a href="../classes/AlexaSDK.html#method_getOnlineFederationOrganizationURI" class="">getOnlineFederationOrganizationURI()</a><br />
                                                                     <a href="../classes/AlexaSDK.html#method_retrieveEntity" class="">retrieveEntity()</a><br />
                                                                     <a href="../classes/AlexaSDK.html#method_retrieveEntityRaw" class="">retrieveEntityRaw()</a><br />
                                                                     <a href="../classes/AlexaSDK.html#method_retrieveMultipleEntities" class="">retrieveMultipleEntities()</a><br />
@@ -224,11 +225,6 @@
                                                                     <a href="../classes/AlexaSDK.html#method_executeAction" class="">executeAction()</a><br />
                                                                     <a href="../classes/AlexaSDK.html#method_retrieveMetadataChanges" class="">retrieveMetadataChanges()</a><br />
                                                                     <a href="../classes/AlexaSDK_Abstract.html#method_getClassName" class="">getClassName()</a><br />
-                                                                    <a href="../classes/AlexaSDK_Office365.html#method_BuildAuthSoap" class="">BuildAuthSoap()</a><br />
-                                                                    <a href="../classes/AlexaSDK_Office365.html#method_Authenticate" class="">Authenticate()</a><br />
-                                                                    <a href="../classes/AlexaSDK_Office365.html#method_getHeader" class="">getHeader()</a><br />
-                                                                    <a href="../classes/AlexaSDK_Office365.html#method_requestRetrieveOrganization" class="">requestRetrieveOrganization()</a><br />
-                                                                    <a href="../classes/AlexaSDK_Office365.html#method_getUserRealm" class="">getUserRealm()</a><br />
                                                             </section>
                             <section class="span4">
                                                                     <a href="../classes/AlexaSDK_Office365.html#property_settings" class="">$settings</a><br />
@@ -309,7 +305,7 @@
                         <dt>File</dt>
                             <dd><a href="../files/Authentication.AlexaSDK_Office365.html"><div class="path-wrapper">Authentication\AlexaSDK_Office365.php</div></a></dd>
                                                 <dt>Package</dt>
-                            <dd><div class="namespace-wrapper">AlexaSDK</div></dd>
+                            <dd><div class="namespace-wrapper">AlexaSDK\Authentication</div></dd>
                                                 <dt>Class hierarchy</dt>
                             <dd class="hierarchy">
                                                                                                                                                                                                                                                                                                                                                                                                                                                             
@@ -437,13 +433,13 @@ the web address (URL) for each organization.</em></p>
             <a id="property_SOAPFaultActions" name="property_SOAPFaultActions" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$SOAPFaultActions</h3>
-                <pre class="signature">$SOAPFaultActions : </pre>
+                <pre class="signature">$SOAPFaultActions : Array</pre>
                 <p><em>List of recognised SOAP Faults that can be returned by MS Dynamics CRM</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                Array
+                &mdash; List of SOAP Fault actions                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -685,13 +681,13 @@ the web address (URL) for each organization.</em></p>
             <a id="property_debugMode" name="property_debugMode" class="anchor"></a>
             <article class="property">
                 <h3 class="protected ">$debugMode</h3>
-                <pre class="signature">$debugMode : </pre>
-                <p><em></em></p>
+                <pre class="signature">$debugMode : Boolean</pre>
+                <p><em>Internal details</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                Boolean
+                &mdash; if TRUE will outputs debug information, default FALSE                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -711,12 +707,12 @@ the web address (URL) for each organization.</em></p>
             <a id="property_timeLimit" name="property_timeLimit" class="anchor"></a>
             <article class="property">
                 <h3 class="protected ">$timeLimit</h3>
-                <pre class="signature">$timeLimit : </pre>
-                <p><em></em></p>
+                <pre class="signature">$timeLimit : Integer</pre>
+                <p><em>Limits the maximum execution time</em></p>
                 
 
                                 <h4>Type</h4>
-                
+                Integer
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1351,34 +1347,6 @@ the web address (URL) for each organization.</em></p>
                     
                 </aside>
                         <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/AlexaSDK.html"><div class="path-wrapper">\AlexaSDK</div></a></dd>
-                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_getOnlineFederationOrganizationURI" name="method_getOnlineFederationOrganizationURI" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">getOnlineFederationOrganizationURI()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getOnlineFederationOrganizationURI() </pre>
-                <p><em></em></p>
-                
-
-                
-                
-                				
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
                                                     <dt>Inherited from</dt>
                     <dd><a href="../classes/AlexaSDK.html"><div class="path-wrapper">\AlexaSDK</div></a></dd>
                                                             </dl>
@@ -2662,157 +2630,6 @@ e.g. AlexaSDK_Incident, or AlexaSDK_Account</p>
         </aside>
     </div>
 
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_BuildAuthSoap" name="method_BuildAuthSoap" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">BuildAuthSoap()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">BuildAuthSoap() </pre>
-                <p><em></em></p>
-                
-
-                
-                
-                				
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_Authenticate" name="method_Authenticate" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">Authenticate()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">Authenticate() </pre>
-                <p><em></em></p>
-                
-
-                
-                
-                				
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_getHeader" name="method_getHeader" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">getHeader()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getHeader(  <span class="argument">$soapAction</span>) </pre>
-                <p><em></em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td></td>
-                                <td>$soapAction </td>
-                                <td></td>
-                            </tr>
-                                            </table>
-                
-                
-                				
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_requestRetrieveOrganization" name="method_requestRetrieveOrganization" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">requestRetrieveOrganization()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">requestRetrieveOrganization() </pre>
-                <p><em></em></p>
-                
-
-                
-                
-                				
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
-                                    <div class="row-fluid">
-        <div class="span8 content class">
-            <a id="method_getUserRealm" name="method_getUserRealm" class="anchor"></a>
-            <article class="method">
-                <h3 class="public ">getUserRealm()</h3>
-                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">getUserRealm(  <span class="argument">$username</span>,   <span class="argument">$requestXML = false</span>) </pre>
-                <p><em>NEED FOR Office 365 authentication</em></p>
-                
-
-                                    <h4>Parameters</h4>
-                    <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td></td>
-                                <td>$username </td>
-                                <td></td>
-                            </tr>
-                                                    <tr>
-                                <td></td>
-                                <td>$requestXML </td>
-                                <td></td>
-                            </tr>
-                                            </table>
-                
-                
-                				
-                            </article>
-        </div>
-        <aside class="span4 detailsbar">
-            <h1><i class="icon-arrow-down"></i></h1>
-                                                            <dl>
-                                                                            </dl>
-            <h2>Tags</h2>
-            <table class="table table-condensed">
-                                    <tr><td colspan="2"><em>None found</em></td></tr>
-                            </table>
-        </aside>
-    </div>
-
                                                     <div class="row-fluid">
         <div class="span8 content class">
             <a id="method_getSTSidentifier" name="method_getSTSidentifier" class="anchor"></a>
@@ -3256,7 +3073,7 @@ policies are excluded from the Cache.</p>
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
                     on 
 Warning: date_default_timezone_get(): It is not safe to rely on the system's timezone settings. You are *required* to use the date.timezone setting or the date_default_timezone_set() function. In case you used any of those methods and you are still getting this warning, you most likely misspelled the timezone identifier. We selected the timezone 'UTC' for now, but please set date.timezone to select your timezone. in C:\Program Files (x86)\Ampps\php\vendor\twig\twig\lib\Twig\Extension\Core.php on line 89
-June 2nd, 2015 at 18:42.
+June 11th, 2015 at 16:25.
                 </section>
             </section>
         </section>

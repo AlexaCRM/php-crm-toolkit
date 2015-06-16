@@ -4,7 +4,7 @@
  * 
  * @author alexacrm.com.au
  * @version 1.0
- * @package AlexaSDK
+ * @package AlexaSDK\Authentication
  */
 
 

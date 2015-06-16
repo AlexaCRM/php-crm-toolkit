@@ -1,6 +1,9 @@
 <?php
 /**
- * Validates fields by regexes and can sanatize them. Uses PHP filter_var built-in functions and extra regexes 
+ * Validates fields by regexes and can sanatize them. Uses PHP filter_var built-in functions and extra regexes
+ * 
+ * @package AlexaSDK
+ * @subpackage Helpers 
  */
 
 if (!class_exists("AlexaSDK_FormValidator")) :
