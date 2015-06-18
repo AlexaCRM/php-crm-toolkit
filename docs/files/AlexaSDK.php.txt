@@ -2648,11 +2648,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
                 /* Turn this into a SOAP request, and send it */
                 $retrieveMetadataChangesRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationExecuteAction(), $securityToken, $retrieveMetadataChangesNode);
 
-                //self::vardump($retrieveMetadataChangesRequest);
-                
                 $soapResponse = self::getSoapResponse($this->settings->organizationUrl, $retrieveMetadataChangesRequest);
-                
-                self::vardump($soapResponse);
         }
         
         private static function generateRetrieveMetadataChangesRequest(){

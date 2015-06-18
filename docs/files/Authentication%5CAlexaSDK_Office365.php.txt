@@ -11,7 +11,9 @@
  * @package AlexaSDK\Authentication
  */
 
-    
+/**
+ * This class used to authenticate to Microsoft Dynamics CRM Online
+ */    
 class AlexaSDK_Office365 extends AlexaSDK{
     
         public $username;

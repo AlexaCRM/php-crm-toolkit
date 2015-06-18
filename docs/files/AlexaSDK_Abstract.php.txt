@@ -1,5 +1,4 @@
 <?php
-
 /**
  * AlexaSDK_Abstract.php
  * 
@@ -8,16 +7,28 @@
  * @package AlexaSDK
  */
 
-
+/**
+ * This interface that contains constants for new entity record creation and max record to retrieve
+ */
 interface AlexaSDK_Interface {
-	/** Default GUID for "not known" or new Entities */
+	/** 
+         * Default GUID for "not known" or new Entities 
+         * 
+         * @var String Parameter based on Dynamics CRM guid format
+         */
 	const EmptyGUID = '00000000-0000-0000-0000-000000000000';
-	/** Maximum number of records in a single RetrieveMultiple */
+	/** 
+         * Maximum number of records in a single RetrieveMultiple 
+         * 
+         * @var Integer
+         */
 	const MAX_CRM_RECORDS = 5000;
 }
 
 
-
+/**
+ * Base class for most SDK classes, contains common methods and subsclasses includes
+ */
 abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
         /**
          * Internal details 
@@ -27,16 +38,23 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	protected static $debugMode = FALSE;
         
         /**
-         *  Limits the maximum execution time
+         * Limits the maximum execution time
          * 
          * @var Integer 
          */
         protected static $timeLimit = 240;
         
+        /**
+         * Classes prefix for autoload
+         * 
+         * @var String
+         */
+        protected static $classPrefix = "AlexaSDK";
+        
          /** 
           * List of recognised SOAP Faults that can be returned by MS Dynamics CRM 
           * 
-          * @var Array $SOAPFaultActions List of SOAP Fault actions
+          * @var Array $SOAPFaultActions List of SOAP Fault actions that returned from Dyanmics CRM
           */
 	public static $SOAPFaultActions = Array(
                     'http://www.w3.org/2005/08/addressing/soap/fault',
@@ -48,30 +66,41 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
                     'http://schemas.microsoft.com/xrm/2011/Contracts/Services/IOrganizationService/DeleteOrganizationServiceFaultFault',
                     'http://schemas.microsoft.com/xrm/2011/Contracts/Services/IOrganizationService/RetrieveMultipleOrganizationServiceFaultFault',
                     );
-    
-        function __construct(){
-            
-            require('AlexaSDK.php');
-            require('AlexaSDK_Settings.php');
-            require('Authentication/AlexaSDK_Office365.php');
-            require('Authentication/AlexaSDK_Federation.php');
-            require('Authentication/AlexaSDK_LiveID.php');
-            require('Authentication/AlexaSDK_ActiveDirectory.php');
-            require('Helpers/AlexaSDK_Cache.php');
-            require('Helpers/AlexaSDK_FormValidator.php');
-            require('AlexaSDK_Settings.php');
-            require('AlexaSDK_Entity.php');
-            require('AlexaSDK_OptionSetValue.php');
-            
-            set_time_limit(self::$timeLimit);
-            
-        }
+
+        
+        /**
+	 * Implementation of Class Autoloader
+	 * See http://www.php.net/manual/en/function.spl-autoload-register.php
+	 *
+	 * @param String $className the name of the Class to load
+	 */
+	public static function loadClass($className){
+		/* Only load classes that don't exist, and are part of DynamicsCRM2011 */
+		if ((class_exists($className)) || (strpos($className, self::$classPrefix) === false)) {
+			return false;
+		}
+	
+		/* Work out the filename of the Class to be loaded. */
+		$classFilePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . $className . '.class.php';
+	
+		/* Only try to load files that actually exist and can be read */
+		if ((file_exists($classFilePath) === false) || (is_readable($classFilePath) === false)) {
+			return false;
+		}
+	
+		/* Don't load it if it's already been loaded */
+		require_once $classFilePath;
+	}
         
         
         /**
 	 * Utility function to strip any Namespace from an XML attribute value
-	 * @param String $attributeValue
+         * 
+	 * @param String $attributeValue attribute value that contains namespace attribute
+         * 
 	 * @return String Attribute Value without the Namespace
+         * 
+         * @ignore
 	 */
 	protected static function stripNS($attributeValue) {
 		return preg_replace('/[a-zA-Z]+:([a-zA-Z]+)/', '$1', $attributeValue);
@@ -79,6 +108,7 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	
 	/**
 	 * Get the current time, as required in XML format
+         * 
 	 * @ignore
 	 */
 	protected static function getCurrentTime() {
@@ -87,6 +117,7 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	
 	/**
 	 * Get an appropriate expiry time for the XML requests, as required in XML format
+         * 
 	 * @ignore
 	 */
 	protected static function getExpiryTime() {
@@ -95,6 +126,7 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
         
         /**
 	 * Get an uuid for the XML requests message id, as required in XML format
+         * 
 	 * @ignore
 	 */
         protected static function getUuid($namespace = '') {
@@ -120,7 +152,9 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	
 	/**
 	 * Enable or Disable DEBUG for the Class
-	 * @ignore
+         * 
+         * @param Boolean $_debugMode
+         * 
 	 */
 	public static function setDebug($_debugMode) {
 		self::$debugMode = $_debugMode;
@@ -128,7 +162,9 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
         
         /**
 	 * Set the maximum script execution time
-	 * @ignore
+         * 
+         * @param Integer $_timeLimit
+         * 
 	 */
 	public static function setTimeLimit($_timeLimit) {
 		self::$timeLimit = $_timeLimit;
@@ -142,8 +178,10 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	 * The class name is normally AlexaSDK_Entity_Name_Capitalised,
 	 * e.g. AlexaSDK_Incident, or AlexaSDK_Account
 	 * 
-	 * @param String $entityLogicalName
+	 * @param  String $entityLogicalName
 	 * @return String the name of the class
+         * 
+         * @ignore
 	 */
 	public static function getClassName($entityLogicalName) {
 		/* Since EntityLogicalNames are usually in lowercase, we captialise each word */
@@ -160,6 +198,8 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	 * 
 	 * @param String $entityLogicalName as it is stored in the CRM
 	 * @return String the Entity Name as it would be in a PHP Class name
+         * 
+         * @ignore
 	 */
 	private static function capitaliseEntityName($entityLogicalName) {
 		/* User-defined Entities generally have underscore separated names 
@@ -176,9 +216,12 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 	
 	/**
 	 * Utility function to parse time from XML - includes handling Windows systems with no strptime
+         * 
 	 * @param String $timestamp
 	 * @param String $formatString
+         * 
 	 * @return integer PHP Timestamp
+         * 
 	 * @ignore
 	 */
 	protected static function parseTime($timestamp, $formatString) {
@@ -268,7 +311,11 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
 		}
 	}
         
-        
+        /**
+         * Debug function. Outputs variable wrapped in html "pre" tags
+         * 
+         * @param Mixed $variable Variable to be outputed using var_dump function
+         */
         protected static function vardump($variable){
                 echo "<pre>";
                 var_dump($variable);
@@ -276,4 +323,8 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
         }
     
 }
+
+
+/* Register the Class Loader */
+spl_autoload_register(Array('AlexaSDK_Abstract', 'loadClass'));
 

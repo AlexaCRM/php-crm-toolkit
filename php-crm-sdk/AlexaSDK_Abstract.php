@@ -44,6 +44,13 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
          */
         protected static $timeLimit = 240;
         
+        /**
+         * Classes prefix for autoload
+         * 
+         * @var String
+         */
+        protected static $classPrefix = "AlexaSDK";
+        
          /** 
           * List of recognised SOAP Faults that can be returned by MS Dynamics CRM 
           * 
@@ -59,32 +66,31 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
                     'http://schemas.microsoft.com/xrm/2011/Contracts/Services/IOrganizationService/DeleteOrganizationServiceFaultFault',
                     'http://schemas.microsoft.com/xrm/2011/Contracts/Services/IOrganizationService/RetrieveMultipleOrganizationServiceFaultFault',
                     );
-    
-        /**
-         * Base abscract class constructor
-         * 
-         * Includes all nessecary AlexaSDK files and
-         * sets script execution timelimit
-         * 
-         * @return void
-         */
-        function __construct(){
-            
-            include_once('AlexaSDK.php');
-            include_once('AlexaSDK_Settings.php');
-            include_once('Authentication/AlexaSDK_Office365.php');
-            include_once('Authentication/AlexaSDK_Federation.php');
-            include_once('Authentication/AlexaSDK_LiveID.php');
-            include_once('Authentication/AlexaSDK_ActiveDirectory.php');
-            include_once('Helpers/AlexaSDK_Cache.php');
-            include_once('Helpers/AlexaSDK_FormValidator.php');
-            include_once('AlexaSDK_Settings.php');
-            include_once('AlexaSDK_Entity.php');
-            include_once('AlexaSDK_OptionSetValue.php');
+
         
-            set_time_limit(self::$timeLimit);
-            
-        }
+        /**
+	 * Implementation of Class Autoloader
+	 * See http://www.php.net/manual/en/function.spl-autoload-register.php
+	 *
+	 * @param String $className the name of the Class to load
+	 */
+	public static function loadClass($className){
+		/* Only load classes that don't exist, and are part of DynamicsCRM2011 */
+		if ((class_exists($className)) || (strpos($className, self::$classPrefix) === false)) {
+			return false;
+		}
+	
+		/* Work out the filename of the Class to be loaded. */
+		$classFilePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . $className . '.class.php';
+	
+		/* Only try to load files that actually exist and can be read */
+		if ((file_exists($classFilePath) === false) || (is_readable($classFilePath) === false)) {
+			return false;
+		}
+	
+		/* Don't load it if it's already been loaded */
+		require_once $classFilePath;
+	}
         
         
         /**
@@ -317,3 +323,7 @@ abstract class AlexaSDK_Abstract implements AlexaSDK_Interface {
         }
     
 }
+
+
+/* Register the Class Loader */
+spl_autoload_register(Array('AlexaSDK_Abstract', 'loadClass'));
