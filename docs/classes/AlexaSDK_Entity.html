@@ -106,7 +106,7 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">386</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">106</span>
                                 </a>
                             </li>
                             <li>
@@ -116,7 +116,7 @@
                             </li>
                             <li>
                                 <a href="../reports/deprecated.html">
-                                                                                                                                                                                                                                                                    <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">2</span>
+                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">1</span>
                                 </a>
                             </li>
                         </ul>
@@ -136,10 +136,10 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-487307189"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-2052848077"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-487307189" class="accordion-body collapse in">
+            <div id="namespace-2052848077" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                     
@@ -1110,15 +1110,15 @@ See http://www.php.net/manual/en/function.spl-autoload-register.php</em></p>
             <article class="method">
                 <h3 class="public ">__get()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">__get(string  <span class="argument">$property</span>) : \value</pre>
+                <pre class="signature" style="margin-right: 54px;">__get(String  <span class="argument">$property</span>) : Mixed</pre>
                 <p><em>Method to access AlexaSDK_Entity field values</em></p>
-                <p>User to access entity field values and some predefiend system fields such as
+                <p>Used to access entity field values and some predefiend system fields such as
 (ID, Logicalname, Displayname, Entitytype)</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td>string</td>
+                                <td>String</td>
                                 <td>$property </td>
                                 <td><p>to be fetched</p></td>
                             </tr>
@@ -1126,8 +1126,8 @@ See http://www.php.net/manual/en/function.spl-autoload-register.php</em></p>
                 
                 
                                     <h4>Returns</h4>
-                    \value
-                                            &mdash; <p>of the property, if it exists &amp; is readable</p>
+                    Mixed
+                                            &mdash; <p>value of the property, if it exists &amp; is readable</p>
                                     				
                             </article>
         </div>
@@ -1149,7 +1149,7 @@ See http://www.php.net/manual/en/function.spl-autoload-register.php</em></p>
                 <h3 class="public ">__set()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
                 <pre class="signature" style="margin-right: 54px;">__set(string  <span class="argument">$property</span>, mixed  <span class="argument">$value</span>) : void</pre>
-                <p><em></em></p>
+                <p><em>Sets entity field value</em></p>
                 
 
                                     <h4>Parameters</h4>
@@ -1187,7 +1187,7 @@ See http://www.php.net/manual/en/function.spl-autoload-register.php</em></p>
             <article class="method">
                 <h3 class="public ">validate()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">validate(String  <span class="argument">$property</span>, mixed  <span class="argument">$value</span>) : mixed</pre>
+                <pre class="signature" style="margin-right: 54px;">validate(String  <span class="argument">$property</span>, Mixed  <span class="argument">$value</span>) : Mixed</pre>
                 <p><em>Validate property value by rules described in entity metadata and custom rules for fields</em></p>
                 
 
@@ -1199,7 +1199,7 @@ See http://www.php.net/manual/en/function.spl-autoload-register.php</em></p>
                                 <td><p>to be changed</p></td>
                             </tr>
                                                     <tr>
-                                <td>mixed</td>
+                                <td>Mixed</td>
                                 <td>$value </td>
                                 <td><p>new value for the property</p></td>
                             </tr>
@@ -1207,7 +1207,7 @@ See http://www.php.net/manual/en/function.spl-autoload-register.php</em></p>
                 
                 
                                     <h4>Returns</h4>
-                    mixed
+                    Mixed
                                             &mdash; <p>false, if there is no errors and validation passed, array if validation errors exists</p>
                                     				
                             </article>
@@ -2076,7 +2076,7 @@ if formatted value doesn&#039;t exists, returned propertyValue</em></p>
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
                     on 
 Warning: date_default_timezone_get(): It is not safe to rely on the system's timezone settings. You are *required* to use the date.timezone setting or the date_default_timezone_set() function. In case you used any of those methods and you are still getting this warning, you most likely misspelled the timezone identifier. We selected the timezone 'UTC' for now, but please set date.timezone to select your timezone. in C:\Program Files (x86)\Ampps\php\vendor\twig\twig\lib\Twig\Extension\Core.php on line 89
-June 17th, 2015 at 17:46.
+June 19th, 2015 at 16:43.
                 </section>
             </section>
         </section>

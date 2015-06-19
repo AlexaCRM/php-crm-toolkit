@@ -33,7 +33,7 @@ class AlexaSDK_OptionSetValue extends AlexaSDK_Abstract {
 	/**
 	 * Create a new OptionSetValue
 	 * 
-	 * @param int $_value the Value of the Option
+	 * @param Int $_value the Value of the Option
 	 * @param String $_label the Label of the Option
 	 */
 	public function __construct($_value, $_label) {

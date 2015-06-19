@@ -455,11 +455,11 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         /**
 	 * Method to access AlexaSDK_Entity field values 
          * 
-         * User to access entity field values and some predefiend system fields such as 
+         * Used to access entity field values and some predefiend system fields such as 
          * (ID, Logicalname, Displayname, Entitytype)
          * 
-	 * @param string $property to be fetched
-	 * @return value of the property, if it exists & is readable
+	 * @param String $property to be fetched
+	 * @return Mixed value of the property, if it exists & is readable
 	 */
 	public function __get($property) {
 		/* Handle special fields */
@@ -541,7 +541,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
         
         
         /**
-	 * 
+	 * Sets entity field value
+         * 
 	 * @param string $property to be changed
 	 * @param mixed $value new value for the property
          * @return void
@@ -701,8 +702,8 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 	 * Validate property value by rules described in entity metadata and custom rules for fields
          * 
 	 * @param String $property to be changed
-	 * @param mixed $value new value for the property
-         * @return mixed false, if there is no errors and validation passed, array if validation errors exists
+	 * @param Mixed $value new value for the property
+         * @return Mixed false, if there is no errors and validation passed, array if validation errors exists
 	 */
         public function validate($property, $value) {
             

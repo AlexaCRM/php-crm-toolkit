@@ -8,10 +8,16 @@
  */
 
 /**
- * Validates fields by regexes and can sanatize them. Uses PHP filter_var built-in functions and extra regexes   
+ * Validates fields by regexes and can sanatize them. Uses PHP filter_var built-in functions and extra regexes 
+ * @ignore  
  */
 class AlexaSDK_FormValidator {
 
+    /**
+     * Regular expressions for validation
+     * @ignore
+     * @var Array regular expressions
+     */
     public static $regexes = Array(
         'date' => "[0-9]{1,2}\/[0-9]{1,2}\/[0-9][0-9]",
         'amount' => "^[-]?[0-9]+\$",
@@ -29,9 +35,14 @@ class AlexaSDK_FormValidator {
         '2digitforce' => "^\d+\,\d\d\$",
         'anything' => "^[\d\D]{1,}\$"
     );
-    
+    /**
+     * @ignore
+     */
     private $validations, $sanatations, $mandatories, $errors, $corrects, $fields;
 
+    /**
+     * @ignore
+     */
     public function __construct($validations = array(), $mandatories = array(), $sanatations = array()) {
         $this->validations = $validations;
         $this->sanatations = $sanatations;
@@ -42,7 +53,10 @@ class AlexaSDK_FormValidator {
 
     /**
      * Validates an array of items (if needed) and returns true or false
-     *
+     * 
+     * @param Array $items 
+     * @ignore
+     * @return Boolean True if valid, False if not
      */
     public function validate($items) {
 
@@ -70,8 +84,9 @@ class AlexaSDK_FormValidator {
     }
 
     /**
-     *
-     * 	Adds unvalidated class to those elements that are not validated. Removes them from classes that are.
+     * Adds unvalidated class to those elements that are not validated. Removes them from classes that are.
+     * @ignore
+     * @return String
      */
     public function getScript() {
 
@@ -97,11 +112,13 @@ class AlexaSDK_FormValidator {
     }
 
     /**
-     *
      * Sanatizes an array of items according to the $this->sanatations
      * sanatations will be standard of type string, but can also be specified.
      * For ease of use, this syntax is accepted:
      * $sanatations = array('fieldname', 'otherfieldname'=>'float');
+     * 
+     * @return Array 
+     * @ignore
      */
     public function sanatize($items) {
 
@@ -117,6 +134,8 @@ class AlexaSDK_FormValidator {
     /**
      *
      * Adds an error to the errors array.
+     * 
+     * @ignore
      */
     private function addError($field, $type = 'string') {
 
@@ -127,6 +146,8 @@ class AlexaSDK_FormValidator {
      *
      * Sanatize a single var according to $type.
      * Allows for static calling to allow simple sanatization
+     * 
+     * @ignore
      */
     public static function sanatizeItem($var, $type) {
 
@@ -163,6 +184,7 @@ class AlexaSDK_FormValidator {
      * Validates a single var according to $type.
      * Allows for static calling to allow simple validation.
      *
+     * @ignore
      */
     public static function validateItem($var, $type) {
 

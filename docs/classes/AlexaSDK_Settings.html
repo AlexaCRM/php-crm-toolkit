@@ -106,7 +106,7 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">386</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">106</span>
                                 </a>
                             </li>
                             <li>
@@ -116,7 +116,7 @@
                             </li>
                             <li>
                                 <a href="../reports/deprecated.html">
-                                                                                                                                                                                                                                                                    <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">2</span>
+                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">1</span>
                                 </a>
                             </li>
                         </ul>
@@ -136,10 +136,10 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1971372138"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-533600625"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-1971372138" class="accordion-body collapse in">
+            <div id="namespace-533600625" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                     
@@ -172,7 +172,7 @@
                     <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
 
                     <h1><small>\</small>AlexaSDK_Settings</h1>
-                    <p><em>AlexaSDK_Settings.php</em></p>
+                    <p><em>SDK configuration class, used to create instance of AlexaSDK class</em></p>
                     
                     
                                         
@@ -191,7 +191,7 @@
                         </section>
                         <section class="row-fluid public">
                             <section class="span4">
-                                                                    <a href="../classes/AlexaSDK_Settings.html#method_AlexaSDK_Settings" class="">AlexaSDK_Settings()</a><br />
+                                                                    <a href="../classes/AlexaSDK_Settings.html#method___construct" class="">__construct()</a><br />
                                                                     <a href="../classes/AlexaSDK_Settings.html#method_isFullSettings" class="">isFullSettings()</a><br />
                                                             </section>
                             <section class="span4">
@@ -202,6 +202,7 @@
                                                                     <a href="../classes/AlexaSDK_Settings.html#property_use_ssl" class="">$use_ssl</a><br />
                                                                     <a href="../classes/AlexaSDK_Settings.html#property_port" class="">$port</a><br />
                                                                     <a href="../classes/AlexaSDK_Settings.html#property_organizationName" class="">$organizationName</a><br />
+                                                                    <a href="../classes/AlexaSDK_Settings.html#property_organizationId" class="">$organizationId</a><br />
                                                                     <a href="../classes/AlexaSDK_Settings.html#property_discoveryUrl" class="">$discoveryUrl</a><br />
                                                                     <a href="../classes/AlexaSDK_Settings.html#property_organizationUrl" class="">$organizationUrl</a><br />
                                                                     <a href="../classes/AlexaSDK_Settings.html#property_organizationDataUrl" class="">$organizationDataUrl</a><br />
@@ -256,22 +257,7 @@
                                                                         </dl>
                     <h2>Tags</h2>
                     <table class="table table-condensed">
-                                            <tr>
-                            <th>
-                                author
-                            </th>
-                            <td>
-                                                                    <p>alexacrm.com.au</p>
-                                                            </td>
-                        </tr>
-                                            <tr>
-                            <th>
-                                version
-                            </th>
-                            <td>
-                                                                    
-                                                            </td>
-                        </tr>
+                                            <tr><td colspan="2"><em>None found</em></td></tr>
                                         </table>
                 </aside>
             </div>
@@ -290,13 +276,13 @@
             <a id="property_authMode" name="property_authMode" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$authMode</h3>
-                <pre class="signature">$authMode : </pre>
-                <p><em></em></p>
+                <pre class="signature">$authMode : String</pre>
+                <p><em>Deployment type Internet-facing deployment(On-premises) or CRM Online(Office 365)</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                String
+                &mdash; can be &#039;OnlineFederation&#039; for CRM Online, or &#039;Federation&#039; for Internet-Facing Deployment                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -314,13 +300,13 @@
             <a id="property_username" name="property_username" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$username</h3>
-                <pre class="signature">$username : </pre>
-                <p><em></em></p>
+                <pre class="signature">$username : string</pre>
+                <p><em>Username to login to Dynamics CRM</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                string
+                &mdash; the Username to login with                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -338,13 +324,13 @@
             <a id="property_password" name="property_password" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$password</h3>
-                <pre class="signature">$password : </pre>
-                <p><em></em></p>
+                <pre class="signature">$password : string</pre>
+                <p><em>Password to login to Dynamics CRM</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                string
+                &mdash; the Password to login with                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -362,13 +348,13 @@
             <a id="property_serverUrl" name="property_serverUrl" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$serverUrl</h3>
-                <pre class="signature">$serverUrl : </pre>
-                <p><em></em></p>
+                <pre class="signature">$serverUrl : string</pre>
+                <p><em>Url where Dynamics CRM is located</em></p>
                 
 
                                 <h4>Type</h4>
-                
-                                            </article>
+                string
+                &mdash; the Url of Dynamics CRM                            </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
@@ -434,12 +420,36 @@
             <a id="property_organizationName" name="property_organizationName" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$organizationName</h3>
-                <pre class="signature">$organizationName : </pre>
-                <p><em></em></p>
+                <pre class="signature">$organizationName : String</pre>
+                <p><em>Unique Name of Dynamics CRM organization</em></p>
                 
 
                                 <h4>Type</h4>
+                String
+                                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_organizationId" name="property_organizationId" class="anchor"></a>
+            <article class="property">
+                <h3 class="public ">$organizationId</h3>
+                <pre class="signature">$organizationId : String</pre>
+                <p><em>Unique ID of Dynamics CRM organization</em></p>
                 
+
+                                <h4>Type</h4>
+                String
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -458,12 +468,12 @@
             <a id="property_discoveryUrl" name="property_discoveryUrl" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$discoveryUrl</h3>
-                <pre class="signature">$discoveryUrl : </pre>
-                <p><em></em></p>
+                <pre class="signature">$discoveryUrl : string</pre>
+                <p><em>Discovery Service Url</em></p>
                 
 
                                 <h4>Type</h4>
-                
+                string
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -482,12 +492,12 @@
             <a id="property_organizationUrl" name="property_organizationUrl" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$organizationUrl</h3>
-                <pre class="signature">$organizationUrl : </pre>
-                <p><em></em></p>
+                <pre class="signature">$organizationUrl : string</pre>
+                <p><em>Organization Service Url</em></p>
                 
 
                                 <h4>Type</h4>
-                
+                string
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -506,12 +516,12 @@
             <a id="property_organizationDataUrl" name="property_organizationDataUrl" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$organizationDataUrl</h3>
-                <pre class="signature">$organizationDataUrl : </pre>
-                <p><em></em></p>
+                <pre class="signature">$organizationDataUrl : string</pre>
+                <p><em>OrganizationData Service Url</em></p>
                 
 
                                 <h4>Type</h4>
-                
+                string
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -530,12 +540,12 @@
             <a id="property_loginUrl" name="property_loginUrl" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$loginUrl</h3>
-                <pre class="signature">$loginUrl : </pre>
-                <p><em></em></p>
+                <pre class="signature">$loginUrl : String</pre>
+                <p><em>Authorization endpoint that used to accuire token for SOAP requests</em></p>
                 
 
                                 <h4>Type</h4>
-                
+                String
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -554,12 +564,16 @@
             <a id="property_crmRegion" name="property_crmRegion" class="anchor"></a>
             <article class="property">
                 <h3 class="public ">$crmRegion</h3>
-                <pre class="signature">$crmRegion : </pre>
-                <p><em></em></p>
+                <pre class="signature">$crmRegion : String</pre>
+                <p><em>Select the right region for your Dynamics CRM
+Only for Dynamics CRM Online
+crmna:dynamics.com - North America
+crmemea:dynamics.com - Europe, the Middle East and Africa
+crmapac:dynamics.com - Asia Pacific</em></p>
                 
 
                                 <h4>Type</h4>
-                
+                String
                                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -582,55 +596,55 @@
 
                                     <div class="row-fluid">
         <div class="span8 content class">
-            <a id="method_AlexaSDK_Settings" name="method_AlexaSDK_Settings" class="anchor"></a>
+            <a id="method___construct" name="method___construct" class="anchor"></a>
             <article class="method">
-                <h3 class="public ">AlexaSDK_Settings()</h3>
+                <h3 class="public ">__construct()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">AlexaSDK_Settings(  <span class="argument">$discoveryUrl = null</span>,   <span class="argument">$username = null</span>,   <span class="argument">$password = null</span>,   <span class="argument">$organizationUrl = null</span>,   <span class="argument">$loginUrl = null</span>,   <span class="argument">$server = null</span>,   <span class="argument">$authMode = null</span>,   <span class="argument">$region = null</span>) </pre>
-                <p><em></em></p>
+                <pre class="signature" style="margin-right: 54px;">__construct(string  <span class="argument">$discoveryUrl = null</span>, string  <span class="argument">$username = null</span>, string  <span class="argument">$password = null</span>, string  <span class="argument">$organizationUrl = null</span>, string  <span class="argument">$loginUrl = null</span>, string  <span class="argument">$serverUrl = null</span>, string  <span class="argument">$authMode = null</span>, string  <span class="argument">$region = null</span>) : void</pre>
+                <p><em>Set up settings using constructor</em></p>
                 
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
                                                     <tr>
-                                <td></td>
+                                <td>string</td>
                                 <td>$discoveryUrl </td>
-                                <td></td>
+                                <td><p>Discovery Service Url</p></td>
                             </tr>
                                                     <tr>
-                                <td></td>
+                                <td>string</td>
                                 <td>$username </td>
-                                <td></td>
+                                <td><p>Username to login to Dynamics CRM</p></td>
                             </tr>
                                                     <tr>
-                                <td></td>
+                                <td>string</td>
                                 <td>$password </td>
-                                <td></td>
+                                <td><p>Password to login to Dynamics CRM</p></td>
                             </tr>
                                                     <tr>
-                                <td></td>
+                                <td>string</td>
                                 <td>$organizationUrl </td>
-                                <td></td>
+                                <td><p>Organization Service Url</p></td>
                             </tr>
                                                     <tr>
-                                <td></td>
+                                <td>string</td>
                                 <td>$loginUrl </td>
-                                <td></td>
+                                <td><p>Authorization endpoint that used to authorize and accuire token for SOAP requests</p></td>
                             </tr>
                                                     <tr>
-                                <td></td>
-                                <td>$server </td>
-                                <td></td>
+                                <td>string</td>
+                                <td>$serverUrl </td>
+                                <td><p>Url where Dynamics CRM is located</p></td>
                             </tr>
                                                     <tr>
-                                <td></td>
+                                <td>string</td>
                                 <td>$authMode </td>
-                                <td></td>
+                                <td><p>can be 'OnlineFederation' for Dynamics CRM Online, or 'Federation' for Internet-Facing Deployment</p></td>
                             </tr>
                                                     <tr>
-                                <td></td>
+                                <td>string</td>
                                 <td>$region </td>
-                                <td></td>
+                                <td><p>the region for your Dynamics CRM Online(crmna:dynamics.com, crmemea:dynamics.com, crmapac:dynamics.com)</p></td>
                             </tr>
                                             </table>
                 
@@ -655,13 +669,15 @@
             <article class="method">
                 <h3 class="public ">isFullSettings()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">isFullSettings() </pre>
-                <p><em></em></p>
+                <pre class="signature" style="margin-right: 54px;">isFullSettings() : boolean</pre>
+                <p><em>Check if all required settings are filled</em></p>
                 
 
                 
                 
-                				
+                                    <h4>Returns</h4>
+                    boolean
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -726,7 +742,7 @@
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
                     on 
 Warning: date_default_timezone_get(): It is not safe to rely on the system's timezone settings. You are *required* to use the date.timezone setting or the date_default_timezone_set() function. In case you used any of those methods and you are still getting this warning, you most likely misspelled the timezone identifier. We selected the timezone 'UTC' for now, but please set date.timezone to select your timezone. in C:\Program Files (x86)\Ampps\php\vendor\twig\twig\lib\Twig\Extension\Core.php on line 89
-June 17th, 2015 at 17:46.
+June 19th, 2015 at 16:43.
                 </section>
             </section>
         </section>

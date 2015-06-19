@@ -67,15 +67,45 @@ class AlexaSDK extends AlexaSDK_Abstract{
         
         
         /* Cached Organization data */
+        /**
+         * @ignore
+         */
 	private $organizationDOM;
+        /**
+         * @ignore
+         */
 	private $organizationSoapActions;
+        /**
+         * @ignore
+         */
 	private $organizationCreateAction;
+        /**
+         * @ignore
+         */
 	private $organizationDeleteAction;
+        /**
+         * @ignore
+         */
 	private $organizationExecuteAction;
+        /**
+         * @ignore
+         */
 	private $organizationRetrieveAction;
+        /**
+         * @ignore
+         */
 	private $organizationRetrieveMultipleAction;
+        /**
+         * @ignore
+         */
 	private $organizationUpdateAction;
+        /**
+         * @ignore
+         */
 	private $organizationSecurityPolicy;
+        /**
+         * @ignore
+         */
 	private $organizationSecurityToken;
         
         /** 
@@ -113,7 +143,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
         /**
          * Create a new instance of the AlexaSDK
          * 
-         * @param AlexaSDK_Settings $_settings
+         * @param AlexaSDK_Settings $_settings instance of AlexaSDK_Settings class
          * @param boolean $_debug Enable debug mode TRUE or FALSE
          * @throws Exception if provided $_settings not instance of AlexaSDK_Settings class
          * @throws BadMethodCallException if $_settings doesn't contains Discovery URI, Username and Password
@@ -167,10 +197,10 @@ class AlexaSDK extends AlexaSDK_Abstract{
         }
         
         private function includes(){
-                require ( dirname(__FILE__) . "/Authentication/AlexaSDK_Office365.class.php" );
-                require ( dirname(__FILE__) . "/Authentication/AlexaSDK_Federation.class.php" );
-                require ( dirname(__FILE__) . "/Helpers/AlexaSDK_Cache.class.php" );
-                require ( dirname(__FILE__) . "/Helpers/AlexaSDK_FormValidator.class.php" );
+                include_once ( dirname(__FILE__) . "/Authentication/AlexaSDK_Office365.class.php" );
+                include_once ( dirname(__FILE__) . "/Authentication/AlexaSDK_Federation.class.php" );
+                include_once ( dirname(__FILE__) . "/Helpers/AlexaSDK_Cache.class.php" );
+                include_once ( dirname(__FILE__) . "/Helpers/AlexaSDK_FormValidator.class.php" );
         }
         
         /**
@@ -291,7 +321,14 @@ class AlexaSDK extends AlexaSDK_Abstract{
 	}
         
         /**
+         * Parse STS Identifier from Organization.wsdl
+         * 
          * Not needed any more
+         * 
+         * @param String $service Web Service to use (Discovery, Organization, OrganizationData)
+         * 
+         * @ignore
+         * 
          * @deprecated
          */
         public function getSecurityTokenServiceIdentifier($service){
@@ -310,8 +347,6 @@ class AlexaSDK extends AlexaSDK_Abstract{
                 $this->security[$service.'_sts_identifier'] = self::getSTSidentifier($this->organizationSecurityPolicy);
                 return $this->security[$service.'_sts_identifier'];
         }
-        
-        
         
         
         /**
@@ -1027,9 +1062,11 @@ class AlexaSDK extends AlexaSDK_Abstract{
         /**
 	 * Send a RetrieveEntity request to the Dynamics CRM 2011 server and return the results as a structured Object
 	 *
-	 * @param string $entityType the LogicalName of the Entity to be retrieved (Incident, Account etc.)
-	 * @param string $entityId the internal Id of the Entity to be retrieved (without enclosing brackets)
-	 * @param array $columnSet array listing all fields to be fetched, or null to get all columns
+	 * @param String $entityType the LogicalName of the Entity to be retrieved (Incident, Account etc.)
+	 * @param String $entityId the internal Id of the Entity to be retrieved (without enclosing brackets)
+	 * @param Array $entityFilters array listing all fields to be fetched, or null to get all columns
+         * @param Boolean $showUnpublished
+         * 
 	 * @return stdClass a PHP Object containing all the data retrieved.
 	 */
 	public function retrieveEntity($entityType, $entityId = NULL, $entityFilters = NULL, $showUnpublished = false) {

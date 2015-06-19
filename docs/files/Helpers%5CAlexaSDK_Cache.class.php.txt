@@ -11,41 +11,105 @@
 
 /**
  * This class used to work with cahced entities data
+ * @ignore
  */    
 class AlexaSDK_Cache {
 
     // Public OPTIONS
     // Can be set by phpFastCache::$option_name = $value|array|string
+    /**
+     * @ignore
+     */
     public static $storage = "auto"; // PDO | mpdo | Auto | Files | memcache | apc | wincache | xcache
+    /**
+     * @ignore
+     */
     public static $files_cleanup_after = 1; // hour | auto clean up files after this
+    /**
+     * @ignore
+     */
     public static $autosize = 40; // Megabytes
+    /**
+     * @ignore
+     */
     public static $path = ""; // PATH/TO/CACHE/ default will be current path
+    /**
+     * @ignore
+     */
     public static $securityKey = "cache.storage"; // phpFastCache::$securityKey = "newKey";
+    /**
+     * @ignore
+     */
     public static $securityHtAccess = true; // auto create .htaccess
+    /**
+     * @ignore
+     */
     public static $option = array();
+    /**
+     * @ignore
+     */
     public static $server = array(array("localhost", 11211)); // for MemCache
+    /**
+     * @ignore
+     */
     public static $useTmpCache = false; // use for get from Tmp Memory, will be faster in checking cache on LOOP.
+    /**
+     * @ignore
+     */
     public static $debugging = false; // turn true for debugging
     // NOTHING TO CHANGE FROM HERE
+    /**
+     * @ignore
+     */
     private static $step_debugging = 0;
+    /**
+     * @ignore
+     */
     private static $Tmp = array();
+    /**
+     * @ignore
+     */
     private static $supported_api = array("pdo", "mpdo", "files", "memcache", "memcached", "apc", "xcache", "wincache");
+    /**
+     * @ignore
+     */
     private static $filename = "pdo.caching";
+    /**
+     * @ignore
+     */
     private static $table = "objects";
+    /**
+     * @ignore
+     */
     private static $autodb = "";
+    /**
+     * @ignore
+     */
     private static $multiPDO = array();
+    /**
+     * @ignore
+     */
     public static $sys = array();
+    /**
+     * @ignore
+     */
     private static $checked = array(
         "path" => false,
         "servers" => array(),
         "config_file" => "",
     );
+    /**
+     * @ignore
+     */
     private static $objects = array(
         "memcache" => "",
         "memcached" => "",
         "pdo" => "",
     );
 
+    /**
+     * @ignore
+     */
     private static function getOS() {
         $os = array(
             "os" => PHP_OS,
@@ -56,6 +120,9 @@ class AlexaSDK_Cache {
         return $os;
     }
 
+    /**
+     * @ignore
+     */
     public static function systemInfo() {
         // self::startDebug(self::$sys,"Check Sys",__LINE__,__FUNCTION__);
 
@@ -166,6 +233,9 @@ class AlexaSDK_Cache {
     // Auto create, Chmod and Warning
     // Revision 618
     // PHP_SAPI =  apache2handler should go to tmp
+    /**
+     * @ignore
+     */
     private static function isPHPModule() {
         if (PHP_SAPI == "apache2handler") {
             return true;
@@ -179,6 +249,9 @@ class AlexaSDK_Cache {
 
     // Revision 618
     // Security with .htaccess
+    /**
+     * @ignore
+     */
     static function htaccessGen($path = "") {
         if (self::$securityHtAccess == true) {
 
@@ -196,6 +269,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function getPath($skip_create = false) {
 
         if (self::$path == '') {
@@ -233,6 +309,9 @@ allow from 127.0.0.1";
 
     // return method automatic;
     // APC will be TOP, then Memcached, Memcache, PDO and Files
+    /**
+     * @ignore
+     */
     public static function autoconfig($name = "") {
         // self::startDebug($name,"Check Name",__LINE__,__FUNCTION__);
 
@@ -343,6 +422,9 @@ allow from 127.0.0.1";
         return self::$sys['method'];
     }
 
+    /**
+     * @ignore
+     */
     private static function cacheMethod($name = "") {
         $cache = self::$storage;
         if (is_array($name)) {
@@ -355,10 +437,16 @@ allow from 127.0.0.1";
         return $cache;
     }
 
+    /**
+     * @ignore
+     */
     public static function safename($name) {
         return strtolower(preg_replace("/[^a-zA-Z0-9_\s\.]+/", "", $name));
     }
 
+    /**
+     * @ignore
+     */
     private static function encode($value, $time_in_second = "") {
         $value = serialize(array(
             "time" => @date("U"),
@@ -368,6 +456,9 @@ allow from 127.0.0.1";
         return $value;
     }
 
+    /**
+     * @ignore
+     */
     private static function decode($value) {
         $x = @unserialize($value);
         if ($x == false) {
@@ -381,6 +472,9 @@ allow from 127.0.0.1";
      * Start Public Static
      */
 
+    /**
+     * @ignore
+     */
     public static function cleanup($option = "") {
         $api = self::autoconfig();
         self::$Tmp = array();
@@ -416,6 +510,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function delete($name = "string|array(db->item)") {
 
         $api = self::autoconfig($name);
@@ -457,6 +554,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function exists($name = "string|array(db->item)") {
 
         $api = self::autoconfig($name);
@@ -491,6 +591,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function deleteMulti($object = array()) {
         $res = array();
         foreach ($object as $driver => $name) {
@@ -505,6 +608,9 @@ allow from 127.0.0.1";
         return $res;
     }
 
+    /**
+     * @ignore
+     */
     public static function setMulti($mname = array(), $time_in_second_for_all = 600, $skip_for_all = false) {
         $res = array();
 
@@ -540,6 +646,9 @@ allow from 127.0.0.1";
         return $res;
     }
 
+    /**
+     * @ignore
+     */
     public static function set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
         $api = self::autoconfig($name);
         if (self::$useTmpCache == true) {
@@ -578,6 +687,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function decrement($name, $step = 1) {
         $api = self::autoconfig($name);
         if (self::$useTmpCache == true) {
@@ -619,6 +731,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function get($name) {
         $api = self::autoconfig($name);
         if (self::$useTmpCache == true) {
@@ -662,6 +777,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function getMulti($object = array()) {
         $res = array();
         foreach ($object as $driver => $name) {
@@ -676,6 +794,9 @@ allow from 127.0.0.1";
         return $res;
     }
 
+    /**
+     * @ignore
+     */
     public static function stats() {
         $api = self::autoconfig();
         switch ($api) {
@@ -709,6 +830,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function increment($name, $step = 1) {
         $api = self::autoconfig($name);
 
@@ -757,6 +881,9 @@ allow from 127.0.0.1";
      * Use Files & Folders to cache
      */
 
+    /**
+     * @ignore
+     */
     private static function files_exist($name) {
         $data = self::files_get($name);
         if ($data == null) {
@@ -766,6 +893,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function files_set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
 
         $db = self::selectDB($name);
@@ -806,6 +936,9 @@ allow from 127.0.0.1";
         return $value;
     }
 
+    /**
+     * @ignore
+     */
     private static function files_get($name) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -840,6 +973,9 @@ allow from 127.0.0.1";
         return isset($data['value']) ? $data['value'] : null;
     }
 
+    /**
+     * @ignore
+     */
     private static function files_stats($dir = "") {
         $total = array(
             "expired" => 0,
@@ -876,6 +1012,9 @@ allow from 127.0.0.1";
         return $total;
     }
 
+    /**
+     * @ignore
+     */
     private static function files_cleanup($dir = "") {
         $total = 0;
         if ($dir == "") {
@@ -909,6 +1048,9 @@ allow from 127.0.0.1";
         return $total;
     }
 
+    /**
+     * @ignore
+     */
     private static function files_delete($name) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -934,6 +1076,9 @@ allow from 127.0.0.1";
         return true;
     }
 
+    /**
+     * @ignore
+     */
     private static function files_increment($name, $step = 1) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -961,6 +1106,9 @@ allow from 127.0.0.1";
         return $data['value'];
     }
 
+    /**
+     * @ignore
+     */
     private static function files_decrement($name, $step = 1) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -988,6 +1136,9 @@ allow from 127.0.0.1";
         return $data['value'];
     }
 
+    /**
+     * @ignore
+     */
     private static function getMemoryName($name) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -1011,6 +1162,9 @@ allow from 127.0.0.1";
      * http://xcache.lighttpd.net/wiki/XcacheApi
      */
 
+    /**
+     * @ignore
+     */
     private static function xcache_exist($name) {
         $name = self::getMemoryName($name);
         if (xcache_isset($name)) {
@@ -1020,6 +1174,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function xcache_set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
         $name = self::getMemoryName($name);
         if ($skip_if_existing == true) {
@@ -1032,6 +1189,9 @@ allow from 127.0.0.1";
         return false;
     }
 
+    /**
+     * @ignore
+     */
     private static function xcache_get($name) {
 
         $name = self::getMemoryName($name);
@@ -1044,6 +1204,9 @@ allow from 127.0.0.1";
         return $data;
     }
 
+    /**
+     * @ignore
+     */
     private static function xcache_stats() {
         try {
             return xcache_list(XC_TYPE_VAR, 100);
@@ -1052,6 +1215,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function xcache_cleanup($option = array()) {
         // Revision 621
 
@@ -1062,11 +1228,17 @@ allow from 127.0.0.1";
         return true;
     }
 
+    /**
+     * @ignore
+     */
     private static function xcache_delete($name) {
         $name = self::getMemoryName($name);
         return xcache_unset($name);
     }
 
+    /**
+     * @ignore
+     */
     private static function xcache_increment($name, $step = 1) {
         $orgi = $name;
         $name = self::getMemoryName($name);
@@ -1079,6 +1251,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function xcache_decrement($name, $step = 1) {
         $orgi = $name;
         $name = self::getMemoryName($name);
@@ -1096,6 +1271,9 @@ allow from 127.0.0.1";
      * http://www.php.net/manual/en/ref.apc.php
      */
 
+    /**
+     * @ignore
+     */
     private static function apc_exist($name) {
         $name = self::getMemoryName($name);
         if (apc_exists($name)) {
@@ -1105,6 +1283,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function apc_set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
         $name = self::getMemoryName($name);
         if ($skip_if_existing == true) {
@@ -1114,6 +1295,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function apc_get($name) {
 
         $name = self::getMemoryName($name);
@@ -1126,6 +1310,9 @@ allow from 127.0.0.1";
         return $data;
     }
 
+    /**
+     * @ignore
+     */
     private static function apc_stats() {
         try {
             return apc_cache_info("user");
@@ -1134,15 +1321,24 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function apc_cleanup($option = array()) {
         return apc_clear_cache("user");
     }
 
+    /**
+     * @ignore
+     */
     private static function apc_delete($name) {
         $name = self::getMemoryName($name);
         return apc_delete($name);
     }
 
+    /**
+     * @ignore
+     */
     private static function apc_increment($name, $step = 1) {
         $orgi = $name;
         $name = self::getMemoryName($name);
@@ -1155,6 +1351,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function apc_decrement($name, $step = 1) {
         $orgi = $name;
         $name = self::getMemoryName($name);
@@ -1172,6 +1371,9 @@ allow from 127.0.0.1";
      * http://www.php.net/manual/en/class.memcache.php
      */
 
+    /**
+     * @ignore
+     */
     public static function memcache_addserver() {
         if (!isset(self::$checked['memcache'])) {
             self::$checked['memcache'] = array();
@@ -1191,6 +1393,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_exist($name) {
         $x = self::memcache_get($name);
         if ($x == null) {
@@ -1200,6 +1405,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
         $orgi = $name;
         $name = self::getMemoryName($name);
@@ -1210,6 +1418,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_get($name) {
         $name = self::getMemoryName($name);
         $x = self::$objects['memcache']->get($name);
@@ -1220,27 +1431,42 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_stats() {
         self::memcache_addserver();
         return self::$objects['memcache']->getStats();
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_cleanup($option = "") {
         self::memcache_addserver();
         self::$objects['memcache']->flush();
         return true;
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_delete($name) {
         $name = self::getMemoryName($name);
         return self::$objects['memcache']->delete($name);
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_increment($name, $step = 1) {
         $name = self::getMemoryName($name);
         return self::$objects['memcache']->increment($name, $step);
     }
 
+    /**
+     * @ignore
+     */
     private static function memcache_decrement($name, $step = 1) {
         $name = self::getMemoryName($name);
         return self::$objects['memcache']->decrement($name, $step);
@@ -1250,6 +1476,9 @@ allow from 127.0.0.1";
      * Begin Memcached Static
      */
 
+    /**
+     * @ignore
+     */
     public static function memcached_addserver() {
         if (!isset(self::$checked['memcached'])) {
             self::$checked['memcached'] = array();
@@ -1275,6 +1504,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_exist($name) {
         $x = self::memcached_get($name);
         if ($x == null) {
@@ -1284,6 +1516,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
         $orgi = $name;
         $name = self::getMemoryName($name);
@@ -1294,6 +1529,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_get($name) {
         $name = self::getMemoryName($name);
         $x = self::$objects['memcached']->get($name);
@@ -1304,27 +1542,42 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_stats() {
         self::memcached_addserver();
         return self::$objects['memcached']->getStats();
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_cleanup($option = "") {
         self::memcached_addserver();
         self::$objects['memcached']->flush();
         return true;
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_delete($name) {
         $name = self::getMemoryName($name);
         return self::$objects['memcached']->delete($name);
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_increment($name, $step = 1) {
         $name = self::getMemoryName($name);
         return self::$objects['memcached']->increment($name, $step);
     }
 
+    /**
+     * @ignore
+     */
     private static function memcached_decrement($name, $step = 1) {
         $name = self::getMemoryName($name);
         return self::$objects['memcached']->decrement($name, $step);
@@ -1334,6 +1587,9 @@ allow from 127.0.0.1";
      * Begin WinCache Static
      */
 
+    /**
+     * @ignore
+     */
     private static function wincache_exist($name) {
         $name = self::getMemoryName($name);
         if (wincache_ucache_exists($name)) {
@@ -1343,6 +1599,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function wincache_set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
         $orgi = $name;
         $name = self::getMemoryName($name);
@@ -1353,6 +1612,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function wincache_get($name) {
         $name = self::getMemoryName($name);
 
@@ -1365,25 +1627,40 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function wincache_stats() {
         return wincache_scache_info();
     }
 
+    /**
+     * @ignore
+     */
     private static function wincache_cleanup($option = "") {
         wincache_ucache_clear();
         return true;
     }
 
+    /**
+     * @ignore
+     */
     private static function wincache_delete($name) {
         $name = self::getMemoryName($name);
         return wincache_ucache_delete($name);
     }
 
+    /**
+     * @ignore
+     */
     private static function wincache_increment($name, $step = 1) {
         $name = self::getMemoryName($name);
         return wincache_ucache_inc($name, $step);
     }
 
+    /**
+     * @ignore
+     */
     private static function wincache_decrement($name, $step = 1) {
         $name = self::getMemoryName($name);
         return wincache_ucache_dec($name, $step);
@@ -1392,7 +1669,10 @@ allow from 127.0.0.1";
     /*
      * Begin PDO Static
      */
-
+    
+    /**
+     * @ignore
+     */
     private static function pdo_exist($name) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -1411,12 +1691,18 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function pdo_cleanup($option = "") {
         self::db(array("skip_clean" => true))->exec("drop table if exists " . self::$table);
         self::initDatabase();
         return true;
     }
 
+    /**
+     * @ignore
+     */
     private static function pdo_stats($full = false) {
         $res = array();
         if ($full == true) {
@@ -1438,6 +1724,9 @@ allow from 127.0.0.1";
 
     // for PDO return DB name,
     // For Files, return Dir
+    /**
+     * @ignore
+     */
     private static function selectDB($object) {
         $res = array(
             'db' => "",
@@ -1514,6 +1803,9 @@ allow from 127.0.0.1";
         return $res;
     }
 
+    /**
+     * @ignore
+     */
     private static function pdo_get($name) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -1536,6 +1828,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function pdo_decrement($name, $step = 1) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -1554,6 +1849,9 @@ allow from 127.0.0.1";
         return $int - $step;
     }
 
+    /**
+     * @ignore
+     */
     private static function pdo_increment($name, $step = 1) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -1573,6 +1871,9 @@ allow from 127.0.0.1";
         return $int + $step;
     }
 
+    /**
+     * @ignore
+     */
     private static function pdo_delete($name) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -1580,6 +1881,9 @@ allow from 127.0.0.1";
         return self::db(array('db' => $db['db']))->exec("DELETE FROM " . self::$table . " WHERE `name`='" . $name . "'");
     }
 
+    /**
+     * @ignore
+     */
     private static function pdo_set($name, $value, $time_in_second = 600, $skip_if_existing = false) {
         $db = self::selectDB($name);
         $name = $db['item'];
@@ -1628,6 +1932,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function db($option = array()) {
         $vacuum = false;
         $dbname = isset($option['db']) ? $option['db'] : "";
@@ -1748,6 +2055,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     private static function initDatabase($object = null) {
         if ($object == null) {
             self::db(array("skip_clean" => true))->exec('CREATE TABLE IF NOT EXISTS "' . self::$table . '" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "name" VARCHAR UNIQUE NOT NULL  , "value" BLOB, "added" INTEGER NOT NULL  DEFAULT 0, "endin" INTEGER NOT NULL  DEFAULT 0)');
@@ -1764,6 +2074,9 @@ allow from 127.0.0.1";
     // you can replace it to your email
     // maximum 1 email per hour
     // you can use phpFastCache::bugs($title, $e) in any code
+    /**
+     * @ignore
+     */
     public static function bugs($title, $e) {
         $code = md5("error_" . $title);
         $send = self::get($code);
@@ -1780,6 +2093,9 @@ allow from 127.0.0.1";
 
     // use for debug
     // public function, you can use phpFastCache::debug($e|array|string) any time in any code
+    /**
+     * @ignore
+     */
     public static function debug($e, $exit = false) {
         echo "<pre>";
         print_r($e);
@@ -1789,6 +2105,9 @@ allow from 127.0.0.1";
         }
     }
 
+    /**
+     * @ignore
+     */
     public static function startDebug($value, $text = "", $line = __LINE__, $func = __FUNCTION__) {
         if (self::$debugging == true) {
             self::$step_debugging++;
