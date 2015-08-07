@@ -97,6 +97,11 @@ class AlexaSDK_Settings{
          */
         public $crmRegion;
         
+        public $organizationUniqueName;
+        
+        public $organizationVersion;
+        
+        
         /**
          * Set up settings using constructor
          * 
