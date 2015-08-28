@@ -494,7 +494,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                         case 'PROPERTIES':
                                     return $this->properties;
                                 break;
-                        /*case 'ENTITYNAME':
+                        case 'ENTITYNAME':
 				if ($this->entityDisplayName != NULL) {
 					return $this->entityDisplayName;
 				} else {
@@ -515,7 +515,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				} else {
 					return NULL;
 				}
-				break;*/
+				break;
                         
 		}
 		/* Handle dynamic properties... */

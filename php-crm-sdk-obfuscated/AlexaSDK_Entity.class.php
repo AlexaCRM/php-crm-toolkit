@@ -221,8 +221,27 @@ break;
 case 'PROPERTIES':
 return $this->properties;
 break;
-case 'ERRORS':
-return $this->errors;
+case 'ENTITYNAME':
+if ($this->IIIIIII1Il1l != NULL) {
+return $this->IIIIIII1Il1l;
+}else {
+return NULL;
+}
+break;
+case 'ENTITYDESCRIPTION':
+if ($this->IIIIIII1I1II != NULL) {
+return $this->IIIIIII1I1II;
+}else {
+return NULL;
+}
+break;
+case 'ENTITIESNAMES':
+case 'ENTITYCOLLECTIONNAME':
+if ($this->IIIIIII1Il11 != NULL) {
+return $this->IIIIIII1Il11;
+}else {
+return NULL;
+}
 break;
 }
 $IIIIIII1lIll = $GLOBALS['IIIIIIIl1Il1']($IIIIIII1lIll);
@@ -436,7 +455,7 @@ $IIIIIII1Ill1 = '';
 }
 return $IIIIIII1Ill1;
 }
-public function reset() {
+public function $GLOBALS['IIIIIIlIl111']() {
 foreach ($this->propertyValues as &$IIIIIII1lIll) {
 $IIIIIII1lIll['Changed'] = false;
 }
