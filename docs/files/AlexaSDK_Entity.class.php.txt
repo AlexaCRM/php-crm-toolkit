@@ -76,20 +76,20 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
          * 
          * @var Array
          */
-	public $properties = Array();
+	private $properties = Array();
         
         /**
          * The details of mandatary entity fields, contains field keys that are mandatory
          * 
          * @var Array
          */
-	public $mandatories = Array();
+	private $mandatories = Array();
         
         /**
          * 
          * @var Array of AlexaSDK_OptionSetValue objects
          */
-	public $optionSets = Array();
+	private $optionSets = Array();
         
 	/**
          * The details of this instance of the Entity - the added AliasedValue properites 
@@ -103,35 +103,35 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
          * 
          * @var Array contains values of properties (Entity field values)
          */
-	public $propertyValues = Array();
+	private $propertyValues = Array();
         
         /**
          * The details of this instance of the Entity - the propery Formatted Values 
          * 
          * @var Array same as $propertyValues, but contains nicenames of values
          */
-        public $formattedValues = Array();
+        private $formattedValues = Array();
         
         /**
          * The details of many to many relationships
          * 
          * @var Array
          */
-        public $manyToManyRelationships = Array();
+        private $manyToManyRelationships = Array();
         
         /**
          * The details of many to one relationships
          * 
          * @var Array
          */
-        public $manyToOneRelationships = Array();
+        private $manyToOneRelationships = Array();
         
         /**
          * The details of one to many relationships
          * 
          * @var Array
          */
-        public $oneToManyRelationships = Array();
+        private $oneToManyRelationships = Array();
         
         /**
          * Entity field values validation 
@@ -208,7 +208,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                 
                 /* Check if the Definition of this Entity is Cached on the Connector */
 		if ($this->auth->isEntityDefinitionCached($this->entityLogicalName)) {
-                    
+                        
 			/* Use the Cached values */
 			$isDefined = $this->auth->getCachedEntityDefinition($this->entityLogicalName, 
 					$this->entityData, $this->properties, $this->propertyValues, $this->mandatories,
@@ -485,7 +485,16 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 					return NULL;
 				}
 				break;
-                        /*case 'ENTITYNAME':
+                        case 'ONETOMANYRELATIONSHIPS':
+                                    return $this->oneToManyRelationships;
+                                break;
+                        case 'OPTIONSETS':
+                                    return $this->optionSets;
+                                break;
+                        case 'PROPERTIES':
+                                    return $this->properties;
+                                break;
+                        case 'ENTITYNAME':
 				if ($this->entityDisplayName != NULL) {
 					return $this->entityDisplayName;
 				} else {
@@ -506,7 +515,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 				} else {
 					return NULL;
 				}
-				break;*/
+				break;
                         
 		}
 		/* Handle dynamic properties... */
@@ -595,20 +604,29 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
 		if ($this->properties[$property]['isLookup'] && $value != null) {
 			/* Check the new value is an Entity */
 			if (!$value instanceOf self) {
-				$trace = debug_backtrace();
+                                $trace = debug_backtrace();
+                                throw new Exception('Property '.$property.' of the '.$this->entityLogicalName
+						.' entity must be a object of '.get_class()
+						. ' class in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'],
+						E_USER_ERROR);
+				/*
 				trigger_error('Property '.$property.' of the '.$this->entityLogicalName
 						.' entity must be a '.get_class()
 						. ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'],
-						E_USER_ERROR);
+						E_USER_ERROR);*/
 				return;
 			}
 			/* Check the new value is the right type of Entity */
 			if (!in_array($value->entityLogicalName, $this->properties[$property]['lookupTypes'])) {
 				$trace = debug_backtrace();
-				trigger_error('Property '.$property.' of the '.$this->entityLogicalName
+                                throw new Exception('Property '.$property.' of the '.$this->entityLogicalName
 						.' entity must be a '.implode(' or ', $this->properties[$property]['lookupTypes'])
 						. ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'],
 						E_USER_ERROR);
+				/*trigger_error('Property '.$property.' of the '.$this->entityLogicalName
+						.' entity must be a '.implode(' or ', $this->properties[$property]['lookupTypes'])
+						. ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'],
+						E_USER_ERROR);*/
 				return;
 			}
 			/* Clear any AttributeOf related to this field */
@@ -1000,7 +1018,7 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
                                         if ($this->propertyValues[$property]['Value'] != NULL){
                                             $valueNode->setAttribute('i:type', 'b:EntityReference');
                                             $valueNode->appendChild($entityDOM->createElement('b:Id', ($this->propertyValues[$property]['Value']) ? $this->propertyValues[$property]['Value']->ID : ""));
-                                            $valueNode->appendChild($entityDOM->createElement('b:LogicalName', ($this->propertyValues[$property]['Value']) ?  $this->propertyValues[$property]['Value']->entityLogicalName : ""));
+                                            $valueNode->appendChild($entityDOM->createElement('b:LogicalName', ($this->propertyValues[$property]['Value']) ?  $this->propertyValues[$property]['Value']->logicalname : ""));
                                             $valueNode->appendChild($entityDOM->createElement('b:Name'))->setAttribute('i:nil', 'true');
                                         }else{
                                             $valueNode->setAttribute('i:nil', 'true');
@@ -1530,6 +1548,10 @@ class AlexaSDK_Entity extends AlexaSDK_Abstract {
          */
         public function getPropertyKeys(){
                 return array_keys($this->propertyValues);
+        }
+        
+        public function getPrimaryNameField(){
+                return $this->displayName;
         }
         
         /**

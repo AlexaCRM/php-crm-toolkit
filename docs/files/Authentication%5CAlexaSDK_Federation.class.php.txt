@@ -25,8 +25,23 @@ class AlexaSDK_Federation extends AlexaSDK{
          * 
          * @var Array 
          */
-        private $organizationSecurityToken;
+        private $organizationSecurityToken = NULL;
         
+        
+        /**
+         *  Token that used to construct SOAP requests
+         * 
+         * @var Array 
+         */
+        private $discoverySecurityToken;
+        
+        
+        /**
+         * Object of AlexaSDK class
+         * 
+         * @var AlexaSDK
+         */
+        private $auth;
         
         /**
          * Create a new instance of the AlexaSDK
@@ -35,14 +50,14 @@ class AlexaSDK_Federation extends AlexaSDK{
          * 
          * @return AlexaSDK_Federation
          */
-        function __construct($_settings){
-            
+        function __construct($_settings, $_auth){
                 $this->settings = $_settings;
-            
+                $this->auth = $_auth;
         }
         
         /**
 	 * Get the current Organization Service security token, or get a new one if necessary 
+         * @todo Make this methods common to authentication classes, make abstract AlexaSDK_Authentication class
 	 * @ignore
 	 */
 	public function getOrganizationSecurityToken() {
@@ -53,12 +68,53 @@ class AlexaSDK_Federation extends AlexaSDK{
 				/* Use the existing token */
 				return $this->organizationSecurityToken;
 			}
-		}
+                }else{
+                        /* Check if Security Token cached  */
+                        $isDefined = $this->auth->getCachedSecurityToken("organization", $this->organizationSecurityToken);
+                        /* Check if the Security Token is still valid */
+                        if ($isDefined && $this->organizationSecurityToken['expiryTime'] > time()){
+                                /* Use cached token */
+                                return $this->organizationSecurityToken;
+                        }
+                }
 		/* Request a new Security Token for the Organization Service */
 		$this->organizationSecurityToken = $this->requestSecurityToken($this->settings->loginUrl, $this->settings->organizationUrl, $this->settings->username, $this->settings->password);
+                /* Cache retrieved token */
+                $this->auth->setCachedSecurityToken('organization', $this->organizationSecurityToken);
 		/* Save the token, and return it */
 		return $this->organizationSecurityToken;
 	}
+        
+        
+        /**
+	 * Get the current Discovery Service security token, or get a new one if necessary 
+	 * @ignore
+	 */
+        public function getDiscoverySecurityToken(){
+                /* Check if there is an existing token */
+		if ($this->discoverySecurityToken != NULL) {
+			/* Check if the Security Token is still valid */
+			if ($this->discoverySecurityToken['expiryTime'] > time()) {
+				/* Use the existing token */
+				return $this->discoverySecurityToken;
+			}
+		}else{
+                        /* Check if Security Token cached  */
+                        $isDefined = $this->auth->getCachedSecurityToken("discovery", $this->discoverySecurityToken);
+                        /* Check if the Security Token is still valid */
+                        if ($isDefined && $this->discoverySecurityToken['expiryTime'] > time()){
+                                /* Use cached token */
+                                return $this->discoverySecurityToken;
+                        }
+                }
+            
+                /* Request a new Security Token for the Organization Service */
+		$this->discoverySecurityToken = $this->requestSecurityToken($this->settings->loginUrl, $this->settings->discoveryUrl, $this->settings->username, $this->settings->password);
+                /* Cache retrieved token */
+                $this->auth->setCachedSecurityToken('discovery', $this->discoverySecurityToken);
+		/* Save the token, and return it */
+		return $this->discoverySecurityToken;
+        }
         
         
         /**
@@ -103,13 +159,10 @@ class AlexaSDK_Federation extends AlexaSDK{
 	 * @ignore
 	 */
 	protected function requestSecurityToken($securityServerURI, $loginEndpoint, $loginUsername, $loginPassword) {
-            
 		/* Generate the Security Token Request XML */
 		$loginSoapRequest = self::getLoginXML($securityServerURI, $loginEndpoint, $loginUsername, $loginPassword);
 		/* Send the Security Token request */
-                
 		$security_xml = self::getSoapResponse($securityServerURI, $loginSoapRequest);
-                
 		/* Convert the XML into a DOMDocument */
 		$securityDOM = new DOMDocument();
 		$securityDOM->loadXML($security_xml);
@@ -129,7 +182,6 @@ class AlexaSDK_Federation extends AlexaSDK{
 		$expiryTime = $securityDOM->getElementsByTagName("RequestSecurityTokenResponse")->item(0)->getElementsByTagName('Expires')->item(0)->textContent;
 		/* Convert it to a PHP Timestamp */
 		$expiryTime = self::parseTime(substr($expiryTime, 0, -5), '%Y-%m-%dT%H:%M:%S');
-		
 		/* Return an associative Array */
 		$securityToken = Array(
 				'securityToken' => $requestedSecurityToken,

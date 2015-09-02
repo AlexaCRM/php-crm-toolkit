@@ -140,6 +140,8 @@ class AlexaSDK extends AlexaSDK_Abstract{
         /* Maximum record to retrieve */
 	protected static $maximumRecords = self::MAX_CRM_RECORDS;
         
+        private $cachedEntitiesShortDefinitions = Array();
+        
         /**
          * Create a new instance of the AlexaSDK
          * 
@@ -163,6 +165,9 @@ class AlexaSDK extends AlexaSDK_Abstract{
                 throw new Exception("Settings must be instacne of AlexaSDK_Settings class");
             }
             
+            /* Create new object of Cache classe */
+            $this->cacheClass = new AlexaSDK_Cache($this->settings->cache);
+            
             /* Check if we're using a cached login */
             /*if (is_array($discoveryUrl)) {
                     return $this->loadLoginCache($discoveryUrl);
@@ -181,19 +186,15 @@ class AlexaSDK extends AlexaSDK_Abstract{
             /* Create authentication class to connect to CRM Online or Internet facing deployment via ADFS */
             switch ($this->settings->authMode){
                 case "OnlineFederation":
-                    $this->authentication = new AlexaSDK_Office365($this->settings);
+                    $this->authentication = new AlexaSDK_Office365($this->settings, $this);
                     break;
                 case "Federation":
-                    $this->authentication = new AlexaSDK_Federation($this->settings);
+                    $this->authentication = new AlexaSDK_Federation($this->settings, $this);
                     break;
             }
             
-            /* Create new object of Cache classe */
-            $this->cacheClass = new AlexaSDK_Cache( array('storage' => 'auto'));
-            
             /* Load cahced data if it exists */
             $this->loadEntityDefinitionCache();
-            
         }
         
         private function includes(){
@@ -209,7 +210,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
          */
         public function clearCache(){
             /* Clear all cache using AlexaSDK_Cache */
-            $this->cacheClass->cleanup();
+            return $this->cacheClass->cleanup();
         }
         
         /**
@@ -220,8 +221,8 @@ class AlexaSDK extends AlexaSDK_Abstract{
 	 */
 	protected function getDiscoveryAuthenticationMode() {
 		/* If it's set, return the details from the Security array */
-		if (isset($this->settings->authType)) 
-			return $this->settings->authType;
+		if (isset($this->settings->authMode)) 
+			return $this->settings->authMode;
 		/* Get the Discovery DOM */
 		$discoveryDOM = $this->getDiscoveryDOM();
 		/* Get the Security Policy for the Organization Service from the WSDL */
@@ -232,16 +233,16 @@ class AlexaSDK extends AlexaSDK_Abstract{
 			return FALSE;
 		}
                 /* Find the Authentication type used */
-                $authType = Array();
+                $authMode = Array();
                 if ($this->discoverySecurityPolicy->getElementsByTagName('Authentication')->length > 1){
                     foreach($this->discoverySecurityPolicy->getElementsByTagName('Authentication') as $authentication){
-                        array_push($authType, $authentication->textContent);
+                        array_push($authMode, $authentication->textContent);
                     }
                 }else{
-                    array_push($authType, $this->discoverySecurityPolicy->getElementsByTagName('Authentication')->item(0)->textContent);
+                    array_push($authMode, $this->discoverySecurityPolicy->getElementsByTagName('Authentication')->item(0)->textContent);
                 }
                 /* Retrun authType array */
-		return $authType;
+		return $authMode;
 	}
         
         /**
@@ -711,7 +712,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
 	 * Parse the results of a RetrieveEntity into a useable PHP object
 	 * @ignore
 	 */
-	public static function parseRetrieveAllEntitiesResponse($soapResponse) {
+	public static function parseRetrieveAllEntitiesResponse1($soapResponse) {
             
 		/* Load the XML into a DOMDocument */
 		$soapResponseDOM = new DOMDocument();
@@ -764,48 +765,62 @@ class AlexaSDK extends AlexaSDK_Abstract{
                     throw new Exception('Unable to load metadata simple_xml_class KeyValuePairOfstringanyType value');
                     return FALSE;
                 }
-		
+                
 		/* Return the SimpleXML object */
 		return $responseData;
 	}
         
+        
         /**
-	 * Parse the results of a RetrieveRequest into a useable PHP object
+	 * Parse the results of a RetrieveMultipleRequest into a useable PHP object
 	 * @param AlexaSDK $conn
-	 * @param String $entityLogicalName
 	 * @param String $soapResponse
+	 * @param Boolean $simpleMode
 	 * @ignore
 	 */
-	protected static function parseRetrieveResponse(AlexaSDK $conn, $entityLogicalName, $soapResponse) {
+	protected static function parseRetrieveAllEntitiesResponse(AlexaSDK $conn, $soapResponse) {
 		/* Load the XML into a DOMDocument */
 		$soapResponseDOM = new DOMDocument();
 		$soapResponseDOM->loadXML($soapResponse);
-		/* Find the RetrieveResponse */
-		$retrieveResponseNode = NULL;
-		foreach ($soapResponseDOM->getElementsByTagName('RetrieveResponse') as $node) {
-			$retrieveResponseNode = $node;
+		/* Find the RetrieveMultipleResponse */
+		$retrieveMultipleResponseNode = NULL;
+		foreach ($soapResponseDOM->getElementsByTagName('ExecuteResponse') as $node) {
+			$retrieveMultipleResponseNode = $node;
 			break;
 		}
 		unset($node);
-		if ($retrieveResponseNode == NULL) {
-			throw new Exception('Could not find RetrieveResponse node in XML provided');
+		if ($retrieveMultipleResponseNode == NULL) {
+			throw new Exception('Could not find ExecuteResponse node in XML provided');
 			return FALSE;
 		}
-		/* Find the RetrieveResult node */
-		$retrieveResultNode = NULL;
-		foreach ($retrieveResponseNode->getElementsByTagName('RetrieveResult') as $node) {
-			$retrieveResultNode = $node;
+		/* Find the RetrieveMultipleResult node */
+		$retrieveMultipleResultNode = NULL;
+		foreach ($retrieveMultipleResponseNode->getElementsByTagName('Results') as $node) {
+			$retrieveMultipleResultNode = $node;
 			break;
 		}
 		unset($node);
-		if ($retrieveResultNode == NULL) {
-			throw new Exception('Could not find RetrieveResult node in XML provided');
+		if ($retrieveMultipleResultNode == NULL) {
+			throw new Exception('Could not find ExecuteResult node in XML provided');
 			return FALSE;
 		}
-                		
-		/* Generate a new Entity from the DOMNode */
-		$entity = AlexaSDK_Entity::fromDOM($conn, $entityLogicalName, $retrieveResultNode);
-		return $entity;
+		/* Assemble an associative array for the details to return */
+		$responseDataArray = Array();
+                
+		/* Loop through the Entities returned */
+		foreach ($retrieveMultipleResultNode->getElementsByTagName('EntityMetadata') as $entityNode) {
+                    
+                        if ($entityNode->getElementsByTagName("IsValidForAdvancedFind")->item(0)->textContent == "true"){
+                            
+                                $responseElement["LogicalName"] = $entityNode->getElementsByTagName("LogicalName")->item(0)->textContent;
+                                $responseElement["DisplayName"] = $entityNode->getElementsByTagName("DisplayName")->item(0)->getElementsByTagName("UserLocalizedLabel")->item(0)->getElementsByTagName("Label")->item(0)->textContent;
+                               
+                                array_push($responseDataArray, $responseElement);
+                        }
+		}
+		/* Convert the Array to a stdClass Object */
+		$responseData = $responseDataArray;
+		return $responseData;
 	}
         
         
@@ -993,7 +1008,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
 		}
 		
 		/* Fetch the WSDL for the Organization Service as a parseable DOM Document */
-		if (self::$debugMode) echo 'Getting WSDL data for Organization DOM from: '.$this->organizationUrl.'?wsdl'.PHP_EOL;
+		if (self::$debugMode) echo 'Getting WSDL data for Organization DOM from: '.$this->settings->organizationUrl.'?wsdl'.PHP_EOL;
 		$organizationDOM = new DOMDocument(); 
 		@$organizationDOM->load($this->settings->organizationUrl.'?wsdl');
 		/* Flatten the WSDL and include all the Imports */
@@ -1197,7 +1212,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
 			throw new Exception('Cannot determine Organization URI before Discovery Service Security Details are set!');
 		
 		/* Request a Security Token for the Discovery Service */
-		$securityToken = $this->authentication->requestSecurityToken($this->security['discovery_authendpoint'], $this->settings->discoveryUrl, $this->security['username'], $this->security['password']);
+		$securityToken = $this->authentication->getDiscoverySecurityToken();
 		
 		/* Determine the Soap Action for the Execute method of the Discovery Service */
 		$discoveryServiceSoapAction = $this->getDiscoveryExecuteAction();
@@ -1242,6 +1257,77 @@ class AlexaSDK extends AlexaSDK_Abstract{
 		//$this->cacheOrganizationDetails();
 		return $organizationServiceURI;
 	}
+        
+        
+        public function retrieveOrganizations(){
+                /* Request a Security Token for the Discovery Service */
+		$securityToken = $this->authentication->getDiscoverySecurityToken();
+		
+		/* Determine the Soap Action for the Execute method of the Discovery Service */
+		$discoveryServiceSoapAction = $this->getDiscoveryExecuteAction();
+		
+		/* Generate a Soap Request for the Retrieve Organization Request method of the Discovery Service */
+		$discoverySoapRequest = $this->generateSoapRequest($this->settings->discoveryUrl, $discoveryServiceSoapAction, $securityToken, self::generateRetrieveOrganizationRequest());
+                
+		$discovery_data = self::getSoapResponse($this->settings->discoveryUrl, $discoverySoapRequest);
+                
+                $organizationDetails = Array();
+                $discoveryDOM = new DOMDocument(); $discoveryDOM->loadXML($discovery_data);
+                
+                if ($discoveryDOM->getElementsByTagName('OrganizationDetail')->length > 0) {
+                        foreach ($discoveryDOM->getElementsByTagName('OrganizationDetail') as $organizationNode) {
+                                $organization = Array();
+                                foreach ($organizationNode->getElementsByTagName('Endpoints')->item(0)->getElementsByTagName('KeyValuePairOfEndpointTypestringztYlk6OT') as $endpointDOM) {
+                                    
+                                        $organization["Endpoints"][$endpointDOM->getElementsByTagName('key')->item(0)->textContent] = $endpointDOM->getElementsByTagName('value')->item(0)->textContent;
+                                        
+                                }
+                                
+                                if ($organizationNode->getElementsByTagName('FriendlyName')->length > 0) {
+                                        $organization["FriendlyName"] = $organizationNode->getElementsByTagName('FriendlyName')->item(0)->textContent;
+                                }
+                                
+                                if ($organizationNode->getElementsByTagName('OrganizationId')->length > 0) {
+                                        $organization["OrganizationId"] = $organizationNode->getElementsByTagName('OrganizationId')->item(0)->textContent;
+                                }
+                                
+                                if ($organizationNode->getElementsByTagName('OrganizationVersion')->length > 0) {
+                                        $organization["OrganizationVersion"] = $organizationNode->getElementsByTagName('OrganizationVersion')->item(0)->textContent;
+                                }
+                                
+                                if ($organizationNode->getElementsByTagName('State')->length > 0) {
+                                        $organization["State"] = $organizationNode->getElementsByTagName('State')->item(0)->textContent;
+                                }
+                                
+                                if ($organizationNode->getElementsByTagName('UniqueName')->length > 0) {
+                                        $organization["UniqueName"] = $organizationNode->getElementsByTagName('UniqueName')->item(0)->textContent;
+                                }
+                                
+                                if ($organizationNode->getElementsByTagName('UrlName')->length > 0) {
+                                        $organization["UrlName"] = $organizationNode->getElementsByTagName('UrlName')->item(0)->textContent;
+                                }
+                            
+                                array_push($organizationDetails, $organization);
+                            
+                        }
+                }
+                return $organizationDetails;
+        }
+        
+        public function retrieveOrganization($webApplicationUrl){
+                $organizationDetails = NULL;
+                $parsedUrl = parse_url($webApplicationUrl);
+            
+                $organizations = $this->retrieveOrganizations();
+                
+                foreach($organizations as $organization){
+                        if (substr_count($organization["Endpoints"]["WebApplication"] , $parsedUrl["host"])){
+                            $organizationDetails = $organization;
+                        }
+                }
+                return $organizationDetails;
+        }
+        
         
         /**
 	 * Get the connector timeout value
@@ -1311,80 +1397,28 @@ class AlexaSDK extends AlexaSDK_Abstract{
 	}
 	
         
-        /* NEED TO REFACTOR
+        /** 
          * SEE GetSOAPResponse
+         * 
+         * @param $soapUrl
+         * @param $content
+         * @param $requestType
+         * @ignore
+         * @return Array $header Formatted headers
          */
-        private static function formatHeaders($url, $request, $type = "POST") {
-            $scheme = parse_url($url);
-            
+        private static function formatHeaders($soapUrl, $content, $requestType = "POST") {
+            $scheme = parse_url($soapUrl);
+            /* Setup headers array */
             $headers = array(
-                $type . " " . $scheme["path"] . " HTTP/1.1",
+                $requestType . " " . $scheme["path"] . " HTTP/1.1",
                 "Host: " . $scheme["host"],
                 'Connection: Keep-Alive',
                 "Content-type: application/soap+xml; charset=UTF-8",
-                "Content-length: " . strlen($request),
+                "Content-length: " . strlen($content),
             );
-
             return $headers;
         }
         
-        
-        /**
-	 * Request a Security Token from the ADFS server using Username & Password authentication 
-	 * @ignore
-	 */
-	protected function requestSecurityToken($securityServerURI, $loginEndpoint, $loginUsername, $loginPassword) {
-                //$securityServerURI = "https://login.microsoftonline.com/RST2.srf";
-            
-		/* Generate the Security Token Request XML */
-		$loginSoapRequest = self::getLoginXML($securityServerURI, $loginEndpoint, $loginUsername, $loginPassword);
-		/* Send the Security Token request */
-                
-		$security_xml = self::getSoapResponse($securityServerURI, $loginSoapRequest);
-                
-		/* Convert the XML into a DOMDocument */
-		$securityDOM = new DOMDocument();
-		$securityDOM->loadXML($security_xml);
-		/* Get the two CipherValue keys */
-		$cipherValues = $securityDOM->getElementsbyTagName("CipherValue");
-		$securityToken0 =  $cipherValues->item(0)->textContent;
-		$securityToken1 =  $cipherValues->item(1)->textContent;
-		/* Get the KeyIdentifier */
-		$keyIdentifier = $securityDOM->getElementsbyTagName("KeyIdentifier")->item(0)->textContent;
-		/* Get the BinarySecret */
-		$binarySecret = $securityDOM->getElementsbyTagName("BinarySecret")->item(0)->textContent;
-		/* Make life easier - get the entire RequestedSecurityToken section */
-		$requestedSecurityToken = $securityDOM->saveXML($securityDOM->getElementsByTagName("RequestedSecurityToken")->item(0));
-		preg_match('/<trust:RequestedSecurityToken>(.*)<\/trust:RequestedSecurityToken>/', $requestedSecurityToken, $matches);
-		$requestedSecurityToken = $matches[1];
-		/* Find the Expiry Time */
-		$expiryTime = $securityDOM->getElementsByTagName("RequestSecurityTokenResponse")->item(0)->getElementsByTagName('Expires')->item(0)->textContent;
-		/* Convert it to a PHP Timestamp */
-		$expiryTime = self::parseTime(substr($expiryTime, 0, -5), '%Y-%m-%dT%H:%M:%S');
-		
-		/* Return an associative Array */
-		$securityToken = Array(
-				'securityToken' => $requestedSecurityToken,
-				'securityToken0' => $securityToken0,
-				'securityToken1' => $securityToken1,
-				'binarySecret' => $binarySecret,
-				'keyIdentifier' => $keyIdentifier,
-				'expiryTime' => $expiryTime
-			);
-		/* DEBUG logging */
-		if (self::$debugMode) {
-			echo 'Got Security Token - Expires at: '.date('r', $securityToken['expiryTime']).PHP_EOL;
-			echo "\tKey Identifier\t: ".$securityToken['keyIdentifier'].PHP_EOL;
-			echo "\tSecurity Token 0\t: ".substr($securityToken['securityToken0'], 0, 25).'...'.substr($securityToken['securityToken0'], -25).' ('.strlen($securityToken['securityToken0']).')'.PHP_EOL;
-			echo "\tSecurity Token 1\t: ".substr($securityToken['securityToken1'], 0, 25).'...'.substr($securityToken['securityToken1'], -25).' ('.strlen($securityToken['securityToken1']).')'.PHP_EOL;
-			echo "\tBinary Secret\t: ".$securityToken['binarySecret'].PHP_EOL.PHP_EOL;
-		}
-		/* Return an associative Array */
-		return $securityToken;
-	}
-	
-	
-	
 	/**
 	 * Send the SOAP message, and get the response 
 	 * @ignore
@@ -1394,16 +1428,9 @@ class AlexaSDK extends AlexaSDK_Abstract{
             
 		/* Separate the provided URI into Path & Hostname sections */
 		$urlDetails = parse_url($soapUrl);
+                /* Format cUrl headers */
+                $headers = self::formatHeaders($soapUrl, $content);
                 
-		// setup headers
-		$headers = array(
-				"POST ". $urlDetails['path'] ." HTTP/1.1",
-				"Host: " . $urlDetails['host'],
-				'Connection: Keep-Alive',
-				"Content-type: application/soap+xml; charset=UTF-8",
-				"Content-length: ".strlen($content),
-		);
-		
 		$cURLHandle = curl_init();
 		curl_setopt($cURLHandle, CURLOPT_URL, $soapUrl);
 		curl_setopt($cURLHandle, CURLOPT_RETURNTRANSFER, 1);
@@ -1415,7 +1442,8 @@ class AlexaSDK extends AlexaSDK_Abstract{
 		curl_setopt($cURLHandle, CURLOPT_POSTFIELDS, $content);
 		curl_setopt($cURLHandle, CURLOPT_HEADER, false);
 		/* Execute the cURL request, get the XML response */
-		$responseXML = curl_exec($cURLHandle);
+		$responseXML = curl_exec($cURLHandle);                
+                
 		/* Check for cURL errors */
 		if (curl_errno($cURLHandle) != CURLE_OK) {
 			throw new Exception('cURL Error: '.curl_error($cURLHandle));
@@ -1902,77 +1930,6 @@ class AlexaSDK extends AlexaSDK_Abstract{
         
         
         /**
-	 * Parse the results of a RetrieveMultipleRequest into a useable PHP object
-	 * @param AlexaSDK $conn
-	 * @param String $soapResponse
-	 * @param Boolean $simpleMode
-	 * @ignore
-	 */
-	protected static function parseRetrieveMultipleFormResponse(AlexaSDK $conn, $soapResponse, $simpleMode) {
-		/* Load the XML into a DOMDocument */
-		$soapResponseDOM = new DOMDocument();
-		$soapResponseDOM->loadXML($soapResponse);
-		/* Find the RetrieveMultipleResponse */
-		$retrieveMultipleResponseNode = NULL;
-		foreach ($soapResponseDOM->getElementsByTagName('RetrieveMultipleResponse') as $node) {
-			$retrieveMultipleResponseNode = $node;
-			break;
-		}
-		unset($node);
-		if ($retrieveMultipleResponseNode == NULL) {
-			throw new Exception('Could not find RetrieveMultipleResponse node in XML provided');
-			return FALSE;
-		}
-		/* Find the RetrieveMultipleResult node */
-		$retrieveMultipleResultNode = NULL;
-		foreach ($retrieveMultipleResponseNode->getElementsByTagName('RetrieveMultipleResult') as $node) {
-			$retrieveMultipleResultNode = $node;
-			break;
-		}
-		unset($node);
-		if ($retrieveMultipleResultNode == NULL) {
-			throw new Exception('Could not find RetrieveMultipleResult node in XML provided');
-			return FALSE;
-		}
-		/* Assemble an associative array for the details to return */
-		$responseDataArray = Array();
-		$responseDataArray['EntityName'] = $retrieveMultipleResultNode->getElementsByTagName('EntityName')->length == 0 ? NULL : $retrieveMultipleResultNode->getElementsByTagName('EntityName')->item(0)->textContent;
-		$responseDataArray['MoreRecords'] = ($retrieveMultipleResultNode->getElementsByTagName('MoreRecords')->item(0)->textContent == 'true');
-		$responseDataArray['PagingCookie'] = $retrieveMultipleResultNode->getElementsByTagName('PagingCookie')->length == 0 ? NULL : $retrieveMultipleResultNode->getElementsByTagName('PagingCookie')->item(0)->textContent;
-		$responseDataArray['Entities'] = Array();
-		/* Loop through the Entities returned */
-		foreach ($retrieveMultipleResultNode->getElementsByTagName('Entities')->item(0)->getElementsByTagName('Entity') as $entityNode) {
-			/* If we are in "SimpleMode", just create the Attributes as a stdClass */
-			if ($simpleMode) {
-				/* Create an Array to hold the Entity properties */
-				$entityArray = Array();
-				/* Identify the Attributes */
-				$keyValueNodes = $entityNode->getElementsByTagName('Attributes')->item(0)->getElementsByTagName('KeyValuePairOfstringanyType');
-				/* Add the Attributes in the Key/Value Pairs of String/AnyType to the Array */
-				self::addAttributes($entityArray, $keyValueNodes);
-				/* Identify the FormattedValues */
-				$keyValueNodes = $entityNode->getElementsByTagName('FormattedValues')->item(0)->getElementsByTagName('KeyValuePairOfstringstring');
-				/* Add the Formatted Values in the Key/Value Pairs of String/String to the Array */
-				self::addFormattedValues($entityArray, $keyValueNodes);
-				/* Add the Entity to the Entities Array as a stdClass Object */
-				$responseDataArray['Entities'][] = (Object)$entityArray;
-			} else {
-				/* Generate a new Entity from the DOMNode */
-				$entity = AlexaSDK_Entity::fromDOM($conn, $responseDataArray['EntityName'], $entityNode);
-				/* Add the Entity to the Entities Array as a AlexaSDK_Entity Object */
-				$responseDataArray['Entities'][] = $entity;
-			}
-		}
-		/* Record the number of Entities */
-		$responseDataArray['Count'] = count($responseDataArray['Entities']);
-		
-		/* Convert the Array to a stdClass Object */
-		$responseData = (Object)$responseDataArray;
-		return $responseData;
-	}
-        
-        
-        /**
 	 * Add a list of Attributes to an Array of Attributes, using appropriate handling
 	 * of the Attribute type, and avoiding over-writing existing attributes
 	 * already in the array 
@@ -2168,6 +2125,13 @@ class AlexaSDK extends AlexaSDK_Abstract{
 	}
         
         
+        public function setCachedEntityShortDefinition($entitiesDefinitions){
+                $this->cachedEntitiesShortDefinitions = $entitiesDefinitions;
+                
+                $this->cacheClass->set("entities_definitions", serialize($this->cachedEntitiesShortDefinitions) , self::$cacheTime);
+        }
+        
+        
         /**
 	 * Cache the definition of an Entity
 	 * 
@@ -2192,12 +2156,12 @@ class AlexaSDK extends AlexaSDK_Abstract{
                                 $entitytypecode, $entityDisplayName, $entityDisplayCollectionName, 
                                 $entityDescription, $manyToManyRelationships, $manyToOneRelationships, $oneToManyRelationships);
                 
-                // Write products to Cache in 10 minutes with same keyword
+                /* Store entitiy definition in cache */
                 $this->cacheClass->set("entities", serialize($this->cachedEntityDefintions) , self::$cacheTime);
 	}
         
         
-        
+
         /**
 	 * Get the Definition of an Entity from the Cache
 	 * 
@@ -2328,6 +2292,11 @@ class AlexaSDK extends AlexaSDK_Abstract{
                 $entities = $this->cacheClass->get('entities');
                 if ($entities != null){
                     $this->cachedEntityDefintions = unserialize($entities);
+                }
+                
+                $entitesDefitions = $this->cacheClass->get('entities_definitions');
+                if ($entitesDefitions){
+                    $this->cachedEntitiesShortDefinitions = unserialize($entitesDefitions);
                 }
         }
         
@@ -2537,7 +2506,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
          * @param Array(optional)
 	 * @ignore
 	 */
-        protected static function generateExecuteActionRequest($requestName, $parameters = NULL){
+        protected static function generateExecuteActionRequest($requestName, $parameters = NULL, $requestType = NULL){
                 /* Generate the ExecuteAction message */
 		$executeActionRequestDOM = new DOMDocument();
                 
@@ -2546,7 +2515,12 @@ class AlexaSDK extends AlexaSDK_Abstract{
                 
                 $requestNode = $executeActionNode->appendChild($executeActionRequestDOM->createElement('request'));
                 $requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:b', 'http://schemas.microsoft.com/xrm/2011/Contracts');
-               
+                /* Set request type */
+                if ($requestType){
+                    $requestNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:e', 'http://schemas.microsoft.com/crm/2011/Contracts');
+                    $requestNode->setAttribute('i:type', 'e:'.$requestType);
+                }
+                
                 $parametersNode = $requestNode->appendChild($executeActionRequestDOM->createElement('b:Parameters'));
                 $parametersNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic');
                 
@@ -2592,14 +2566,19 @@ class AlexaSDK extends AlexaSDK_Abstract{
                                             break;
                                     case 'boolean':
                                             /* Boolean - Just get the numerical value */
-                                            $xmlValue = $parameter["value"];
+                                            $xmlValue = ($parameter["value"]) ? "true" : "false";
                                             break;
-
+                                    case 'guid':
+                                            $xmlType = 'guid';
+                                            $xmlTypeNS = 'http://schemas.microsoft.com/2003/10/Serialization/';
+                                        break;
+                                    case 'base64binary':
+                                            $xmlType = 'base64Binary';
+                                            break;
                                     case 'string':
                                     case 'int':
                                     case 'decimal':
                                     case 'double':
-                                    case 'guid':
                                             /* No special handling for these types */
                                             break;
                                     default:
@@ -2743,110 +2722,13 @@ class AlexaSDK extends AlexaSDK_Abstract{
          * @ignore
 	 * @deprecated Wil be changed soon
          * NEED TO REFACTOR
-	 */
-        public function getEntityFormByName($entity, $formName){
-            
-            $securityToken = $this->authentication->getOrganizationSecurityToken();
-            
-            $request = '<RetrieveMultiple xmlns="http://schemas.microsoft.com/xrm/2011/Contracts/Services">
-                            <query i:type="b:QueryExpression" xmlns:b="http://schemas.microsoft.com/xrm/2011/Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-                                <b:ColumnSet>
-                                    <b:AllColumns>false</b:AllColumns>
-                                    <b:Columns xmlns:c="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
-                                        <c:string>name</c:string>
-                                        <c:string>formxml</c:string>
-                                        <c:string>objecttypecode</c:string>
-                                    </b:Columns>
-                                </b:ColumnSet>
-                                <b:Criteria>
-                                    <b:Conditions/>
-                                    <b:FilterOperator>And</b:FilterOperator>
-                                    <b:Filters>
-                                        <b:FilterExpression>
-                                            <b:Conditions>
-                                                <b:ConditionExpression>
-                                                    <b:AttributeName>objecttypecode</b:AttributeName>
-                                                    <b:Operator>Equal</b:Operator>
-                                                    <b:Values xmlns:c="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
-                                                        <c:anyType i:type="d:string" xmlns:d="http://www.w3.org/2001/XMLSchema">'.$entity.'</c:anyType>
-                                                    </b:Values>
-                                                    <b:EntityName i:nil="true"/>
-                                                </b:ConditionExpression>
-                                                <b:ConditionExpression>
-                                                    <b:AttributeName>name</b:AttributeName>
-                                                    <b:Operator>Equal</b:Operator>
-                                                    <b:Values xmlns:c="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
-                                                        <c:anyType i:type="d:string" xmlns:d="http://www.w3.org/2001/XMLSchema">'.$formName.'</c:anyType>
-                                                    </b:Values>
-                                                    <b:EntityName i:nil="true"/>
-                                                </b:ConditionExpression>
-                                            </b:Conditions>
-                                            <b:FilterOperator>And</b:FilterOperator>
-                                            <b:Filters/>
-                                        </b:FilterExpression>
-                                    </b:Filters>
-                                </b:Criteria>
-                                <b:Distinct>false</b:Distinct>
-                                <b:EntityName>systemform</b:EntityName>
-                                <b:LinkEntities/>
-                                <b:Orders/>
-                                <b:PageInfo>
-                                    <b:Count>0</b:Count>
-                                    <b:PageNumber>0</b:PageNumber>
-                                    <b:PagingCookie i:nil="true"/>
-                                    <b:ReturnTotalRecordCount>false</b:ReturnTotalRecordCount>
-                                </b:PageInfo>
-                                <b:NoLock>false</b:NoLock>
-                            </query>
-                        </RetrieveMultiple>';
-            
-            $doc = new DOMDocument();
-            $doc->loadXML($request);
-            $executeNode = $doc->getElementsByTagName('RetrieveMultiple')->item(0);
-            
-            $request = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationRetrieveMultipleAction(), $securityToken, $executeNode);
-            
-            $soapResponse = self::GetSOAPResponse($this->settings->organizationUrl, $request);
-            
-            /* Convert the XML into a DOMDocument */
-            $DOM = new DOMDocument();
-            $DOM->loadXML($soapResponse);
-            
-            try{
-                if (
-                        ($DOM->getElementsByTagNameNS('http://schemas.microsoft.com/xrm/2011/Contracts', 'Entities')->item(0)
-                        ->getElementsByTagNameNS('http://schemas.microsoft.com/xrm/2011/Contracts', 'Entity')->length) > 0){
-
-                    $form = $DOM->getElementsByTagNameNS('http://schemas.microsoft.com/xrm/2011/Contracts', 'Entities')->item(0)
-                            ->getElementsByTagNameNS('http://schemas.microsoft.com/xrm/2011/Contracts', 'Entity')->item(0)
-                            ->getElementsByTagNameNS('http://schemas.microsoft.com/xrm/2011/Contracts', 'Attributes')->item(0)
-                            ->getElementsByTagNameNS('http://schemas.microsoft.com/xrm/2011/Contracts', 'KeyValuePairOfstringanyType')->item(1)
-                            ->getElementsByTagNameNS('http://schemas.datacontract.org/2004/07/System.Collections.Generic', 'value')->item(0)->textContent;
-
-                    if ($form){
-                        return $form;
-                    }else{
-                        return false;
-                    }
-
-
-                }else{
-                    return false;
-                }
-            }catch(Exception $ex){
-                return false;
-            }
-        }
-        
-
-        
-        /** 
-         * @ignore
-	 * @deprecated Wil be changed soon
-         * NEED TO REFACTOR
          * ADD cache definition to retrieved entities
 	 */
         function retrieveAllEntities(){
+            
+            if (!empty($this->cachedEntitiesShortDefinitions)){
+                    return $this->cachedEntitiesShortDefinitions;
+            }
             
             $securityToken = $this->authentication->getOrganizationSecurityToken();
             
@@ -2878,9 +2760,13 @@ class AlexaSDK extends AlexaSDK_Abstract{
             $responseDOM = new DOMDocument();
             $responseDOM->loadXML($retrieveEntityRequest);
 
-            $result = $this->getSoapResponse($this->settings->organizationUrl, $retrieveEntityRequest);
+            $rawSoapResponse = $this->getSoapResponse($this->settings->organizationUrl, $retrieveEntityRequest);
             
-            return self::parseRetrieveAllEntitiesResponse($result);
+            $entitiesDefinition = self::parseRetrieveAllEntitiesResponse($this, $rawSoapResponse, false);
+            
+            $this->setCachedEntityShortDefinition($entitiesDefinition);
+            
+            return $entitiesDefinition;
         }
         
         
@@ -2912,6 +2798,88 @@ class AlexaSDK extends AlexaSDK_Abstract{
                 
 		return $stsIdentifier;
         }
-       
+        
+        public function importSolution($customizationFile, $overwriteUnmanagedCustomizations, $publishWorkflows){
+                    
+                if (!base64_decode($customizationFile)){
+                        $customizationFile = base64_encode($customizationFile);
+                }
+            
+                $parameters = array(
+                    array('key' => 'OverwriteUnmanagedCustomizations',
+                          'value' => $overwriteUnmanagedCustomizations,
+                          'type' => 'boolean'
+                        ),
+                    array('key' => 'PublishWorkflows',
+                          'value' => $publishWorkflows,
+                          'type' => 'boolean'
+                        ),
+                    array('key' => 'CustomizationFile',
+                          'value' => $customizationFile,
+                          'type' => 'base64Binary'
+                        ),
+                    array('key' => 'ImportJobId',
+                          'value' => self::EmptyGUID,
+                          'type' => 'guid'
+                        ),
+                );
+                /* Send the sequrity request and get a security token */
+                $securityToken = $this->authentication->getOrganizationSecurityToken();
+                /* Generate the XML for the Body of a Execute Action request */
+                $executeActionNode = self::generateExecuteActionRequest('ImportSolution', $parameters, 'ImportSolutionRequest');
+
+                if (self::$debugMode) echo PHP_EOL.'ExecuteAction Request: '.PHP_EOL.$executeActionNode->C14N().PHP_EOL.PHP_EOL;
+
+                /* Turn this into a SOAP request, and send it */
+                $executeActionRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->getOrganizationExecuteAction(), $securityToken, $executeActionNode);
+                $soapResponse = self::getSoapResponse($this->settings->organizationUrl, $executeActionRequest, true);
+
+                if (self::$debugMode) echo PHP_EOL.'ExecuteAction Response: '.PHP_EOL.$soapResponse.PHP_EOL.PHP_EOL;
+
+                /* Load the XML into a DOMDocument */
+                $soapResponseDOM = new DOMDocument();
+                $soapResponseDOM->loadXML($soapResponse);
+
+                /* Find the UpdateResponse */
+                $executeResultNode = NULL;
+                foreach ($soapResponseDOM->getElementsByTagName('ExecuteResult') as $node) {
+                        $executeResultNode = $node;
+                        break;
+                }
+                unset($node);
+                if ($executeResultNode == NULL) {
+                        throw new Exception('Could not find ExecuteResult node in XML returned from Server');
+                        return FALSE;
+                }
+
+                $keyValuesArray = Array();
+
+                foreach( $executeResultNode->getElementsByTagName('KeyValuePairOfstringanyType') as $keyValueNode){
+                    $keyValuesArray[$keyValueNode->getElementsByTagName('key')->item(0)->textContent] = $keyValueNode->getElementsByTagName('value')->item(0)->textContent;
+                }
+                /* Add the Entity to the KeyValues Array as a stdClass Object */
+                $responseDataArray = (Object)$keyValuesArray;
+
+                /* Return structured Key/Value object */
+                return $responseDataArray;
+        }
+        
+        public function setCachedSecurityToken($service, $token){
+                if ($this->cacheClass){
+                    $this->cacheClass->set(strtolower($service)."securitytoken", serialize($token), floor($token['expiryTime'] - time()));
+                }
+        }
+        
+        public function getCachedSecurityToken($service, &$securityToken){
+                if ($this->cacheClass){
+                    $token = $this->cacheClass->get(strtolower($service)."securitytoken");
+                    if ($token != NULL){
+                        $securityToken = unserialize($token);
+                        return TRUE;
+                    }
+                }
+                $securityToken = NULL;
+                return FALSE;
+        }
 }
 
