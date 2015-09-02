@@ -9,7 +9,7 @@ protected $IIIIIII1I1II = NULL;
 protected $IIIIIII1Il1I = NULL;
 public $IIIIIII1I1ll;
 private $properties = Array();
-private $IIIIIIll1l11 = Array();
+private $IIIIIIll11II = Array();
 private $optionSets = Array();
 protected $localProperties = Array();
 private $propertyValues = Array();
@@ -22,8 +22,8 @@ protected $validator = NULL;
 public $errors = Array();
 private $entityDomain = NULL;
 private $IIIIIIlIll11;
-function __construct(AlexaSDK $IIIIIIllI1Il,$IIIIIIlIIIlI = NULL,$IIIIIIlIIIl1 = NULL) {
-$this->IIIIIIlIll11 = $IIIIIIllI1Il;
+function __construct(AlexaSDK $IIIIIIllI1I1,$IIIIIIlIIIlI = NULL,$IIIIIIlIIIl1 = NULL) {
+$this->IIIIIIlIll11 = $IIIIIIllI1I1;
 if ($IIIIIIlIIIlI != NULL &&$IIIIIIlIIIlI != $this->IIIIIIIl111l) {
 if ($this->IIIIIIIl111l != NULL) {
 throw new Exception('Cannot override the Entity Logical Name on a strongly typed Entity');
@@ -37,7 +37,7 @@ $this->setEntityDomain($this->IIIIIIlIll11);
 $this->validator = new AlexaSDK_FormValidator();
 if ($this->IIIIIIlIll11->isEntityDefinitionCached($this->IIIIIIIl111l)) {
 $IIIIIIlIIIll = $this->IIIIIIlIll11->getCachedEntityDefinition($this->IIIIIIIl111l,
-$this->IIIIIII1I1ll,$this->properties,$this->propertyValues,$this->IIIIIIll1l11,
+$this->IIIIIII1I1ll,$this->properties,$this->propertyValues,$this->IIIIIIll11II,
 $this->optionSets,$this->IIIIIII1Ill1,$this->IIIIIII1Il1I,$this->IIIIIII1Il1l,
 $this->IIIIIII1Il11,$this->IIIIIII1I1II,$this->IIIIIII1I1Il,
 $this->IIIIIII1I1I1,$this->IIIIIII1I1lI);
@@ -89,9 +89,9 @@ $label = (String)$IIIIIIIIll11->OptionSet->TrueOption->Label->UserLocalizedLabel
 $IIIIIIlIIlIl[$value] = $label;
 break;
 case 'State':
-foreach ($IIIIIIIIll11->OptionSet->Options->OptionMetadata as $IIIIIIll1lll) {
-$value = (int)$IIIIIIll1lll->Value;
-$label = (String)$IIIIIIll1lll->Label->UserLocalizedLabel->Label[0];
+foreach ($IIIIIIIIll11->OptionSet->Options->OptionMetadata as $IIIIIIll1ll1) {
+$value = (int)$IIIIIIll1ll1->Value;
+$label = (String)$IIIIIIll1ll1->Label->UserLocalizedLabel->Label[0];
 if ($GLOBALS['IIIIIII1IIIl']($value,$IIIIIIlIIlIl)) {
 trigger_error('Option '.$label.' of OptionSet '.$IIIIIIlIIlll.' used by field '.(String)$IIIIIIIIll11->SchemaName.' has the same Value as another Option in this Set',
 E_USER_WARNING);
@@ -101,9 +101,9 @@ $IIIIIIlIIlIl[$value] = $label;
 }
 break;
 case 'Status':
-foreach ($IIIIIIIIll11->OptionSet->Options->OptionMetadata as $IIIIIIll1lll) {
-$value = (int)$IIIIIIll1lll->Value;
-$label = (String)$IIIIIIll1lll->Label->UserLocalizedLabel->Label[0];
+foreach ($IIIIIIIIll11->OptionSet->Options->OptionMetadata as $IIIIIIll1ll1) {
+$value = (int)$IIIIIIll1ll1->Value;
+$label = (String)$IIIIIIll1ll1->Label->UserLocalizedLabel->Label[0];
 if ($GLOBALS['IIIIIII1IIIl']($value,$IIIIIIlIIlIl)) {
 trigger_error('Option '.$label.' of OptionSet '.$IIIIIIlIIlll.' used by field '.(String)$IIIIIIIIll11->SchemaName.' has the same Value as another Option in this Set',
 E_USER_WARNING);
@@ -113,9 +113,9 @@ $IIIIIIlIIlIl[$value] = $label;
 }
 break;
 case 'Picklist':
-foreach ($IIIIIIIIll11->OptionSet->Options->OptionMetadata as $IIIIIIll1lll) {
-$value = (int)$IIIIIIll1lll->Value;
-$label = (String)$IIIIIIll1lll->Label->UserLocalizedLabel->Label[0];
+foreach ($IIIIIIIIll11->OptionSet->Options->OptionMetadata as $IIIIIIll1ll1) {
+$value = (int)$IIIIIIll1ll1->Value;
+$label = (String)$IIIIIIll1ll1->Label->UserLocalizedLabel->Label[0];
 if ($GLOBALS['IIIIIII1IIIl']($value,$IIIIIIlIIlIl)) {
 trigger_error('Option '.$label.' of OptionSet '.$IIIIIIlIIlll.' used by field '.(String)$IIIIIIIIll11->SchemaName.' has the same Value as another Option in this Set',
 E_USER_WARNING);
@@ -171,14 +171,14 @@ $this->propertyValues[$GLOBALS['IIIIIIIl1Il1']((String)$IIIIIIIIll11->LogicalNam
 'Changed'=>false,
 );
 if ($IIIIIIlIIl1I != 'None'&&$IIIIIIlIIl1I != 'Recommended') {
-$this->IIIIIIll1l11[$GLOBALS['IIIIIIIl1Il1']((String)$IIIIIIIIll11->LogicalName)] = $IIIIIIlIIl1I;
+$this->IIIIIIll11II[$GLOBALS['IIIIIIIl1Il1']((String)$IIIIIIIIll11->LogicalName)] = $IIIIIIlIIl1I;
 }
 }
 foreach($this->IIIIIII1I1ll->OneToManyRelationships->OneToManyRelationshipMetadata as $IIIIIIlIIl1l){
 $this->IIIIIII1I1lI[(string)$IIIIIIlIIl1l->ReferencingEntity] = "";
 }
 $this->IIIIIIlIll11->setCachedEntityDefinition($this->IIIIIIIl111l,
-$this->IIIIIII1I1ll,$this->properties,$this->propertyValues,$this->IIIIIIll1l11,
+$this->IIIIIII1I1ll,$this->properties,$this->propertyValues,$this->IIIIIIll11II,
 $this->optionSets,$this->IIIIIII1Ill1,$this->IIIIIII1Il1I,$this->IIIIIII1Il1l,
 $this->IIIIIII1Il11,$this->IIIIIII1I1II,$this->IIIIIII1I1Il,
 $this->IIIIIII1I1I1,$this->IIIIIII1I1lI);
@@ -359,7 +359,7 @@ $this->propertyValues[$IIIIIII1lIll]['Changed'] = true;
 }
 public function validate($IIIIIII1lIll,$value) {
 $errorsFound = false;
-if (isset($this->IIIIIIll1l11[$IIIIIII1lIll]) &&!$value){
+if (isset($this->IIIIIIll11II[$IIIIIII1lIll]) &&!$value){
 $this->errors[$IIIIIII1lIll] = $this->getPropertyLabel($IIIIIII1lIll)." is required";
 }
 switch($this->properties[$IIIIIII1lIll]["Type"]){
@@ -455,7 +455,7 @@ $IIIIIII1Ill1 = '';
 }
 return $IIIIIII1Ill1;
 }
-public function $GLOBALS['IIIIIIlIl111']() {
+public function reset() {
 foreach ($this->propertyValues as &$IIIIIII1lIll) {
 $IIIIIII1lIll['Changed'] = false;
 }
@@ -493,7 +493,7 @@ $this->IIIIIIlIIII1 = $value;
 public function checkMandatories(Array &$IIIIIIlIllII = NULL) {
 $IIIIIIlIlI11 = true;
 $IIIIIIlIlI1I = Array();
-foreach ($this->IIIIIIll1l11 as $IIIIIII1lIll =>$IIIIIIlIlI1l) {
+foreach ($this->IIIIIIll11II as $IIIIIII1lIll =>$IIIIIIlIlI1l) {
 if ($this->properties[$IIIIIII1lIll]['AttributeOf'] != NULL) {
 $IIIIIIlIlIl1 = $this->properties[$IIIIIII1lIll]['AttributeOf'];
 }else {

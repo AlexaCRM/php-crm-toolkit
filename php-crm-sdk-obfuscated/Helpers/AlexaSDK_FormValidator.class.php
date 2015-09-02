@@ -1,6 +1,6 @@
-<?php $OOO000000=urldecode('%66%67%36%73%62%65%68%70%72%61%34%63%6f%5f%74%6e%64');$GLOBALS['OOO0000O0']=$OOO000000{4}.$OOO000000{9}.$OOO000000{3}.$OOO000000{5}.$OOO000000{2}.$OOO000000{10}.$OOO000000{13}.$OOO000000{16};$GLOBALS['OOO0000O0'].=$GLOBALS['OOO0000O0']{3}.$OOO000000{11}.$OOO000000{12}.$GLOBALS['OOO0000O0']{7}.$OOO000000{5};?><?php eval($GLOBALS['OOO0000O0']('JEdMT0JBTFNbJ0lJSUlJSWxsbDFsSSddPSdzdWJzdHInOyRHTE9CQUxTWydJSUlJSUlJMUlJSWwnXT0nYXJyYXlfa2V5X2V4aXN0cyc7JEdMT0JBTFNbJ0lJSUlJSWxJSTFsbCddPSdpbXBsb2RlJzskR0xPQkFMU1snSUlJSUlJbGwxMTFsJ109J2FycmF5X3NlYXJjaCc7')); ?><?php 
+<?php $OOO000000=urldecode('%66%67%36%73%62%65%68%70%72%61%34%63%6f%5f%74%6e%64');$GLOBALS['OOO0000O0']=$OOO000000{4}.$OOO000000{9}.$OOO000000{3}.$OOO000000{5}.$OOO000000{2}.$OOO000000{10}.$OOO000000{13}.$OOO000000{16};$GLOBALS['OOO0000O0'].=$GLOBALS['OOO0000O0']{3}.$OOO000000{11}.$OOO000000{12}.$GLOBALS['OOO0000O0']{7}.$OOO000000{5};?><?php eval($GLOBALS['OOO0000O0']('JEdMT0JBTFNbJ0lJSUlJSWxsbDFsbCddPSdzdWJzdHInOyRHTE9CQUxTWydJSUlJSUlJMUlJSWwnXT0nYXJyYXlfa2V5X2V4aXN0cyc7JEdMT0JBTFNbJ0lJSUlJSWxJSTFsbCddPSdpbXBsb2RlJzskR0xPQkFMU1snSUlJSUlJbGwxMTExJ109J2FycmF5X3NlYXJjaCc7')); ?><?php 
 class AlexaSDK_FormValidator {
-public static $IIIIIIll1ll1 = Array(
+public static $IIIIIIll1l1I = Array(
 'date'=>"[0-9]{1,2}\/[0-9]{1,2}\/[0-9][0-9]",
 'amount'=>"^[-]?[0-9]+\$",
 'number'=>"^[-]?[0-9,]+\$",
@@ -17,113 +17,113 @@ public static $IIIIIIll1ll1 = Array(
 '2digitforce'=>"^\d+\,\d\d\$",
 'anything'=>"^[\d\D]{1,}\$"
 );
-private $IIIIIIll1l1I,$IIIIIIll1l1l,$IIIIIIll1l11,$errors,$IIIIIIll11Il,$IIIIIIll11I1;
-public function __construct($IIIIIIll1l1I = array(),$IIIIIIll1l11 = array(),$IIIIIIll1l1l = array()) {
-$this->IIIIIIll1l1I = $IIIIIIll1l1I;
+private $IIIIIIll1l1l,$IIIIIIll1l11,$IIIIIIll11II,$errors,$IIIIIIll11I1,$IIIIIIll11lI;
+public function __construct($IIIIIIll1l1l = array(),$IIIIIIll11II = array(),$IIIIIIll1l11 = array()) {
 $this->IIIIIIll1l1l = $IIIIIIll1l1l;
 $this->IIIIIIll1l11 = $IIIIIIll1l11;
+$this->IIIIIIll11II = $IIIIIIll11II;
 $this->errors = array();
-$this->IIIIIIll11Il = array();
+$this->IIIIIIll11I1 = array();
 }
-public function validate($IIIIIIll11lI) {
-$this->IIIIIIll11I1 = $IIIIIIll11lI;
-$IIIIIIll11l1 = false;
-foreach ($IIIIIIll11lI as $key =>$IIIIIIll111I) {
-if ((strlen($IIIIIIll111I) == 0 ||$GLOBALS['IIIIIIll111l']($key,$this->IIIIIIll1l1I) === false) &&$GLOBALS['IIIIIIll111l']($key,$this->IIIIIIll1l11) === false) {
-$this->IIIIIIll11Il[] = $key;
+public function validate($IIIIIIll11ll) {
+$this->IIIIIIll11lI = $IIIIIIll11ll;
+$IIIIIIll111I = false;
+foreach ($IIIIIIll11ll as $key =>$IIIIIIll111l) {
+if ((strlen($IIIIIIll111l) == 0 ||$GLOBALS['IIIIIIll1111']($key,$this->IIIIIIll1l1l) === false) &&$GLOBALS['IIIIIIll1111']($key,$this->IIIIIIll11II) === false) {
+$this->IIIIIIll11I1[] = $key;
 continue;
 }
-$IIIIIIIllllI = self::validateItem($IIIIIIll111I,$this->IIIIIIll1l1I[$key]);
+$IIIIIIIllllI = self::validateItem($IIIIIIll111l,$this->IIIIIIll1l1l[$key]);
 if ($IIIIIIIllllI === false) {
-$IIIIIIll11l1 = true;
-$this->addError($key,$this->IIIIIIll1l1I[$key]);
+$IIIIIIll111I = true;
+$this->addError($key,$this->IIIIIIll1l1l[$key]);
 }else {
-$this->IIIIIIll11Il[] = $key;
+$this->IIIIIIll11I1[] = $key;
 }
 }
-return(!$IIIIIIll11l1);
+return(!$IIIIIIll111I);
 }
 public function getScript() {
 if (!empty($this->errors)) {
 $errors = array();
-foreach ($this->errors as $key =>$IIIIIIll111I) {
+foreach ($this->errors as $key =>$IIIIIIll111l) {
 $errors[] = "'INPUT[name={$key}]'";
 }
-$IIIIIIl1IIII = '$$('.$GLOBALS['IIIIIIlII1ll'](',',$errors) .').addClass("unvalidated");';
-$IIIIIIl1IIII .= "alert('there are errors in the form');";
+$IIIIIIl1IIIl = '$$('.$GLOBALS['IIIIIIlII1ll'](',',$errors) .').addClass("unvalidated");';
+$IIIIIIl1IIIl .= "alert('there are errors in the form');";
 }
-if (!empty($this->IIIIIIll11Il)) {
-$IIIIIIll11Il = array();
-foreach ($this->IIIIIIll11Il as $key) {
-$IIIIIIll11Il[] = "'INPUT[name={$key}]'";
+if (!empty($this->IIIIIIll11I1)) {
+$IIIIIIll11I1 = array();
+foreach ($this->IIIIIIll11I1 as $key) {
+$IIIIIIll11I1[] = "'INPUT[name={$key}]'";
 }
-$IIIIIIl1IIII .= '$$('.$GLOBALS['IIIIIIlII1ll'](',',$IIIIIIll11Il) .').removeClass("unvalidated");';
+$IIIIIIl1IIIl .= '$$('.$GLOBALS['IIIIIIlII1ll'](',',$IIIIIIll11I1) .').removeClass("unvalidated");';
 }
-$IIIIIIl1IIII = "<script type='text/javascript'>{$IIIIIIl1IIII} </script>";
-return($IIIIIIl1IIII);
+$IIIIIIl1IIIl = "<script type='text/javascript'>{$IIIIIIl1IIIl} </script>";
+return($IIIIIIl1IIIl);
 }
-public function sanatize($IIIIIIll11lI) {
-foreach ($IIIIIIll11lI as $key =>$IIIIIIll111I) {
-if ($GLOBALS['IIIIIIll111l']($key,$this->IIIIIIll1l1l) === false &&!$GLOBALS['IIIIIII1IIIl']($key,$this->IIIIIIll1l1l))
+public function sanatize($IIIIIIll11ll) {
+foreach ($IIIIIIll11ll as $key =>$IIIIIIll111l) {
+if ($GLOBALS['IIIIIIll1111']($key,$this->IIIIIIll1l11) === false &&!$GLOBALS['IIIIIII1IIIl']($key,$this->IIIIIIll1l11))
 continue;
-$IIIIIIll11lI[$key] = self::sanatizeItem($IIIIIIll111I,$this->IIIIIIll1l1I[$key]);
+$IIIIIIll11ll[$key] = self::sanatizeItem($IIIIIIll111l,$this->IIIIIIll1l1l[$key]);
 }
-return($IIIIIIll11lI);
+return($IIIIIIll11ll);
 }
-private function addError($IIIIIIl1IIlI,$type = 'string') {
-$this->errors[$IIIIIIl1IIlI] = $type;
+private function addError($IIIIIIl1IIll,$type = 'string') {
+$this->errors[$IIIIIIl1IIll] = $type;
 }
-public static function sanatizeItem($IIIIIIl1II1I,$type) {
-$IIIIIIl1II1l = NULL;
+public static function sanatizeItem($IIIIIIl1II1l,$type) {
+$IIIIIIl1II11 = NULL;
 switch ($type) {
 case 'url':
-$IIIIIIl1II11 = FILTER_SANITIZE_URL;
+$IIIIIIl1IlII = FILTER_SANITIZE_URL;
 break;
 case 'int':
-$IIIIIIl1II11 = FILTER_SANITIZE_NUMBER_INT;
+$IIIIIIl1IlII = FILTER_SANITIZE_NUMBER_INT;
 break;
 case 'float':
-$IIIIIIl1II11 = FILTER_SANITIZE_NUMBER_FLOAT;
-$IIIIIIl1II1l = FILTER_FLAG_ALLOW_FRACTION |FILTER_FLAG_ALLOW_THOUSAND;
+$IIIIIIl1IlII = FILTER_SANITIZE_NUMBER_FLOAT;
+$IIIIIIl1II11 = FILTER_FLAG_ALLOW_FRACTION |FILTER_FLAG_ALLOW_THOUSAND;
 break;
 case 'email':
-$IIIIIIl1II1I = $GLOBALS['IIIIIIlll1lI']($IIIIIIl1II1I,0,254);
-$IIIIIIl1II11 = FILTER_SANITIZE_EMAIL;
+$IIIIIIl1II1l = $GLOBALS['IIIIIIlll1ll']($IIIIIIl1II1l,0,254);
+$IIIIIIl1IlII = FILTER_SANITIZE_EMAIL;
 break;
 case 'string':
 default:
-$IIIIIIl1II11 = FILTER_SANITIZE_STRING;
-$IIIIIIl1II1l = FILTER_FLAG_NO_ENCODE_QUOTES;
+$IIIIIIl1IlII = FILTER_SANITIZE_STRING;
+$IIIIIIl1II11 = FILTER_FLAG_NO_ENCODE_QUOTES;
 break;
 }
-$IIIIIIl1IIII = filter_var($IIIIIIl1II1I,$IIIIIIl1II11,$IIIIIIl1II1l);
-return($IIIIIIl1IIII);
+$IIIIIIl1IIIl = filter_var($IIIIIIl1II1l,$IIIIIIl1IlII,$IIIIIIl1II11);
+return($IIIIIIl1IIIl);
 }
-public static function validateItem($IIIIIIl1II1I,$type) {
-if ($GLOBALS['IIIIIII1IIIl']($type,self::$IIIIIIll1ll1)) {
-$IIIIIIl1IlIl = filter_var($IIIIIIl1II1I,FILTER_VALIDATE_REGEXP,array("options"=>array("regexp"=>'!'.self::$IIIIIIll1ll1[$type] .'!i'))) !== false;
-return($IIIIIIl1IlIl);
+public static function validateItem($IIIIIIl1II1l,$type) {
+if ($GLOBALS['IIIIIII1IIIl']($type,self::$IIIIIIll1l1I)) {
+$IIIIIIl1IlI1 = filter_var($IIIIIIl1II1l,FILTER_VALIDATE_REGEXP,array("options"=>array("regexp"=>'!'.self::$IIIIIIll1l1I[$type] .'!i'))) !== false;
+return($IIIIIIl1IlI1);
 }
-$IIIIIIl1II11 = false;
+$IIIIIIl1IlII = false;
 switch ($type) {
 case 'email':
-$IIIIIIl1II1I = $GLOBALS['IIIIIIlll1lI']($IIIIIIl1II1I,0,254);
-$IIIIIIl1II11 = FILTER_VALIDATE_EMAIL;
+$IIIIIIl1II1l = $GLOBALS['IIIIIIlll1ll']($IIIIIIl1II1l,0,254);
+$IIIIIIl1IlII = FILTER_VALIDATE_EMAIL;
 break;
 case 'int':
-$IIIIIIl1II11 = FILTER_VALIDATE_INT;
+$IIIIIIl1IlII = FILTER_VALIDATE_INT;
 break;
 case 'boolean':
-$IIIIIIl1II11 = FILTER_VALIDATE_BOOLEAN;
+$IIIIIIl1IlII = FILTER_VALIDATE_BOOLEAN;
 break;
 case 'ip':
-$IIIIIIl1II11 = FILTER_VALIDATE_IP;
+$IIIIIIl1IlII = FILTER_VALIDATE_IP;
 break;
 case 'url':
-$IIIIIIl1II11 = FILTER_VALIDATE_URL;
+$IIIIIIl1IlII = FILTER_VALIDATE_URL;
 break;
 }
-return ($IIIIIIl1II11 === false) ?false : filter_var($IIIIIIl1II1I,$IIIIIIl1II11) !== false ?true : false;
+return ($IIIIIIl1IlII === false) ?false : filter_var($IIIIIIl1II1l,$IIIIIIl1IlII) !== false ?true : false;
 }
 }
 ?>

@@ -166,7 +166,7 @@ class AlexaSDK extends AlexaSDK_Abstract{
             }
             
             /* Create new object of Cache classe */
-            $this->cacheClass = new AlexaSDK_Cache();
+            $this->cacheClass = new AlexaSDK_Cache($this->settings->cache);
             
             /* Check if we're using a cached login */
             /*if (is_array($discoveryUrl)) {

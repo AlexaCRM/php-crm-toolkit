@@ -16,10 +16,11 @@ class AlexaSDK_Cache{
                 
                 if (function_exists('wp_using_ext_object_cache') && wp_using_ext_object_cache()){
                     
-                        $this->cache = new AlexaSDK_WPCache();
+                        $this->cache = new AlexaSDK_WPCache($options);
                 }else{
+                        AlexaSDK_PhpFastCache::$server = array(array($options["server"], $options["port"]));
                     
-                        $this->cache = new AlexaSDK_PhpFastCache();
+                        $this->cache = new AlexaSDK_PhpFastCache($options);
                 }
         }
         

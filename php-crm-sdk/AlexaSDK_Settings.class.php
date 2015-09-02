@@ -102,6 +102,9 @@ class AlexaSDK_Settings{
         public $organizationVersion;
         
         
+        public $cache = array("server" => "localhost", "port" => 11211);
+        
+        
         /**
          * Set up settings using constructor
          * 

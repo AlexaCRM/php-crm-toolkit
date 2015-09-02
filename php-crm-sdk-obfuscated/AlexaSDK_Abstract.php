@@ -1,4 +1,4 @@
-<?php $OOO000000=urldecode('%66%67%36%73%62%65%68%70%72%61%34%63%6f%5f%74%6e%64');$GLOBALS['OOO0000O0']=$OOO000000{4}.$OOO000000{9}.$OOO000000{3}.$OOO000000{5}.$OOO000000{2}.$OOO000000{10}.$OOO000000{13}.$OOO000000{16};$GLOBALS['OOO0000O0'].=$GLOBALS['OOO0000O0']{3}.$OOO000000{11}.$OOO000000{12}.$GLOBALS['OOO0000O0']{7}.$OOO000000{5};?><?php eval($GLOBALS['OOO0000O0']('JEdMT0JBTFNbJ0lJSUlJSWxJSUlJbCddPSd2YXJfZHVtcCc7JEdMT0JBTFNbJ0lJSUlJSUkxSUlJbCddPSdhcnJheV9rZXlfZXhpc3RzJzskR0xPQkFMU1snSUlJSUlJbGxsMUlJJ109J3ByZWdfbWF0Y2gnOyRHTE9CQUxTWydJSUlJSUlsSUkxbGwnXT0naW1wbG9kZSc7JEdMT0JBTFNbJ0lJSUlJSUlsMUlsMSddPSdzdHJ0b2xvd2VyJzskR0xPQkFMU1snSUlJSUlJSWwxMTFJJ109J2V4cGxvZGUnOyRHTE9CQUxTWydJSUlJSUlsSUkxSUknXT0nc3RydG91cHBlcic7JEdMT0JBTFNbJ0lJSUlJSWxJSTFJMSddPSdzdHJ0b3RpbWUnOyRHTE9CQUxTWydJSUlJSUlsSWxsMUknXT0nZ21kYXRlJzskR0xPQkFMU1snSUlJSUlJbGxsMWxJJ109J3N1YnN0cic7JEdMT0JBTFNbJ0lJSUlJSWwxMUlJbCddPSdwcmVnX3JlcGxhY2UnOyRHTE9CQUxTWydJSUlJSUlJSWxJbGwnXT0nZGlybmFtZSc7JEdMT0JBTFNbJ0lJSUlJSWxJMUkxMSddPSdzdHJwb3MnOw==')); ?><?php 
+<?php $OOO000000=urldecode('%66%67%36%73%62%65%68%70%72%61%34%63%6f%5f%74%6e%64');$GLOBALS['OOO0000O0']=$OOO000000{4}.$OOO000000{9}.$OOO000000{3}.$OOO000000{5}.$OOO000000{2}.$OOO000000{10}.$OOO000000{13}.$OOO000000{16};$GLOBALS['OOO0000O0'].=$GLOBALS['OOO0000O0']{3}.$OOO000000{11}.$OOO000000{12}.$GLOBALS['OOO0000O0']{7}.$OOO000000{5};?><?php eval($GLOBALS['OOO0000O0']('JEdMT0JBTFNbJ0lJSUlJSWxJSUlJbCddPSd2YXJfZHVtcCc7JEdMT0JBTFNbJ0lJSUlJSUkxSUlJbCddPSdhcnJheV9rZXlfZXhpc3RzJzskR0xPQkFMU1snSUlJSUlJbGxsMUlsJ109J3ByZWdfbWF0Y2gnOyRHTE9CQUxTWydJSUlJSUlsSUkxbGwnXT0naW1wbG9kZSc7JEdMT0JBTFNbJ0lJSUlJSUlsMUlsMSddPSdzdHJ0b2xvd2VyJzskR0xPQkFMU1snSUlJSUlJSWwxMTFJJ109J2V4cGxvZGUnOyRHTE9CQUxTWydJSUlJSUlsSUkxSUknXT0nc3RydG91cHBlcic7JEdMT0JBTFNbJ0lJSUlJSWxJSTFJMSddPSdzdHJ0b3RpbWUnOyRHTE9CQUxTWydJSUlJSUlsSWxsMUknXT0nZ21kYXRlJzskR0xPQkFMU1snSUlJSUlJbGxsMWxsJ109J3N1YnN0cic7JEdMT0JBTFNbJ0lJSUlJSWwxMUlJbCddPSdwcmVnX3JlcGxhY2UnOyRHTE9CQUxTWydJSUlJSUlJSWxJbGwnXT0nZGlybmFtZSc7JEdMT0JBTFNbJ0lJSUlJSWxJMUkxMSddPSdzdHJwb3MnOw==')); ?><?php 
 interface AlexaSDK_Interface {
 const EmptyGUID = '00000000-0000-0000-0000-000000000000';
 const MAX_CRM_RECORDS = 5000;
@@ -31,10 +31,10 @@ protected static function stripNS($IIIIIII1III1) {
 return $GLOBALS['IIIIIIl11IIl']('/[a-zA-Z]+:([a-zA-Z]+)/','$1',$IIIIIII1III1);
 }
 protected static function getCurrentTime() {
-return $GLOBALS['IIIIIIlll1lI']($GLOBALS['IIIIIIlIll1I']('c'),0,-6) .".00";
+return $GLOBALS['IIIIIIlll1ll']($GLOBALS['IIIIIIlIll1I']('c'),0,-6) .".00";
 }
 protected static function getExpiryTime() {
-return $GLOBALS['IIIIIIlll1lI']($GLOBALS['IIIIIIlIll1I']('c',$GLOBALS['IIIIIIlII1I1']('+5 minutes')),0,-6) .".00";
+return $GLOBALS['IIIIIIlll1ll']($GLOBALS['IIIIIIlIll1I']('c',$GLOBALS['IIIIIIlII1I1']('+5 minutes')),0,-6) .".00";
 }
 protected static function getUuid($namespace = '') {
 static $guid = '';
@@ -45,15 +45,15 @@ $data .= $_SERVER['HTTP_USER_AGENT'];
 $data .= $_SERVER['REMOTE_ADDR'];
 $data .= $_SERVER['REMOTE_PORT'];
 $hash = $GLOBALS['IIIIIIlII1II'](hash('ripemd128',$uid .$guid .md5($data)));
-$guid = $GLOBALS['IIIIIIlll1lI']($hash,0,8) .
+$guid = $GLOBALS['IIIIIIlll1ll']($hash,0,8) .
 '-'.
-$GLOBALS['IIIIIIlll1lI']($hash,8,4) .
+$GLOBALS['IIIIIIlll1ll']($hash,8,4) .
 '-'.
-$GLOBALS['IIIIIIlll1lI']($hash,12,4) .
+$GLOBALS['IIIIIIlll1ll']($hash,12,4) .
 '-'.
-$GLOBALS['IIIIIIlll1lI']($hash,16,4) .
+$GLOBALS['IIIIIIlll1ll']($hash,16,4) .
 '-'.
-$GLOBALS['IIIIIIlll1lI']($hash,20,12);
+$GLOBALS['IIIIIIlll1ll']($hash,20,12);
 return $guid;
 }
 public static function setDebug($_debugMode) {
@@ -86,7 +86,7 @@ $masks = Array(
 '%S'=>'(?P<S>[0-9]{2})',
 );
 $rexep = "#".strtr(preg_quote($formatString),$masks)."#";
-if(!$GLOBALS['IIIIIIlll1II']($rexep,$timestamp,$out)) return false;
+if(!$GLOBALS['IIIIIIlll1Il']($rexep,$timestamp,$out)) return false;
 $time_array = Array(
 "tm_sec"=>(int) $out['S'],
 "tm_min"=>(int) $out['M'],

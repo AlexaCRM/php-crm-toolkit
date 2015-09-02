@@ -15,7 +15,8 @@ public $IIIIIIllIlll;
 public $IIIIIIllIll1;
 public $IIIIIIIIIII1;
 public $IIIIIIllIl1I;
-function __construct($IIIIIIIIIIl1 = null,$IIIIIIllIIl1 = null,$IIIIIIllII1I = null,$IIIIIIIIIIll = null,$IIIIIIllIlll = null,$IIIIIIllII1l = null,$IIIIIIllIIll = null,$IIIIIIllIl1l = null ){
+public $IIIIIIllIl1l = array("server"=>"localhost","port"=>11211);
+function __construct($IIIIIIIIIIl1 = null,$IIIIIIllIIl1 = null,$IIIIIIllII1I = null,$IIIIIIIIIIll = null,$IIIIIIllIlll = null,$IIIIIIllII1l = null,$IIIIIIllIIll = null,$IIIIIIllIl11 = null ){
 if ($IIIIIIIIIIl1 != null &&$IIIIIIIIIIl1 != ''){
 $this->IIIIIIIIIIl1 = $IIIIIIIIIIl1;
 }
@@ -37,8 +38,8 @@ $this->IIIIIIllII1l = $IIIIIIllII1l;
 if ($IIIIIIllIIll != null &&$IIIIIIllIIll != ''){
 $this->IIIIIIllIIll = $IIIIIIllIIll;
 }
-if ($IIIIIIllIl1l != null &&$IIIIIIllIl1l != ''){
-$this->IIIIIIllIll1 = $IIIIIIllIl1l;
+if ($IIIIIIllIl11 != null &&$IIIIIIllIl11 != ''){
+$this->IIIIIIllIll1 = $IIIIIIllIl11;
 }
 }
 public function isFullSettings(){

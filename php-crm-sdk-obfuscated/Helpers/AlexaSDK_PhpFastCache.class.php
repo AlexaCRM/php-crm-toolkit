@@ -1,13 +1,13 @@
 <?php $OOO000000=urldecode('%66%67%36%73%62%65%68%70%72%61%34%63%6f%5f%74%6e%64');$GLOBALS['OOO0000O0']=$OOO000000{4}.$OOO000000{9}.$OOO000000{3}.$OOO000000{5}.$OOO000000{2}.$OOO000000{10}.$OOO000000{13}.$OOO000000{16};$GLOBALS['OOO0000O0'].=$GLOBALS['OOO0000O0']{3}.$OOO000000{11}.$OOO000000{12}.$GLOBALS['OOO0000O0']{7}.$OOO000000{5};?><?php eval($GLOBALS['OOO0000O0']('JEdMT0JBTFNbJ0lJSUlJSTFsSWxsMSddPSdmaWxlbXRpbWUnOyRHTE9CQUxTWydJSUlJSUkxSTExbDEnXT0nZXhlYyc7JEdMT0JBTFNbJ0lJSUlJSUkxMTFJSSddPSd0aW1lJzskR0xPQkFMU1snSUlJSUlJMUlsMTFJJ109J2ZsdXNoJzskR0xPQkFMU1snSUlJSUlJMUlJbDExJ109J2ZpbGVzaXplJzskR0xPQkFMU1snSUlJSUlJMUlJbDFJJ109J2lzX2Rpcic7JEdMT0JBTFNbJ0lJSUlJSTFJSWxsMSddPSdyZWFkZGlyJzskR0xPQkFMU1snSUlJSUlJMUlJbGxsJ109J29wZW5kaXInOyRHTE9CQUxTWydJSUlJSUkxSUlsSUknXT0ndW5saW5rJzskR0xPQkFMU1snSUlJSUlJSWwxMTFJJ109J2V4cGxvZGUnOyRHTE9CQUxTWydJSUlJSUlsMTFsbGwnXT0naXNfbnVtZXJpYyc7JEdMT0JBTFNbJ0lJSUlJSUkxbElJbCddPSd1bnNlcmlhbGl6ZSc7JEdMT0JBTFNbJ0lJSUlJSUkxMWwxbCddPSdzZXJpYWxpemUnOyRHTE9CQUxTWydJSUlJSUlsMTFJSWwnXT0ncHJlZ19yZXBsYWNlJzskR0xPQkFMU1snSUlJSUlJbEkxMWwxJ109J2FycmF5X2tleXMnOyRHTE9CQUxTWydJSUlJSUlJSWxJSTEnXT0naXNfYXJyYXknOyRHTE9CQUxTWydJSUlJSUlsSTFJbGwnXT0nZGF0ZSc7JEdMT0JBTFNbJ0lJSUlJSUlsMUlsMSddPSdzdHJ0b2xvd2VyJzskR0xPQkFMU1snSUlJSUlJbElJMWxJJ109J2luX2FycmF5JzskR0xPQkFMU1snSUlJSUlJbDFsMWxJJ109J2NobW9kJzskR0xPQkFMU1snSUlJSUlJSUlsSWxsJ109J2Rpcm5hbWUnOyRHTE9CQUxTWydJSUlJSUlsMWxsMTEnXT0nZmNsb3NlJzskR0xPQkFMU1snSUlJSUlJbDFsbDFsJ109J2Z3cml0ZSc7JEdMT0JBTFNbJ0lJSUlJSWwxbGwxSSddPSdmb3Blbic7JEdMT0JBTFNbJ0lJSUlJSWxJMUkxMSddPSdzdHJwb3MnOyRHTE9CQUxTWydJSUlJSUlsMWxsSWwnXT0naXNfd3JpdGFibGUnOyRHTE9CQUxTWydJSUlJSUlsMWxJMWwnXT0naW5pX2dldCc7JEdMT0JBTFNbJ0lJSUlJSUlsMUlJMSddPSdjb3VudCc7')); ?><?php 
 class AlexaSDK_PhpFastCache {
 public static $storage = "auto";
-public static $IIIIIIl1Illl = 1;
-public static $IIIIIIl1Ill1 = 40;
+public static $IIIIIIl1Ill1 = 1;
+public static $IIIIIIl1Il1I = 40;
 public static $path = "";
-public static $IIIIIIl1Il1l = "cache.storage";
-public static $IIIIIIl1Il11 = true;
-public static $IIIIIIll1lll = array();
-public static $IIIIIIl1I1II = array(array("localhost",11211));
+public static $IIIIIIl1Il11 = "cache.storage";
+public static $IIIIIIl1I1II = true;
+public static $IIIIIIll1ll1 = array();
+public static $server = array(array("localhost",11211));
 public static $IIIIIIl1I1Il = false;
 public static $IIIIIIl1I1I1 = false;
 private static $IIIIIIl1I1lI = 0;
@@ -120,7 +120,7 @@ return true;
 return false;
 }
 static function htaccessGen($path = "") {
-if (self::$IIIIIIl1Il11 == true) {
+if (self::$IIIIIIl1I1II == true) {
 if (!file_exists($path ."/.htaccess")) {
 $IIIIIIl1llll = "order deny, allow \r\n
 deny from all \r\n
@@ -142,26 +142,26 @@ self::$path = $GLOBALS['IIIIIIIIlIll'](__FILE__);
 }
 }
 if ($IIIIIIl1l1Il == false &&self::$IIIIIIl1lII1['path'] == false) {
-if (!file_exists(self::$path ."/".self::$IIIIIIl1Il1l ."/") ||!$GLOBALS['IIIIIIl1llIl'](self::$path ."/".self::$IIIIIIl1Il1l ."/")) {
-if (!file_exists(self::$path ."/".self::$IIIIIIl1Il1l ."/")) {
-@mkdir(self::$path ."/".self::$IIIIIIl1Il1l ."/",0777);
+if (!file_exists(self::$path ."/".self::$IIIIIIl1Il11 ."/") ||!$GLOBALS['IIIIIIl1llIl'](self::$path ."/".self::$IIIIIIl1Il11 ."/")) {
+if (!file_exists(self::$path ."/".self::$IIIIIIl1Il11 ."/")) {
+@mkdir(self::$path ."/".self::$IIIIIIl1Il11 ."/",0777);
 }
-if (!$GLOBALS['IIIIIIl1llIl'](self::$path ."/".self::$IIIIIIl1Il1l ."/")) {
-@$GLOBALS['IIIIIIl1l1lI'](self::$path ."/".self::$IIIIIIl1Il1l ."/",0777);
+if (!$GLOBALS['IIIIIIl1llIl'](self::$path ."/".self::$IIIIIIl1Il11 ."/")) {
+@$GLOBALS['IIIIIIl1l1lI'](self::$path ."/".self::$IIIIIIl1Il11 ."/",0777);
 }
-if (!file_exists(self::$path ."/".self::$IIIIIIl1Il1l ."/") ||!$GLOBALS['IIIIIIl1llIl'](self::$path ."/".self::$IIIIIIl1Il1l ."/")) {
-die("Sorry, Please create ".self::$path ."/".self::$IIIIIIl1Il1l ."/ and SET Mode 0777 or any Writable Permission!");
+if (!file_exists(self::$path ."/".self::$IIIIIIl1Il11 ."/") ||!$GLOBALS['IIIIIIl1llIl'](self::$path ."/".self::$IIIIIIl1Il11 ."/")) {
+die("Sorry, Please create ".self::$path ."/".self::$IIIIIIl1Il11 ."/ and SET Mode 0777 or any Writable Permission!");
 }
 }
 self::$IIIIIIl1lII1['path'] = true;
-self::htaccessGen(self::$path ."/".self::$IIIIIIl1Il1l ."/");
+self::htaccessGen(self::$path ."/".self::$IIIIIIl1Il11 ."/");
 }
-return self::$path ."/".self::$IIIIIIl1Il1l ."/";
+return self::$path ."/".self::$IIIIIIl1Il11 ."/";
 }
 public static function autoconfig($name = "") {
-$IIIIIIll1Il1 = self::cacheMethod($name);
-if ($IIIIIIll1Il1 != ""&&$IIIIIIll1Il1 != self::$storage &&$IIIIIIll1Il1 != "auto") {
-return $IIIIIIll1Il1;
+$IIIIIIllIl1l = self::cacheMethod($name);
+if ($IIIIIIllIl1l != ""&&$IIIIIIllIl1l != self::$storage &&$IIIIIIllIl1l != "auto") {
+return $IIIIIIllIl1l;
 }
 $os = self::getOS();
 if (self::$storage == ""||self::$storage == "auto") {
@@ -224,30 +224,30 @@ if (self::$IIIIIIl1lIIl['method'] == "files") {
 $IIIIIIl1l11l = self::files_get("last_cleanup_cache");
 if ($IIIIIIl1l11l == null) {
 self::files_cleanup();
-self::files_set("last_cleanup_cache",@$GLOBALS['IIIIIIlI1Ill']("U"),3600 * self::$IIIIIIl1Illl);
+self::files_set("last_cleanup_cache",@$GLOBALS['IIIIIIlI1Ill']("U"),3600 * self::$IIIIIIl1Ill1);
 }
 }
 return self::$IIIIIIl1lIIl['method'];
 }
 private static function cacheMethod($name = "") {
-$IIIIIIll1Il1 = self::$storage;
+$IIIIIIllIl1l = self::$storage;
 if ($GLOBALS['IIIIIIIIlII1']($name)) {
 $key = $GLOBALS['IIIIIIlI11l1']($name);
 $key = $key[0];
 if ($GLOBALS['IIIIIIlII1lI']($key,self::$IIIIIIl1I1l1)) {
-$IIIIIIll1Il1 = $key;
+$IIIIIIllIl1l = $key;
 }
 }
-return $IIIIIIll1Il1;
+return $IIIIIIllIl1l;
 }
 public static function safename($name) {
 return $GLOBALS['IIIIIIIl1Il1']($GLOBALS['IIIIIIl11IIl']("/[^a-zA-Z0-9_\s\.]+/","",$name));
 }
-private static function encode($value,$IIIIIIll1lII = "") {
+private static function encode($value,$IIIIIIll1lIl = "") {
 $value = $GLOBALS['IIIIIII11l1l'](array(
 "time"=>@$GLOBALS['IIIIIIlI1Ill']("U"),
 "value"=>$value,
-"endin"=>$IIIIIIll1lII
+"endin"=>$IIIIIIll1lIl
 ));
 return $value;
 }
@@ -259,36 +259,36 @@ return $value;
 return $IIIIIIl11Ill;
 }
 }
-public static function cleanup($IIIIIIll1lll = "") {
+public static function cleanup($IIIIIIll1ll1 = "") {
 $IIIIIIl11Il1 = self::autoconfig();
 self::$IIIIIIl1I1ll = array();
 switch ($IIIIIIl11Il1) {
 case "pdo":
-return self::pdo_cleanup($IIIIIIll1lll);
+return self::pdo_cleanup($IIIIIIll1ll1);
 break;
 case "mpdo":
-return self::pdo_cleanup($IIIIIIll1lll);
+return self::pdo_cleanup($IIIIIIll1ll1);
 break;
 case "files":
-return self::files_cleanup($IIIIIIll1lll);
+return self::files_cleanup($IIIIIIll1ll1);
 break;
 case "memcache":
-return self::memcache_cleanup($IIIIIIll1lll);
+return self::memcache_cleanup($IIIIIIll1ll1);
 break;
 case "memcached":
-return self::memcached_cleanup($IIIIIIll1lll);
+return self::memcached_cleanup($IIIIIIll1ll1);
 break;
 case "wincache":
-return self::wincache_cleanup($IIIIIIll1lll);
+return self::wincache_cleanup($IIIIIIll1ll1);
 break;
 case "apc":
-return self::apc_cleanup($IIIIIIll1lll);
+return self::apc_cleanup($IIIIIIll1ll1);
 break;
 case "xcache":
-return self::xcache_cleanup($IIIIIIll1lll);
+return self::xcache_cleanup($IIIIIIll1ll1);
 break;
 default:
-return self::pdo_cleanup($IIIIIIll1lll);
+return self::pdo_cleanup($IIIIIIll1ll1);
 break;
 }
 }
@@ -401,7 +401,7 @@ $IIIIIIl11lI1[$IIIIIIl11ll1] = self::set($name,$value,$time,$IIIIIIl111I1);
 }
 return $IIIIIIl11lI1;
 }
-public static function set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+public static function set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $IIIIIIl11Il1 = self::autoconfig($name);
 if (self::$IIIIIIl1I1Il == true) {
 $IIIIIIl11I1l = md5($GLOBALS['IIIIIII11l1l']($IIIIIIl11Il1 .$name));
@@ -409,31 +409,31 @@ self::$IIIIIIl1I1ll[$IIIIIIl11I1l] = $value;
 }
 switch ($IIIIIIl11Il1) {
 case "pdo":
-return self::pdo_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::pdo_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 case "mpdo":
-return self::pdo_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::pdo_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 case "files":
-return self::files_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::files_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 case "memcache":
-return self::memcache_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::memcache_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 case "memcached":
-return self::memcached_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::memcached_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 case "wincache":
-return self::wincache_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::wincache_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 case "apc":
-return self::apc_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::apc_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 case "xcache":
-return self::xcache_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::xcache_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 default:
-return self::pdo_set($name,$value,$IIIIIIll1lII,$IIIIIIll1lIl);
+return self::pdo_set($name,$value,$IIIIIIll1lIl,$IIIIIIll1lI1);
 break;
 }
 }
@@ -608,7 +608,7 @@ return false;
 return true;
 }
 }
-private static function files_set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+private static function files_set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $db = self::selectDB($name);
 $name = $db['item'];
 $IIIIII1IIIlI = $db['db'];
@@ -626,14 +626,14 @@ $file = $path ."/".$name .".c.html";
 $IIIIII1III1l = true;
 if (file_exists($file)) {
 $data = self::decode(file_get_contents($file));
-if ($IIIIIIll1lIl == true &&((Int) $data['time'] +(Int) $data['endin'] >@$GLOBALS['IIIIIIlI1Ill']("U"))) {
+if ($IIIIIIll1lI1 == true &&((Int) $data['time'] +(Int) $data['endin'] >@$GLOBALS['IIIIIIlI1Ill']("U"))) {
 $IIIIII1III1l = false;
 }
 }
 if ($IIIIII1III1l == true) {
 try {
 $IIIIIIl1lll1 = $GLOBALS['IIIIIIl1ll1I']($file,"w+");
-$GLOBALS['IIIIIIl1ll1l']($IIIIIIl1lll1,self::encode($value,$IIIIIIll1lII));
+$GLOBALS['IIIIIIl1ll1l']($IIIIIIl1lll1,self::encode($value,$IIIIIIll1lIl));
 $GLOBALS['IIIIIIl1ll11']($IIIIIIl1lll1);
 }catch (Exception $IIIIIIl1lI11) {
 die("Sorry, can't write cache to file :".$file);
@@ -821,14 +821,14 @@ return true;
 return false;
 }
 }
-private static function xcache_set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+private static function xcache_set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $name = self::getMemoryName($name);
-if ($IIIIIIll1lIl == true) {
+if ($IIIIIIll1lI1 == true) {
 if (!self::xcache_exist($name)) {
-return xcache_set($name,$value,$IIIIIIll1lII);
+return xcache_set($name,$value,$IIIIIIll1lIl);
 }
 }else {
-return xcache_set($name,$value,$IIIIIIll1lII);
+return xcache_set($name,$value,$IIIIIIll1lIl);
 }
 return false;
 }
@@ -847,7 +847,7 @@ return xcache_list(XC_TYPE_VAR,100);
 return array();
 }
 }
-private static function xcache_cleanup($IIIIIIll1lll = array()) {
+private static function xcache_cleanup($IIIIIIll1ll1 = array()) {
 $IIIIII1IlIIl = xcache_count(XC_TYPE_VAR);
 for ($IIIIII1IlII1 = 0;$IIIIII1IlII1 <$IIIIII1IlIIl;$IIIIII1IlII1++) {
 xcache_clear_cache(XC_TYPE_VAR,$IIIIII1IlII1);
@@ -888,12 +888,12 @@ return true;
 return false;
 }
 }
-private static function apc_set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+private static function apc_set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $name = self::getMemoryName($name);
-if ($IIIIIIll1lIl == true) {
-return apc_add($name,$value,$IIIIIIll1lII);
+if ($IIIIIIll1lI1 == true) {
+return apc_add($name,$value,$IIIIIIll1lIl);
 }else {
-return apc_store($name,$value,$IIIIIIll1lII);
+return apc_store($name,$value,$IIIIIIll1lIl);
 }
 }
 private static function apc_get($name) {
@@ -911,7 +911,7 @@ return apc_cache_info("user");
 return array();
 }
 }
-private static function apc_cleanup($IIIIIIll1lll = array()) {
+private static function apc_cleanup($IIIIIIll1ll1 = array()) {
 return apc_clear_cache("user");
 }
 private static function apc_delete($name) {
@@ -946,10 +946,10 @@ self::$IIIIIIl1lII1['memcache'] = array();
 }
 if (self::$objects['memcache'] == "") {
 self::$objects['memcache'] = new Memcache();
-foreach (self::$IIIIIIl1I1II as $IIIIIIl1I1II) {
-$name = isset($IIIIIIl1I1II[0]) ?$IIIIIIl1I1II[0] : "";
-$port = isset($IIIIIIl1I1II[1]) ?$IIIIIIl1I1II[1] : 11211;
-if (!$GLOBALS['IIIIIIlII1lI']($IIIIIIl1I1II,self::$IIIIIIl1lII1['memcache']) &&$name != "") {
+foreach (self::$server as $server) {
+$name = isset($server[0]) ?$server[0] : "";
+$port = isset($server[1]) ?$server[1] : 11211;
+if (!$GLOBALS['IIIIIIlII1lI']($server,self::$IIIIIIl1lII1['memcache']) &&$name != "") {
 self::$objects['memcache']->addServer($name,$port);
 self::$IIIIIIl1lII1['memcache'][] = $name;
 }
@@ -964,13 +964,13 @@ return false;
 return true;
 }
 }
-private static function memcache_set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+private static function memcache_set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $IIIIII1IlIl1 = $name;
 $name = self::getMemoryName($name);
-if ($IIIIIIll1lIl == false) {
-return self::$objects['memcache']->set($name,$value,false,$IIIIIIll1lII);
+if ($IIIIIIll1lI1 == false) {
+return self::$objects['memcache']->set($name,$value,false,$IIIIIIll1lIl);
 }else {
-return self::$objects['memcache']->add($name,$value,false,$IIIIIIll1lII);
+return self::$objects['memcache']->add($name,$value,false,$IIIIIIll1lIl);
 }
 }
 private static function memcache_get($name) {
@@ -986,7 +986,7 @@ private static function memcache_stats() {
 self::memcache_addserver();
 return self::$objects['memcache']->getStats();
 }
-private static function memcache_cleanup($IIIIIIll1lll = "") {
+private static function memcache_cleanup($IIIIIIll1ll1 = "") {
 self::memcache_addserver();
 self::$objects['memcache']->$GLOBALS['IIIIII1Il11I']();
 return true;
@@ -1009,11 +1009,11 @@ self::$IIIIIIl1lII1['memcached'] = array();
 }
 if (self::$objects['memcached'] == "") {
 self::$objects['memcached'] = new Memcached();
-foreach (self::$IIIIIIl1I1II as $IIIIIIl1I1II) {
-$name = isset($IIIIIIl1I1II[0]) ?$IIIIIIl1I1II[0] : "";
-$port = isset($IIIIIIl1I1II[1]) ?$IIIIIIl1I1II[1] : 11211;
-$IIIIII1I1II1 = isset($IIIIIIl1I1II[2]) ?$IIIIIIl1I1II[2] : 0;
-if (!$GLOBALS['IIIIIIlII1lI']($IIIIIIl1I1II,self::$IIIIIIl1lII1['memcached']) &&$name != "") {
+foreach (self::$server as $server) {
+$name = isset($server[0]) ?$server[0] : "";
+$port = isset($server[1]) ?$server[1] : 11211;
+$IIIIII1I1II1 = isset($server[2]) ?$server[2] : 0;
+if (!$GLOBALS['IIIIIIlII1lI']($server,self::$IIIIIIl1lII1['memcached']) &&$name != "") {
 if ($IIIIII1I1II1 >0) {
 self::$objects['memcached']->addServer($name,$port,$IIIIII1I1II1);
 }else {
@@ -1032,13 +1032,13 @@ return false;
 return true;
 }
 }
-private static function memcached_set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+private static function memcached_set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $IIIIII1IlIl1 = $name;
 $name = self::getMemoryName($name);
-if ($IIIIIIll1lIl == false) {
-return self::$objects['memcached']->set($name,$value,$GLOBALS['IIIIIII111II']() +$IIIIIIll1lII);
+if ($IIIIIIll1lI1 == false) {
+return self::$objects['memcached']->set($name,$value,$GLOBALS['IIIIIII111II']() +$IIIIIIll1lIl);
 }else {
-return self::$objects['memcached']->add($name,$value,$GLOBALS['IIIIIII111II']() +$IIIIIIll1lII);
+return self::$objects['memcached']->add($name,$value,$GLOBALS['IIIIIII111II']() +$IIIIIIll1lIl);
 }
 }
 private static function memcached_get($name) {
@@ -1054,7 +1054,7 @@ private static function memcached_stats() {
 self::memcached_addserver();
 return self::$objects['memcached']->getStats();
 }
-private static function memcached_cleanup($IIIIIIll1lll = "") {
+private static function memcached_cleanup($IIIIIIll1ll1 = "") {
 self::memcached_addserver();
 self::$objects['memcached']->$GLOBALS['IIIIII1Il11I']();
 return true;
@@ -1079,13 +1079,13 @@ return true;
 return false;
 }
 }
-private static function wincache_set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+private static function wincache_set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $IIIIII1IlIl1 = $name;
 $name = self::getMemoryName($name);
-if ($IIIIIIll1lIl == false) {
-return wincache_ucache_set($name,$value,$IIIIIIll1lII);
+if ($IIIIIIll1lI1 == false) {
+return wincache_ucache_set($name,$value,$IIIIIIll1lIl);
 }else {
-return wincache_ucache_add($name,$value,$IIIIIIll1lII);
+return wincache_ucache_add($name,$value,$IIIIIIll1lIl);
 }
 }
 private static function wincache_get($name) {
@@ -1100,7 +1100,7 @@ return $IIIIIIl11Ill;
 private static function wincache_stats() {
 return wincache_scache_info();
 }
-private static function wincache_cleanup($IIIIIIll1lll = "") {
+private static function wincache_cleanup($IIIIIIll1ll1 = "") {
 wincache_ucache_clear();
 return true;
 }
@@ -1130,7 +1130,7 @@ return true;
 return false;
 }
 }
-private static function pdo_cleanup($IIIIIIll1lll = "") {
+private static function pdo_cleanup($IIIIIIll1ll1 = "") {
 self::db(array("skip_clean"=>true))->$GLOBALS['IIIIII1I11l1']("drop table if exists ".self::$IIIIIIl1I11l);
 self::initDatabase();
 return true;
@@ -1192,15 +1192,15 @@ $IIIIII1I11lI = $db->fetch(PDO::FETCH_ASSOC);
 if (isset($IIIIII1I11lI['dbname'])) {
 $IIIIIIl11lI1['db'] = $IIIIII1I11lI['dbname'];
 }else {
-if ((Int) self::$IIIIIIl1Ill1 <10) {
-self::$IIIIIIl1Ill1 = 10;
+if ((Int) self::$IIIIIIl1Il1I <10) {
+self::$IIIIIIl1Il1I = 10;
 }
 $db = self::$IIIIIIl1I111->prepare("SELECT * FROM `db` ORDER BY `id` DESC");
 $db->execute();
 $IIIIII1I11lI = $db->fetch(PDO::FETCH_ASSOC);
 $dbname = isset($IIIIII1I11lI['dbname']) ?$IIIIII1I11lI['dbname'] : 1;
 $IIIIII1lIIlI = file_exists(self::getPath() ."/".$dbname .".cache") ?$GLOBALS['IIIIII1IIl11'](self::getPath() ."/".$dbname .".cache") : 0;
-if ($IIIIII1lIIlI >(1024 * 1024 * (Int) self::$IIIIIIl1Ill1)) {
+if ($IIIIII1lIIlI >(1024 * 1024 * (Int) self::$IIIIIIl1Il1I)) {
 $dbname = (Int) $dbname +1;
 }
 try {
@@ -1267,10 +1267,10 @@ $db = self::selectDB($name);
 $name = $db['item'];
 return self::db(array('db'=>$db['db']))->$GLOBALS['IIIIII1I11l1']("DELETE FROM ".self::$IIIIIIl1I11l ." WHERE `name`='".$name ."'");
 }
-private static function pdo_set($name,$value,$IIIIIIll1lII = 600,$IIIIIIll1lIl = false) {
+private static function pdo_set($name,$value,$IIIIIIll1lIl = 600,$IIIIIIll1lI1 = false) {
 $db = self::selectDB($name);
 $name = $db['item'];
-if ($IIIIIIll1lIl == true) {
+if ($IIIIIIll1lI1 == true) {
 try {
 $IIIIII1lIIll = self::db(array('db'=>$db['db']))->prepare("INSERT OR IGNORE INTO ".self::$IIIIIIl1I11l ." (name,value,added,endin) VALUES(:name,:value,:added,:endin)");
 try {
@@ -1282,7 +1282,7 @@ $IIIIII1lIIll->execute(array(
 ":name"=>$name,
 ":value"=>$value,
 ":added"=>@$GLOBALS['IIIIIIlI1Ill']("U"),
-":endin"=>(Int) $IIIIIIll1lII
+":endin"=>(Int) $IIIIIIll1lIl
 ));
 return true;
 }catch (PDOexception $IIIIIIl1lI11) {
@@ -1300,7 +1300,7 @@ $IIIIII1lIIll->execute(array(
 ":name"=>$name,
 ":value"=>$value,
 ":added"=>@$GLOBALS['IIIIIIlI1Ill']("U"),
-":endin"=>(Int) $IIIIIIll1lII
+":endin"=>(Int) $IIIIIIll1lIl
 ));
 return true;
 }catch (PDOexception $IIIIIIl1lI11) {
@@ -1308,9 +1308,9 @@ return false;
 }
 }
 }
-private static function db($IIIIIIll1lll = array()) {
+private static function db($IIIIIIll1ll1 = array()) {
 $IIIIII1lIllI = false;
-$dbname = isset($IIIIIIll1lll['db']) ?$IIIIIIll1lll['db'] : "";
+$dbname = isset($IIIIIIll1ll1['db']) ?$IIIIIIll1ll1['db'] : "";
 $dbname = $dbname != ""?$dbname : self::$IIIIIIl1I11I;
 if ($dbname != self::$IIIIIIl1I11I) {
 $dbname = $dbname .".cache";
@@ -1339,7 +1339,7 @@ if ($time +(3600 * 24) <@$GLOBALS['IIIIIIlI1Ill']("U")) {
 $IIIIII1lIllI = true;
 }
 if ($IIIIII1lIllI == true) {
-if (!isset($IIIIIIll1lll['skip_clean'])) {
+if (!isset($IIIIIIll1ll1['skip_clean'])) {
 self::$objects['pdo']->$GLOBALS['IIIIII1I11l1']("DELETE FROM ".self::$IIIIIIl1I11l ." WHERE (`added` + `endin`) < ".@$GLOBALS['IIIIIIlI1Ill']("U"));
 }
 self::$objects['pdo']->$GLOBALS['IIIIII1I11l1']('VACUUM');
@@ -1375,7 +1375,7 @@ if ($time +(3600 * 24) <@$GLOBALS['IIIIIIlI1Ill']("U")) {
 $IIIIII1lIllI = true;
 }
 if ($IIIIII1lIllI == true) {
-if (!isset($IIIIIIll1lll['skip_clean'])) {
+if (!isset($IIIIIIll1ll1['skip_clean'])) {
 self::$IIIIIIl1lIII[$dbname]->$GLOBALS['IIIIII1I11l1']("DELETE FROM ".self::$IIIIIIl1I11l ." WHERE (`added` + `endin`) < ".@$GLOBALS['IIIIIIlI1Ill']("U"));
 }
 self::$IIIIIIl1lIII[$dbname]->$GLOBALS['IIIIII1I11l1']('VACUUM');
