@@ -1,12 +1,12 @@
 <?php
 
 /**
- * AlexaSDK.php
+ * AlexaSDK.class.php
  * 
  * This file defines the AlexaSDK class that can be used to access
  * the Microsoft Dynamics CRM system through SOAP calls from PHP.
  * 
- * @author alexacrm.com.au
+ * @author alexacrm.com
  * @version 1.0
  * @package AlexaSDK
  */

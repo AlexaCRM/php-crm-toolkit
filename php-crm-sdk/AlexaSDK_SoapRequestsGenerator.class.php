@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * AlexaSDK_SoapRequestsGenerator.class.php
+ * 
+ * This file defines the AlexaSDK_SoapRequestsGenerator class that used to generate the body of SOAP requests messages
+ * 
+ * @author alexacrm.com
+ * @version 1.0
+ * @package AlexaSDK
+ */
+
 class AlexaSDK_SoapRequestsGenerator{
 	
 		/**

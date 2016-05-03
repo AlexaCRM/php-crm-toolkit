@@ -17,7 +17,8 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 		/**
 		 * Create a new instance of the AlexaSDK
 		 * 
-		 * @param AlexaSDK_Settings $_settings
+		 * @param AlexaSDK_Settings $_settings 
+		 * @param AlexaSDK $_auth
 		 * 
 		 * @return AlexaSDK_Federation
 		 */

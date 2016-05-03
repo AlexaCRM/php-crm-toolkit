@@ -1,19 +1,30 @@
 <?php
 
-include_once ( dirname(__FILE__) . "/Helpers/Logger.php" );
+/**
+ * AlexaSDK_Logger.php
+ * 
+ * This file defines AlexaSDK_AlexaSDK_Logger and AlexaSDK_Log class 
+ * that used to log the errors and debug infromation into log file
+ * 
+ * @author alexacrm.com.au
+ * @version 1.0
+ * @package AlexaSDK
+ */
 
+
+/**
+ * Logs the messages into the log file with the KLogger
+ */
 class AlexaSDK_Logger extends AlexaSDK_Abstract{
 
-	
-	public static function debug($message) {
-		/*if (self::$debugMode) {
-			print_r("\t".$message.";\n\t");
-		}*/
-	}
-	
+	/**
+	 * Log the message or full exception stack into log file
+	 * 
+	 * @param string $message The message to log if AlexaSDK_Abstract::$debugMode is enabled
+	 * @param Exception $exception the object of Exception class to write trace into log file
+	 * 
+	 */
 	public static function log($message, $exception = NULL){
-			self::debug($message);
-			
 			if (self::$enableLogs){
 
 				$l = AlexaSDK_Log::instance();
@@ -27,12 +38,28 @@ class AlexaSDK_Logger extends AlexaSDK_Abstract{
 	}
 }
 
-
+/**
+ * Singletone instance of the KLogger class
+ */
 class AlexaSDK_Log{
 	
+	/**
+	 * @var Klogger $_instance;
+	 */
 	protected static $_instance;
 	
+	/**
+	 * Main KLogger Instance
+	 *
+	 * Ensures only one instance of KLogger is loaded or can be loaded.
+	 * 
+	 * @static
+	 * @return KLogger class object
+	 */
 	public static function instance() {
+		
+		include_once ( dirname(__FILE__) . "/Helpers/Logger.php" );
+		
 		if (is_null(self::$_instance)) {
 			
 			$dir = trailingslashit( dirname(__FILE__)).trailingslashit("logs");
