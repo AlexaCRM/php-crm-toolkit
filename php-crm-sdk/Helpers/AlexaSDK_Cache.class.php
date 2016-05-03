@@ -39,9 +39,7 @@ class AlexaSDK_Cache{
         }
         
         public function get($name){
-            
                 return $this->cache->get($name);
-            
         }
         
         public function cleanup(){

@@ -1,18 +1,21 @@
 <?php
 
 /**
- * AlexaSDK_Federation.php
+ * AlexaSDK_OnlineFederation.php
+ * 
+ * This file defines the AlexaSDK_OnlineFederation class that used to authenticate and 
+ * request SOAP headers for Microsoft Dynamics CRM Online from Microsoft Office and 
+ * Portal services through SOAP calls from PHP.
  * 
  * @author alexacrm.com.au
  * @version 1.0
  * @package AlexaSDK\Authentication
- * @subpackage Authentication
  */
 
 /**
- * This class used to authenticate to Internet-Facing Deployment Microsoft Dynamics CRM
+ * This class used to authenticate to Microsoft Dynamics CRM Online
  */
-class AlexaSDK_Federation extends AlexaSDK_Authentication {
+class AlexaSDK_OnlineFederation extends AlexaSDK_Authentication {
 
 		/**
 		 * Create a new instance of the AlexaSDK
@@ -28,7 +31,6 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 
 		/**
 		 * Get the current Organization Service security token, or get a new one if necessary 
-		 * @todo Make this methods common to authentication classes, make abstract AlexaSDK_Authentication class
 		 * @ignore
 		 */
 		public function getOrganizationSecurityToken() {
@@ -49,7 +51,7 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 				}
 			}
 			/* Request a new Security Token for the Organization Service */
-			$this->organizationSecurityToken = $this->requestSecurityToken($this->settings->loginUrl, $this->settings->organizationUrl, $this->settings->username, $this->settings->password);
+			$this->organizationSecurityToken = $this->requestSecurityToken($this->settings->loginUrl, $this->settings->crmRegion, $this->settings->username, $this->settings->password);
 			/* Cache retrieved token */
 			$this->setCachedSecurityToken('organization', $this->organizationSecurityToken);
 			/* Save the token, and return it */
@@ -78,7 +80,7 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 				}
 			}
 			/* Request a new Security Token for the Organization Service */
-			$this->discoverySecurityToken = $this->requestSecurityToken($this->settings->loginUrl, $this->settings->discoveryUrl, $this->settings->username, $this->settings->password);
+			$this->discoverySecurityToken = $this->requestSecurityToken($this->settings->loginUrl, $this->settings->crmRegion, $this->settings->username, $this->settings->password);
 			/* Cache retrieved token */
 			$this->setCachedSecurityToken('discovery', $this->discoverySecurityToken);
 			/* Save the token, and return it */
@@ -94,7 +96,9 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 
 			$securityHeader = $securityDOM->appendChild($securityDOM->createElementNS('http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd', 'o:Security'));
 			$securityHeader->setAttribute('s:mustUnderstand', '1');
-			$headerTimestamp = $securityHeader->appendChild($securityDOM->createElementNS('http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd', 'u:Timestamp'));
+
+			$headerTimestamp = $securityHeader->appendChild($securityDOM->createElement('u:Timestamp'));
+
 			$headerTimestamp->setAttribute('u:Id', '_0');
 			$headerTimestamp->appendChild($securityDOM->createElement('u:Created', self::getCurrentTime() . 'Z'));
 			$headerTimestamp->appendChild($securityDOM->createElement('u:Expires', self::getExpiryTime() . 'Z'));
@@ -103,26 +107,11 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 			$requestedSecurityToken->appendXML($securityToken['securityToken']);
 			$securityHeader->appendChild($requestedSecurityToken);
 
-			$signatureNode = $securityHeader->appendChild($securityDOM->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'Signature'));
-			$signedInfoNode = $signatureNode->appendChild($securityDOM->createElement('SignedInfo'));
-			$signedInfoNode->appendChild($securityDOM->createElement('CanonicalizationMethod'))->setAttribute('Algorithm', 'http://www.w3.org/2001/10/xml-exc-c14n#');
-			$signedInfoNode->appendChild($securityDOM->createElement('SignatureMethod'))->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#hmac-sha1');
-			$referenceNode = $signedInfoNode->appendChild($securityDOM->createElement('Reference'));
-			$referenceNode->setAttribute('URI', '#_0');
-			$referenceNode->appendChild($securityDOM->createElement('Transforms'))->appendChild($securityDOM->createElement('Transform'))->setAttribute('Algorithm', 'http://www.w3.org/2001/10/xml-exc-c14n#');
-			$referenceNode->appendChild($securityDOM->createElement('DigestMethod'))->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#sha1');
-			$referenceNode->appendChild($securityDOM->createElement('DigestValue', base64_encode(sha1($headerTimestamp->C14N(true), true))));
-			$signatureNode->appendChild($securityDOM->createElement('SignatureValue', base64_encode(hash_hmac('sha1', $signedInfoNode->C14N(true), base64_decode($securityToken['binarySecret']), true))));
-			$keyInfoNode = $signatureNode->appendChild($securityDOM->createElement('KeyInfo'));
-			$securityTokenReferenceNode = $keyInfoNode->appendChild($securityDOM->createElement('o:SecurityTokenReference'));
-			$securityTokenReferenceNode->setAttributeNS('http://docs.oasis-open.org/wss/oasis-wss-wssecurity-secext-1.1.xsd', 'k:TokenType', 'http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1');
-			$securityTokenReferenceNode->appendChild($securityDOM->createElement('o:KeyIdentifier', $securityToken['keyIdentifier']))->setAttribute('ValueType', 'http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.0#SAMLAssertionID');
-
 			return $securityHeader;
 		}
 
 		/**
-		 * Request a Security Token from the ADFS server using Username & Password authentication 
+		 * Request a Security Token from the login microsoftonline server using Username & Password authentication 
 		 * @ignore
 		 */
 		protected function requestSecurityToken($securityServerURI, $loginEndpoint, $loginUsername, $loginPassword) {
@@ -142,9 +131,12 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 				$keyIdentifier = $securityDOM->getElementsbyTagName("KeyIdentifier")->item(0)->textContent;
 				/* Get the BinarySecret */
 				$binarySecret = $securityDOM->getElementsbyTagName("BinarySecret")->item(0)->textContent;
+				/* Set NS attribute to wsse:SecurityTokenReference element */
+				$securityDOM->getElementsByTagName('SecurityTokenReference')->item(0)->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:wsse', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd');
 				/* Make life easier - get the entire RequestedSecurityToken section */
 				$requestedSecurityToken = $securityDOM->saveXML($securityDOM->getElementsByTagName("RequestedSecurityToken")->item(0));
-				preg_match('/<trust:RequestedSecurityToken>(.*)<\/trust:RequestedSecurityToken>/', $requestedSecurityToken, $matches);
+
+				preg_match('/<wst:RequestedSecurityToken>(.*)<\/wst:RequestedSecurityToken>/', $requestedSecurityToken, $matches);
 				$requestedSecurityToken = $matches[1];
 				/* Find the Expiry Time */
 				$expiryTime = $securityDOM->getElementsByTagName("RequestSecurityTokenResponse")->item(0)->getElementsByTagName('Expires')->item(0)->textContent;
@@ -183,7 +175,8 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 			$loginEnvelope->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:a', 'http://www.w3.org/2005/08/addressing');
 			$loginEnvelope->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:u', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd');
 			$loginHeader = $loginEnvelope->appendChild($loginSoapRequest->createElement('s:Header'));
-			$loginHeader->appendChild($loginSoapRequest->createElement('a:Action', 'http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue'))->setAttribute('s:mustUnderstand', "1");
+			$loginHeader->appendChild($loginSoapRequest->createElement('a:Action', 'http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue'))->setAttribute('s:mustUnderstand', "1");
+			$loginHeader->appendChild($loginSoapRequest->createElement('a:MessageId', 'urn:uuid:' . parent::getUuid()));
 			$loginHeader->appendChild($loginSoapRequest->createElement('a:ReplyTo'))->appendChild($loginSoapRequest->createElement('a:Address', 'http://www.w3.org/2005/08/addressing/anonymous'));
 			$loginHeader->appendChild($loginSoapRequest->createElement('a:To', $securityServerURI))->setAttribute('s:mustUnderstand', "1");
 			$loginSecurity = $loginHeader->appendChild($loginSoapRequest->createElementNS('http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd', 'o:Security'));
@@ -193,16 +186,16 @@ class AlexaSDK_Federation extends AlexaSDK_Authentication {
 			$loginTimestamp->appendChild($loginSoapRequest->createElement('u:Created', self::getCurrentTime() . 'Z'));
 			$loginTimestamp->appendChild($loginSoapRequest->createElement('u:Expires', self::getExpiryTime() . 'Z'));
 			$loginUsernameToken = $loginSecurity->appendChild($loginSoapRequest->createElement('o:UsernameToken'));
-			$loginUsernameToken->setAttribute('u:Id', 'user');
+			$loginUsernameToken->setAttribute('u:Id', 'uuid-14bed392-2320-44ae-859d-fa4ec83df57a-1');
 			$loginUsernameToken->appendChild($loginSoapRequest->createElement('o:Username', $loginUsername));
 			$loginUsernameToken->appendChild($loginSoapRequest->createElement('o:Password', $loginPassword))->setAttribute('Type', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText');
 
 			$loginBody = $loginEnvelope->appendChild($loginSoapRequest->createElementNS('http://www.w3.org/2003/05/soap-envelope', 's:Body'));
-			$loginRST = $loginBody->appendChild($loginSoapRequest->createElementNS('http://docs.oasis-open.org/ws-sx/ws-trust/200512', 'trust:RequestSecurityToken'));
+			$loginRST = $loginBody->appendChild($loginSoapRequest->createElementNS('http://schemas.xmlsoap.org/ws/2005/02/trust', 't:RequestSecurityToken'));
 			$loginAppliesTo = $loginRST->appendChild($loginSoapRequest->createElementNS('http://schemas.xmlsoap.org/ws/2004/09/policy', 'wsp:AppliesTo'));
 			$loginEndpointReference = $loginAppliesTo->appendChild($loginSoapRequest->createElement('a:EndpointReference'));
-			$loginEndpointReference->appendChild($loginSoapRequest->createElement('a:Address', $loginEndpoint));
-			$loginRST->appendChild($loginSoapRequest->createElement('trust:RequestType', 'http://docs.oasis-open.org/ws-sx/ws-trust/200512/Issue'));
+			$loginEndpointReference->appendChild($loginSoapRequest->createElement('a:Address', "urn:" . $loginEndpoint));
+			$loginRST->appendChild($loginSoapRequest->createElement('t:RequestType', 'http://schemas.xmlsoap.org/ws/2005/02/trust/Issue'));
 
 			return $loginSoapRequest->saveXML($loginEnvelope);
 		}

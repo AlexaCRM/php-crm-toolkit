@@ -40,8 +40,18 @@ class AlexaSDK_Settings{
          */
         public $serverUrl;
         
-        
-        public $use_ssl;
+        /**
+		 * Use SSL flag
+		 * 
+		 * @var Boolean $useSsl
+		 */
+        public $useSsl;
+		
+		/**
+		 * Defines what port will be used for Dynamics CRM Server (Example: 2222) 
+		 * 
+		 * @var Integer $port
+		 */
         public $port;
         
         /**
@@ -92,19 +102,82 @@ class AlexaSDK_Settings{
          * crmna:dynamics.com - North America
          * crmemea:dynamics.com - Europe, the Middle East and Africa
          * crmapac:dynamics.com - Asia Pacific
+		 * etc.
          * 
          * @var String $crmRegion
          */
         public $crmRegion;
         
+		/**
+		 * Unique name of organization, can be retrieved by RetrieveOrganizationsRequest
+		 * Or In Dynamics CRM Settings -> Customizations -> Developer Reources
+		 * 
+		 * @var String $organizationUniqueName
+		 */
         public $organizationUniqueName;
         
+		/**
+		 * Version of Dynamics CRM used for this Organization
+		 * 
+		 * @var String $organizationVersion
+		 */
         public $organizationVersion;
+		
+		/**
+		 * 
+		 * 
+		 * @var string 
+		 */
+		public $oauthResource;
+		
+		/**
+		 *
+		 * @var type 
+		 */
+		public $oauthClientId;
+		
+		/**
+		 *
+		 * @var type 
+		 */
+		public $oauthClientSecret;
+		
+		/**
+		 *
+		 * @var type 
+		 */
+		public $oauthGrantType;
+		
+		/**
+		 *
+		 * @var type 
+		 */
+		public $oauthApiVersion;
         
+		/**
+		 *
+		 * @var type 
+		 */
+		public $oauthAuthorizationEndpoint;
+		
+		/**
+		 *
+		 * @var type 
+		 */
+		public $oauthTokenEndpoint;
+		
+		/**
+		 *
+		 * @var type 
+		 */
+		public $oauthMultiTenant = false;
         
+		/**
+		 *
+		 * @var type 
+		 */
         public $cache = array("server" => "localhost", "port" => 11211);
-        
-        
+		
         /**
          * Set up settings using constructor
          * 
@@ -119,39 +192,34 @@ class AlexaSDK_Settings{
          * 
          * @return void
          */
-        function __construct($discoveryUrl = null, $username = null, $password = null, $organizationUrl = null, $loginUrl = null, $serverUrl = null, $authMode = null, $region = null ){
+        function __construct($_settings){
             
-            if ($discoveryUrl != null && $discoveryUrl != ''){
-                $this->discoveryUrl = $discoveryUrl;
-            }
-            
-            if ($username != null && $username != ''){
-                $this->username = $username;
-            }
-            
-            if ($password != null && $password != ''){
-                $this->password = $password;
-            }
-            
-            if ($organizationUrl != null && $organizationUrl != ''){
-                $this->organizationUrl = $organizationUrl;
-            }
-            
-            if ($loginUrl != null && $loginUrl != ''){
-                $this->loginUrl = $loginUrl;
-            }
-            
-            if ($serverUrl != null && $serverUrl != ''){
-                $this->serverUrl = $serverUrl;
-            }
-            
-            if ($authMode != null && $authMode != ''){
-                $this->authMode = $authMode;
-            }
-            
-            if ($region != null && $region != ''){
-                $this->crmRegion = $region;
-            }
+				$this->discoveryUrl = (isset($_settings["discoveryUrl"])) ? $_settings["discoveryUrl"] : NULL;
+				$this->username = (isset($_settings["username"])) ? $_settings["username"] : NULL;
+				$this->password = (isset($_settings["password"])) ? $_settings["password"] : NULL;
+				$this->organizationUrl = (isset($_settings["organizationUrl"])) ? $_settings["organizationUrl"] : NULL;
+				$this->loginUrl = (isset($_settings["loginUrl"])) ? $_settings["loginUrl"] : NULL;
+				$this->serverUrl = (isset($_settings["serverUrl"])) ? $_settings["serverUrl"] : NULL;
+				$this->authMode = (isset($_settings["authMode"])) ? $_settings["authMode"] : NULL;
+				$this->crmRegion = (isset($_settings["crmRegion"])) ? $_settings["crmRegion"] : NULL;
+				$this->port = (isset($_settings["port"])) ? $_settings["port"] : NULL;
+				$this->useSsl = (isset($_settings["useSsl"])) ? $_settings["useSsl"] : false;
+				$this->organizationDataUrl = (isset($_settings["organizationDataUrl"])) ? $_settings["organizationDataUrl"] : NULL;
+				$this->organizationName = (isset($_settings["organizationName"])) ? $_settings["organizationName"] : NULL;
+				$this->organizationUniqueName = (isset($_settings["organizationUniqueName"])) ? $_settings["organizationUniqueName"] : NULL;
+				$this->organizationId = (isset($_settings["organizationId"])) ? $_settings["organizationId"] : NULL;
+				$this->organizationVersion = (isset($_settings["organizationVersion"])) ? $_settings["organizationVersion"] : NULL;
+				
+				$this->cache = (isset($_settings["cache"])) ? $_settings["cache"] :  array("server" => "localhost", "port" => 11211);
+				
+				$this->oauthResource = (isset($_settings["oauthResource"])) ? $_settings["oauthResource"] : NULL;
+				$this->oauthClientId = (isset($_settings["oauthClientId"])) ? $_settings["oauthClientId"] : NULL;
+				$this->oauthClientSecret = (isset($_settings["oauthClientSecret"])) ? $_settings["oauthClientSecret"] : NULL;
+				$this->oauthGrantType = (isset($_settings["oauthGrantType"])) ? $_settings["oauthGrantType"] : NULL;
+				$this->oauthApiVersion = (isset($_settings["oauthApiVersion"])) ? $_settings["oauthApiVersion"] : NULL;
+				$this->oauthAuthorizationEndpoint = (isset($_settings["oauthAuthorizationEndpoint"])) ? $_settings["oauthAuthorizationEndpoint"] : NULL;
+				$this->oauthTokenEndpoint = (isset($_settings["oauthTokenEndpoint"])) ? $_settings["oauthTokenEndpoint"] : NULL;
+				$this->oauthMultiTenant = (isset($_settings["oauthMultiTenant"])) ? $_settings["oauthMultiTenant"] : false;
         }
         
         /**
