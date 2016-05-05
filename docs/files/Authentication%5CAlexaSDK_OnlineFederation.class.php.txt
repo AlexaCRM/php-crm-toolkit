@@ -1,13 +1,13 @@
 <?php
 
 /**
- * AlexaSDK_OnlineFederation.php
+ * AlexaSDK_OnlineFederation.class.php
  * 
  * This file defines the AlexaSDK_OnlineFederation class that used to authenticate and 
  * request SOAP headers for Microsoft Dynamics CRM Online from Microsoft Office and 
  * Portal services through SOAP calls from PHP.
  * 
- * @author alexacrm.com.au
+ * @author alexacrm.com
  * @version 1.0
  * @package AlexaSDK\Authentication
  */

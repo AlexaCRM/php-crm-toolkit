@@ -1,6 +1,15 @@
 <?php
 
 /**
+ * AlexaSDK_Oauth2.class.php
+ * 
+ * @author alexacrm.com
+ * @version 1.0
+ * @package AlexaSDK\Authentication
+ * @subpackage Authentication
+ */
+
+/**
  * This class used to authenticate to Microsoft Dynamics CRM Online
  */    
 class AlexaSDK_Oauth2 extends AlexaSDK_Rest{

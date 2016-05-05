@@ -1,9 +1,9 @@
 <?php
 
 /**
- * AlexaSDK_Federation.php
+ * AlexaSDK_Federation.class.php
  * 
- * @author alexacrm.com.au
+ * @author alexacrm.com
  * @version 1.0
  * @package AlexaSDK\Authentication
  * @subpackage Authentication

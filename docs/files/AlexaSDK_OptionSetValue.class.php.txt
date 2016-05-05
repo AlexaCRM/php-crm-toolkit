@@ -6,7 +6,7 @@
  * This file defines AlexaSDK_OptionSetValue class 
  * object for option sets that is used for working with entities
  * 
- * @author alexacrm.com.au
+ * @author alexacrm.com
  * @version 1.0
  * @package AlexaSDK
  */

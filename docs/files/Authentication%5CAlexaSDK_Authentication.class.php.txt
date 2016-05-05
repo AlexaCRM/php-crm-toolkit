@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * AlexaSDK_Authentication.class.php
+ * 
+ * @author alexacrm.com
+ * @version 1.0
+ * @package AlexaSDK\Authentication
+ * @subpackage Authentication
+ */
+
+
 class AlexaSDK_Authentication extends AlexaSDK{
 	
 		/**

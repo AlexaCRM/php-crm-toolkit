@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * AlexaSDK_SoapRequest.php
+ * 
+ * @author alexacrm.com
+ * @version 1.0
+ * @package AlexaSDK
+ */
+
 class AlexaSDK_SoapRequest{
 	
 		protected $authnetication;

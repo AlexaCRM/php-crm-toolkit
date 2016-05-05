@@ -146,8 +146,6 @@ class AlexaSDK extends AlexaSDK_Abstract {
 				self::$debugMode = $_debug;
 				/* Enable or disable log mode */
 				self::$enableLogs = $_log;
-				/* Include classes */
-				$this->includes();
 				/* Create settings object */
 				$this->settings = new AlexaSDK_Settings($_settings);
 				/* Create new object of Cache classe */
@@ -182,15 +180,6 @@ class AlexaSDK extends AlexaSDK_Abstract {
 				AlexaSDK_Logger::log("Exception", $e);
 				throw $e;
 			}
-		}
-
-		private function includes() {
-			include_once ( dirname(__FILE__) . "/Authentication/AlexaSDK_Authentication.class.php" );
-			include_once ( dirname(__FILE__) . "/Authentication/AlexaSDK_OnlineFederation.class.php" );
-			include_once ( dirname(__FILE__) . "/Authentication/AlexaSDK_Federation.class.php" );
-			include_once ( dirname(__FILE__) . "/Authentication/AlexaSDK_Oauth2.php" );
-			include_once ( dirname(__FILE__) . "/Helpers/AlexaSDK_Cache.class.php" );
-			include_once ( dirname(__FILE__) . "/Helpers/AlexaSDK_FormValidator.class.php" );
 		}
 
 		/**
@@ -948,6 +937,7 @@ class AlexaSDK extends AlexaSDK_Abstract {
 			$executeNode = AlexaSDK_SoapRequestsGenerator::generateRetrieveRequest($entityType, $entityId, $fieldSet);
 			/* Turn this into a SOAP request, and send it */
 			$retrieveRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->soapActions->getSoapAction('organization', 'Retrieve'), $securityToken, $executeNode);
+			
 			$soapResponse = self::getSoapResponse($this->settings->organizationUrl, $retrieveRequest);
 
 			return $soapResponse;
@@ -1372,9 +1362,8 @@ class AlexaSDK extends AlexaSDK_Abstract {
 			$executeNode = AlexaSDK_SoapRequestsGenerator::generateRetrieveMultipleRequest($queryXML, $pagingCookie, $limitCount, $pageNumber);
 			/* Turn this into a SOAP request, and send it */
 			$retrieveMultipleSoapRequest = $this->generateSoapRequest($this->settings->organizationUrl, $this->soapActions->getSoapAction('organization', 'RetrieveMultiple'), $securityToken, $executeNode);
-			$soapResponse = self::getSoapResponse($this->settings->organizationUrl, $retrieveMultipleSoapRequest);
-
-			return $soapResponse;
+			/* Execute request to Dynamics CRM Soap web service and get response */
+			return self::getSoapResponse($this->settings->organizationUrl, $retrieveMultipleSoapRequest);
 		}
 
 		
@@ -1762,6 +1751,46 @@ class AlexaSDK extends AlexaSDK_Abstract {
 			/* Return the structured object */
 			return $newEntity;
 		}
+		
+		
+		/**
+		 * Parse the results of a RetrieveRequest into a useable PHP object
+		 * @param AlexaSDK $auth
+		 * @param String $entityLogicalName
+		 * @param String $soapResponse
+		 * @ignore
+		 */
+		private function parseRetrieveResponse(AlexaSDK $auth, $entityLogicalName, $soapResponse) {
+			/* Load the XML into a DOMDocument */
+			$soapResponseDOM = new DOMDocument();
+			$soapResponseDOM->loadXML($soapResponse);
+			/* Find the RetrieveResponse */
+			$retrieveResponseNode = NULL;
+			foreach ($soapResponseDOM->getElementsByTagName('RetrieveResponse') as $node) {
+				$retrieveResponseNode = $node;
+				break;
+			}
+			unset($node);
+			if ($retrieveResponseNode == NULL) {
+				throw new Exception('Could not find RetrieveResponse node in XML provided');
+				return FALSE;
+			}
+			/* Find the RetrieveResult node */
+			$retrieveResultNode = NULL;
+			foreach ($retrieveResponseNode->getElementsByTagName('RetrieveResult') as $node) {
+				$retrieveResultNode = $node;
+				break;
+			}
+			unset($node);
+			if ($retrieveResultNode == NULL) {
+				throw new Exception('Could not find RetrieveResult node in XML provided');
+				return FALSE;
+			}
+			/* Generate a new Entity from the DOMNode */
+			$entity = AlexaSDK_Entity::FromDom($auth, $entityLogicalName, $retrieveResultNode);
+			return $entity;
+		}
+		
 
 		/**
 		 * Send a Create request to the Dynamics CRM server, and return the ID of the newly created Entity
