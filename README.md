@@ -1,5 +1,5 @@
 # php-crm-toolkit
-AlexaCRM CRM Toolkit for PHP provides integration with Microsoft Dynamics CRM.
+CRM Toolkit for PHP provides integration with Microsoft Dynamics CRM in PHP applications.
 
 # Examples
 ```
@@ -14,16 +14,17 @@ $options = [
     'authMode' => 'OnlineFederation',
 ];
 
-$clientSettings = new Settings( $options );
-$client = new Client( $clientSettings );
+$serviceSettings = new Settings( $options );
+$service = new Client( $serviceSettings );
 
 // retrieve a contact and update its fields
-$contact = $client->entity( 'contact', $guid );
+$contact = $service->entity( 'contact', $guid );
 $contact->firstname = explode( '@', $contact->emailaddress1 )[0];
 $contact->update();
+printf( 'Info for %s %s updated.', $contact->firstname, $contact->lastname );
 
 // create a new contact
-$contact = $client->entity( 'contact' );
+$contact = $service->entity( 'contact' );
 $contact->firstname = 'John';
 $contact->lastname = 'Doe';
 $contact->emailaddress1 = 'john.doe@example.com';
@@ -33,16 +34,17 @@ $contactId = $contact->create();
 $contact->delete();
 
 // execute an action
-$client->executeAction( 'WhoAmI' );
+$whoAmIResponse = $service->executeAction( 'WhoAmI' );
+echo 'Organization ID: ' . $whoAmIResponse->OrganizationId;
 
 // inject cache repo
 // must be instance of AlexaCRM\CRMToolkit\CacheInterface
 $cacheRepo = Cache::instance();
-$client = new Client( clientSettings, $cacheRepo );
+$service = new Client( $serviceSettings, $cacheRepo );
 ```
 
 # Contributing
-Pull requests are gladly accepted in the GitHub repository.
+Pull requests are gladly accepted in the [GitHub repository](https://github.com/AlexaCRM/php-crm-toolkit).
 
 # License
 Copyright (c) 2016 AlexaCRM.
