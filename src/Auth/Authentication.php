@@ -45,14 +45,14 @@ class Authentication extends Client {
 	protected $client;
 
 	/**
-	 *  Token that used to construct SOAP requests
+	 *  Security token for requests to Organization service
 	 *
 	 * @var array
 	 */
 	protected $organizationSecurityToken = null;
 
 	/**
-	 *  Token that used to construct SOAP requests
+	 *  Security token for requests to Discovery service
 	 *
 	 * @var array
 	 */
@@ -68,7 +68,12 @@ class Authentication extends Client {
 	public function getCachedSecurityToken( $service, &$securityToken ) {
 		if ( $this->client->isCacheEnabled() ) {
 			$cacheKey = $this->getSecurityTokenCacheKey( $service );
-			return $this->client->cache->exists( $cacheKey );
+			$isDefined = $this->client->cache->exists( $cacheKey );
+			if ( $isDefined ) {
+				$securityToken = $this->client->cache->get( $cacheKey );
+			}
+
+			return $isDefined;
 		}
 
 		return false;

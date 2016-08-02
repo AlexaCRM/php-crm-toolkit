@@ -71,6 +71,7 @@ class OnlineFederation extends Authentication {
 				return $this->organizationSecurityToken;
 			}
 		}
+
 		/* Request a new Security Token for the Organization Service */
 		$this->organizationSecurityToken = $this->requestSecurityToken( $this->settings->loginUrl, $this->settings->crmRegion, $this->settings->username, $this->settings->password );
 		/* Cache retrieved token */
