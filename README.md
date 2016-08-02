@@ -2,8 +2,8 @@
 CRM Toolkit for PHP provides integration with Microsoft Dynamics CRM in PHP applications.
 
 # Examples
-```
-use AlexaCRM\CRMToolkit\Client;
+```php
+use AlexaCRM\CRMToolkit\Client as OrganizationService;
 use AlexaCRM\CRMToolkit\Settings;
 
 $contactId = '1d2fc62f-1c56-448b-b546-edfb6d6fec5c';
@@ -15,7 +15,7 @@ $options = [
 ];
 
 $serviceSettings = new Settings( $options );
-$service = new Client( $serviceSettings );
+$service = new OrganizationService( $serviceSettings );
 
 // retrieve a contact and update its fields
 $contact = $service->entity( 'contact', $guid );
