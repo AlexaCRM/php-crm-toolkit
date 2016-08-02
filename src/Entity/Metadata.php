@@ -142,6 +142,11 @@ class Metadata {
 		return $this->attributesCollection;
 	}
 
+	/**
+	 * Get Entity keys
+	 *
+	 * @return EntityKey[]
+	 */
 	private function getKeys() {
 		if ( !$this->isKeysCollectionRetrieved() ) {
 			$this->retrieveAttributesFilter();

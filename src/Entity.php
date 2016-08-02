@@ -15,13 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * AlexaCRM\CRMToolkit\AlexaSDK_Entity.class.php
- *
- * @author alexacrm.com
- * @version 1.0
- * @package AlexaCRM\CRMToolkit\AlexaSDK
- */
 namespace AlexaCRM\CRMToolkit;
 
 use AlexaCRM\CRMToolkit\Helpers\FormValidator;
@@ -50,38 +43,38 @@ class Entity extends EntityReference {
 	 *
 	 * @var array
 	 */
-	protected $localProperties = Array();
+	protected $localProperties = [];
 
 	/**
 	 * The details of this instance of the Entity - the property Values
 	 *
 	 * @var array contains values of properties (Entity field values)
 	 */
-	private $propertyValues = Array();
+	private $propertyValues = [];
 
 	/**
 	 * The details of this instance of the Entity - the propery Formatted Values
 	 *
 	 * @var array same as $propertyValues, but contains nicenames of values
 	 */
-	private $formattedValues = Array();
+	private $formattedValues = [];
 
 	/**
 	 * The errors in the property Values
 	 *
 	 * @var array contains field validation errors
 	 */
-	public $errors = Array();
+	public $errors = [];
 
 	/**
-	 * Instance of AlexaCRM\CRMToolkit\Helpers\AlexaSDK_FormValidator class
+	 * Instance of \AlexaCRM\CRMToolkit\Helpers\FormValidator class
 	 *
 	 * @var \AlexaCRM\CRMToolkit\Helpers\FormValidator
 	 */
 	protected $validator = null;
 
 	/**
-	 * Object of AlexaCRM\CRMToolkit\AlexaSDK class
+	 * Object of \AlexaCRM\CRMToolkit\Client class
 	 *
 	 * @var Client
 	 */
@@ -587,7 +580,7 @@ class Entity extends EntityReference {
 	public function checkMandatories( array &$details = null ) {
 		/* Assume true, until proved false */
 		$allMandatoriesFilled = true;
-		$missingFields        = Array();
+		$missingFields        = [];
 		/* Loop through all the Mandatory fields */
 		foreach ( $this->metadata()->mandatories as $property => $reason ) {
 			/* If this is an attribute of another property, check that property instead */
@@ -767,7 +760,7 @@ class Entity extends EntityReference {
 	/**
 	 * Generate an Entity based on a particular Logical Name - will try to be as Strongly Typed as possible
 	 *
-	 * @param Client $auth instanse of AlexaCRM\CRMToolkit\AlexaSDK class object
+	 * @param Client $auth instance of AlexaCRM\CRMToolkit\Client class object
 	 * @param String $entityLogicalName
 	 *
 	 * @return Entity of the specified type, or a generic Entity if no Class exists
@@ -855,7 +848,7 @@ class Entity extends EntityReference {
 	private function setAttributesFromDOM( Client $auth, DOMElement $attributesNode, DOMElement $formattedValuesNode ) {
 		try {
 			/* First, parse out the FormattedValues - these will be required when analysing Attributes */
-			$formattedValues = Array();
+			$formattedValues = [];
 			/* Identify the FormattedValues */
 			$keyValueNodes = $formattedValuesNode->getElementsByTagName( 'KeyValuePairOfstringstring' );
 			/* Add the Formatted Values in the Key/Value Pairs of String/String to the Array */

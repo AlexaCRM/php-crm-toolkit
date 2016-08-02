@@ -1,6 +1,7 @@
 {
     "name": "alexacrm/php-crm-toolkit",
     "description": "PHP Toolkit for Microsoft Dynamics CRM",
+    "keywords": [ "php", "dynamics crm", "crm", "sdk" ],
     "type": "library",
     "license": "LGPL-3.0",
     "authors": [
