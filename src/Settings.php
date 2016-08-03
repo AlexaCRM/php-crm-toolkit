@@ -198,7 +198,7 @@ class Settings {
 	/**
 	 * Set up settings using constructor
 	 *
-	 * @param $settings
+	 * @param array $settings
 	 *
 	 * @throws \InvalidArgumentException
 	 */
