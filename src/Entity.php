@@ -17,7 +17,6 @@
 
 namespace AlexaCRM\CRMToolkit;
 
-use AlexaCRM\CRMToolkit\Helpers\FormValidator;
 use DOMDocument;
 use DOMElement;
 use DOMNode;
@@ -58,20 +57,6 @@ class Entity extends EntityReference {
 	 * @var array same as $propertyValues, but contains nicenames of values
 	 */
 	private $formattedValues = [];
-
-	/**
-	 * The errors in the property Values
-	 *
-	 * @var array contains field validation errors
-	 */
-	public $errors = [];
-
-	/**
-	 * Instance of \AlexaCRM\CRMToolkit\Helpers\FormValidator class
-	 *
-	 * @var \AlexaCRM\CRMToolkit\Helpers\FormValidator
-	 */
-	protected $validator = null;
 
 	/**
 	 * Object of \AlexaCRM\CRMToolkit\Client class
@@ -148,8 +133,6 @@ class Entity extends EntityReference {
 					}
 				}
 			}
-			/* Initialize Field validation class */
-			$this->validator = new FormValidator();
 
 			return;
 		} catch ( Exception $e ) {
@@ -469,60 +452,6 @@ class Entity extends EntityReference {
 	 */
 	public function delete() {
 		return $this->client->delete( $this );
-	}
-
-	/**
-	 * Validate property value by rules described in entity metadata and custom rules for fields
-	 *
-	 * @param String $attribute of entity to validate
-	 * @param Mixed $value new value for the property
-	 *
-	 * @return Mixed false, if there is no errors and validation passed, array if validation errors exists
-	 */
-	public function validate( $attribute, $value ) {
-		/* Check required attribute */
-		if ( $this->attributes[ $attribute ]->requiredLevel != "None" && !$value ) {
-			$this->errors[ $attribute ] = $this->getPropertyLabel( $attribute ) . " is required";
-		}
-		switch ( $this->attributes[ $attribute ]->type ) {
-			case "String":
-				/* Check the max length of the string value */
-				if ( $this->attributes[ $attribute ]->maxLength && ( strlen( $value ) > $this->attributes[ $attribute ]->maxLength ) ) {
-					$this->errors[ $attribute ] = "Must be less than " . $this->attributes[ $attribute ]->maxLength . " characters";
-				}
-				switch ( $this->attributes[ $attribute ]->format ) {
-					case "Text":
-						if ( $value && !$this->validator->validateItem( $value, 'anything' ) ) {
-							$this->errors[ $attribute ] = "Incorrect text value";
-						}
-						break;
-					case "Email":
-						if ( $value && !$this->validator->validateItem( $value, 'email' ) ) {
-							$this->errors[ $attribute ] = "Incorrect email";
-						}
-						break;
-				}
-				break;
-			case "Integer":
-				if ( $value && !$this->validator->validateItem( $value, 'amount' ) ) {
-					$this->errors[ $attribute ] = "Incorrect text value";
-				}
-				break;
-			case "Double":
-				if ( $value && !$this->validator->validateItem( $value, 'float' ) ) {
-					$this->errors[ $attribute ] = "Incorrect text value";
-				}
-				break;
-			case "Money":
-				if ( $value && !$this->validator->validateItem( $value, 'number' ) ) {
-					$this->errors[ $attribute ] = "Incorrect text value";
-				}
-				break;
-			case "Memo":
-				break;
-		}
-
-		return ( !empty( $this->errors[ $attribute ] ) ) ? false : true;
 	}
 
 	/**
