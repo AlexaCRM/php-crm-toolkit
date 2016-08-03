@@ -106,10 +106,23 @@ abstract class AbstractClient implements ClientInterface {
 	public static function getUuid( $namespace = '' ) {
 		static $guid = '';
 		$uid  = uniqid( "", true );
-		$data = array(
-			$namespace, $_SERVER['REQUEST_TIME'], $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'],
-			$_SERVER['REMOTE_PORT'],
-		);
+		$data = [
+			$namespace,
+			array_key_exists( 'REQUEST_TIME_FLOAT', $_SERVER )? $_SERVER['REQUEST_TIME_FLOAT'] : $_SERVER['REQUEST_TIME'],
+		];
+		$requestDependentData = [];
+		if ( php_sapi_name() !== 'cli' ) {
+			$requestDependentData = [
+				$_SERVER['HTTP_USER_AGENT'],
+				$_SERVER['REMOTE_ADDR'],
+				$_SERVER['REMOTE_PORT']
+			];
+		} else {
+			$requestDependentData = [
+				$_SERVER['PWD'],
+			];
+		}
+		$data = array_merge( $data, $requestDependentData );
 
 		$hash = strtoupper( hash( 'ripemd128', $uid . $guid . md5( implode( '', $data ) ) ) );
 		$guid = implode( '-', array(
