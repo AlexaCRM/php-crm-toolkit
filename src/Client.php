@@ -173,9 +173,10 @@ class Client extends AbstractClient {
 
 			if ( !$this->settings->hasOrganizationData() ) {
 				$organizationDetails = $this->retrieveOrganization( $this->settings->serverUrl );
-				$this->settings->organizationName       = $organizationDetails["FriendlyName"];
-				$this->settings->organizationUniqueName = $organizationDetails["UniqueName"];
-				$this->settings->organizationVersion    = $organizationDetails["OrganizationVersion"];
+				$this->settings->organizationId         = $organizationDetails['OrganizationId'];
+				$this->settings->organizationName       = $organizationDetails['FriendlyName'];
+				$this->settings->organizationUniqueName = $organizationDetails['UniqueName'];
+				$this->settings->organizationVersion    = $organizationDetails['OrganizationVersion'];
 			}
 
 			/* Initialize the entity metadata instance */
