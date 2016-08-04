@@ -66,6 +66,13 @@ class Entity extends EntityReference {
 	private $client;
 
 	/**
+	 * Specifies whether entity record exists in the CRM
+	 *
+	 * @var bool
+	 */
+	public $exists = false;
+
+	/**
 	 * Create a new usable Dynamics CRM Entity object
 	 *
 	 * @param Client $_client
@@ -129,12 +136,14 @@ class Entity extends EntityReference {
 						/* NOTE: ParseRetrieveResponse method of AlexaCRM\CRMToolkit\AlexaSDK_Entity class, not the AlexaCRM\CRMToolkit\AlexaSDK class */
 						$this->parseExecuteRetrieveResponse( $this->client, $this->LogicalName, $rawSoapResponse );
 					} catch ( SoapFault $sf ) {
+						$errorCode = $sf->faultcode; // undocumented feature
+						if ( $errorCode == '-2147088239' ) {
+							$this->exists = false;
+						}
 						/* ToDo: Return exception with user-friendly details, maybe KeyAttribute parameters invalid */
 					}
 				}
 			}
-
-			return;
 		} catch ( Exception $e ) {
 			Logger::log( "Exception", $e );
 		}
@@ -1254,6 +1263,7 @@ class Entity extends EntityReference {
 			$this->setAttributesFromDOM( $auth, $attributesNode, $formattedValuesNode );
 			/* Before returning the Entity, reset it so all fields are marked unchanged */
 			$this->reset();
+			$this->exists = true;
 		} catch ( Exception $e ) {
 			Logger::log( "Exception", $e );
 		}
