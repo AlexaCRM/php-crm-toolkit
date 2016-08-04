@@ -1246,17 +1246,17 @@ class Client extends AbstractClient {
 			$faultCode = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
 			                         ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Body' )->item( 0 )
 			                         ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Fault' )->item( 0 )
-			                         ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Code' )->item( 0 )
-			                         ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Value' )->item( 0 )->nodeValue;
-			/* Strip any Namespace References from the fault code */
-			$faultCode = self::stripNS( $faultCode );
+				                     ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Detail' )->item( 0 )
+				                     ->getElementsByTagName( 'OrganizationServiceFault' )->item( 0 )
+				                     ->getElementsByTagName( 'ErrorCode' )->item( 0 )->nodeValue;
+
 			// Get the Fault String
 			$faultString = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
 			                           ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Body' )->item( 0 )
 			                           ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Fault' )->item( 0 )
 			                           ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Reason' )->item( 0 )
-			                           ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Text' )->item( 0 )->nodeValue . PHP_EOL;
-			throw new SoapFault( $faultCode, $faultString );
+			                           ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Text' )->item( 0 )->nodeValue;
+			throw new SoapFault( (string)$faultCode, $faultString );
 		}
 
 		/* Return XML response string */
