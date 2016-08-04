@@ -137,6 +137,8 @@ abstract class AbstractClient implements ClientInterface {
 	}
 
 	/**
+	 * Checks whether given GUID is well-formed
+	 *
 	 * @param string $guid
 	 *
 	 * @return bool TRUE if guid is valid, FALSE otherwise
