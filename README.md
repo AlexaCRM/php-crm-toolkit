@@ -43,6 +43,8 @@ $cacheRepo = Cache::instance();
 $service = new Client( $serviceSettings, $cacheRepo );
 ```
 
+In `/examples/` you can find a few examples of toolkit usage. Copy `config.example.php` to `config.php`, set up credentials for your CRM and you are ready to go!
+
 # Contributing
 Pull requests are gladly accepted in the [GitHub repository](https://github.com/AlexaCRM/php-crm-toolkit).
 
