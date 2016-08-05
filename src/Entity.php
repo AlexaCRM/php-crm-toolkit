@@ -191,7 +191,8 @@ class Entity extends EntityReference {
 				case "METADATA":
 					return $this->metadata();
 			}
-			if ( property_exists( 'Metadata', $property ) ) {
+
+			if ( property_exists( 'AlexaCRM\CRMToolkit\Entity\Metadata', $property ) ) {
 				return $this->metadata()->$property;
 			}
 			/* Handle dynamic properties... */
