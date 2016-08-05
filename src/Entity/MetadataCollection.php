@@ -108,7 +108,9 @@ class MetadataCollection {
 		$cacheKey = self::$cachePrefix . 'metadata_entities_list';
 		$isCacheEnabled = $this->getClient()->isCacheEnabled();
 
-		if ( !count( $this->cachedEntitiesList ) && $isCacheEnabled
+		if ( count( $this->cachedEntitiesList ) ) {
+			return $this->cachedEntitiesList;
+		} elseif ( !count( $this->cachedEntitiesList ) && $isCacheEnabled
 		     && $this->getCache()->exists( $cacheKey ) ) { // entities list exists
 			$this->cachedEntitiesList = $this->getCache()->get( $cacheKey );
 		} else { // entities list is not loaded
