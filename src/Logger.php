@@ -20,15 +20,15 @@ namespace AlexaCRM\CRMToolkit;
 use Exception;
 
 /**
- * Logs the messages into the log file with the AlexaCRM\CRMToolkit\Log\KLogger
+ * Logs the messages
  */
-class Logger extends AbstractClient {
+class Logger {
 
 	/**
-	 * Log the message or full exception stack into log file
+	 * Log the message or full exception stack trace
 	 *
-	 * @param string $message The message to log if AlexaCRM\CRMToolkit\AlexaSDK_Abstract::$debugMode is enabled
-	 * @param Exception $exception the object of Exception class to write trace into log file
+	 * @param string $message The message to log
+	 * @param Exception $exception the object of Exception class to write stack trace
 	 *
 	 * @throws Exception
 	 */
