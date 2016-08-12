@@ -1133,8 +1133,6 @@ class Client extends AbstractClient {
 	 * @return string response XML
 	 */
 	public static function getSoapResponse( $soapUrl, $content, $throwException = true ) {
-		/* Separate the provided URI into Path & Hostname sections */
-		$urlDetails = parse_url( $soapUrl );
 		/* Format cUrl headers */
 		$headers = self::formatHeaders( $soapUrl, $content );
 
@@ -1432,7 +1430,7 @@ class Client extends AbstractClient {
 			/* If we are in "SimpleMode", just create the Attributes as a stdClass */
 			if ( $simpleMode ) {
 				/* Create an Array to hold the Entity properties */
-				$entityArray = Array();
+				$entityArray = [];
 				/* Identify the Attributes */
 				$keyValueNodes = $entityNode->getElementsByTagName( 'Attributes' )->item( 0 )->getElementsByTagName( 'KeyValuePairOfstringanyType' );
 				/* Add the Attributes in the Key/Value Pairs of String/AnyType to the Array */
@@ -1468,7 +1466,7 @@ class Client extends AbstractClient {
 	 *
 	 * @ignore
 	 */
-	protected static function addAttributes( Array &$targetArray, DOMNodeList $keyValueNodes, Array $keys = null, $key1 = null ) {
+	protected static function addAttributes( array &$targetArray, DOMNodeList $keyValueNodes, Array $keys = null, $key1 = null ) {
 		foreach ( $keyValueNodes as $keyValueNode ) {
 			/* Get the Attribute name (key) */
 			$attributeKey = $keyValueNode->getElementsByTagName( 'key' )->item( 0 )->textContent;
@@ -1524,10 +1522,10 @@ class Client extends AbstractClient {
 			if ( $keys == null ) {
 				/* Assume that if there is a duplicate, it's a formatted version of this */
 				if ( array_key_exists( $attributeKey, $targetArray ) ) {
-					$responseDataArray[ $attributeKey ] = (Object) Array(
+					$targetArray[ $attributeKey ] = (object)[
 						'Value'          => $attributeValue,
 						'FormattedValue' => $targetArray[ $attributeKey ]
-					);
+					];
 				} else {
 					$targetArray[ $attributeKey ] = $attributeValue;
 				}

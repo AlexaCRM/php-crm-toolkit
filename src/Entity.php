@@ -292,8 +292,6 @@ class Entity extends EntityReference {
 			 * according to the definition of the AlexaCRM\CRMToolkit\Entity\OptionSet
 			 */
 			if ( $this->attributes[ $property ]->optionSet != null ) {
-				/* Which AlexaCRM\CRMToolkit\Entity\OptionSet is used? */
-				$optionSetName = $this->attributes[ $property ]->optionSet;
 				/* Container for the final value */
 				$optionSetValue = null;
 				/* Handle passing a String value */
@@ -909,7 +907,6 @@ class Entity extends EntityReference {
 								'Changed' => false,
 							);
 							/* Determine the Value for this field */
-							$valueType   = $keyValueNode->getElementsByTagName( 'value' )->item( 0 )->getElementsByTagName( 'Value' )->item( 0 )->getAttribute( 'type' );
 							$storedValue = $keyValueNode->getElementsByTagName( 'value' )->item( 0 )->getElementsByTagName( 'Value' )->item( 0 )->textContent;
 						} else {
 							/* For an AliasedValue, we need to find the Alias first */
