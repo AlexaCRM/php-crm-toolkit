@@ -3,6 +3,12 @@ CRM Toolkit for PHP provides integration with Microsoft Dynamics CRM in PHP appl
 
 # Examples
 ```php
+
+/**
+ * Use init.php if you didn't install the package via Composer
+ */
+require_once 'vendor/autoload.php';
+
 use AlexaCRM\CRMToolkit\Client as OrganizationService;
 use AlexaCRM\CRMToolkit\Settings;
 
