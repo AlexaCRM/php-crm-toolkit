@@ -2,8 +2,9 @@ language: php
 php:
 - '7.0'
 - '5.6'
-
 before_script:
 - composer install --prefer-source --no-interaction
-
 script: phpunit
+notifications:
+  slack:
+    secure: QtQJUtBAIJ/qZc2knaCXeL9w+PNBqxbuOgIAaJY29r4/49zNOo9D3F2JyOFGIoL0iJ9Cxk5YFggigs6kB1lvsq6aiEgMeMV2aoGqAYmv6CAsOKy1k4onjH5JlHmh1SuO0Gw/F+Eg9iBQHKThz+R5elG3C05Ha08qtfLiJ1c0nGtb2jEmaLNBLeO+IOszJJeTA48Hdz7ByZrhOseavfjl/lx/hRUUXP7qo0BOydgpTRQkjNzCZSoueXnKpcyvZfvK2FjSp0ygUWAFedyWAgFUtIYOI99y0R9FNb6Bq8vK7y5hdWR5Tv5lTw/Ul4zp+IfS+sp+5O1Vy00+TVwST+oDchCTNxfQR9HkhorlE/bXS7/mRv4e9UnhpwVRBAMs8OE4TcLN1hxwOhypG3DUF4W0yoPYlqst/FDDhasVAIMA1ac0wXI35LW2miYWuTegrcJ/KC7GkWwpBT2A1yAOwOSWOuiPaPGSSV3obnWyI22E3I6Md57XfVzfCaxvbxent9q8zcO2J9PCTZ5aXr/+iO6F9h8ywMLtK5CwBVe5TtOz1CVC4jmMAn4dLUEWuGg5P3/4kToEQt0kv5lvW0IW1VWr/RAgTjtl41l/l4u/P/Vh5yX5x5L/677spJWEtB4kGc1vucV03WjqEhDlCbINKmQNFvqA5BDe+mrYsBCiSdzZKBQ=
