@@ -285,12 +285,7 @@ class Client extends AbstractClient {
 				$this->discoverySecurityPolicy = self::findSecurityPolicy( $discoveryDOM, 'DiscoveryService' );
 			}
 
-			if ( $this->security['discovery_authmode'] == "Federation" ) {
-				/* Find the Authentication type used */
-				$authAddress = self::getFederatedSecurityAddress( $this->discoverySecurityPolicy );
-			} else if ( $this->security['discovery_authmode'] == "OnlineFederation" ) {
-				$authAddress = self::getOnlineFederationSecurityAddress( $this->discoverySecurityPolicy );
-			}
+			$authAddress = self::getSecurityAddress( $this->discoverySecurityPolicy, $this->security['discovery_authmode'] );
 
 			return $authAddress;
 		} catch ( Exception $e ) {
@@ -319,11 +314,9 @@ class Client extends AbstractClient {
 				$this->organizationSecurityPolicy = self::findSecurityPolicy( $organizationDOM, 'OrganizationService' );
 			}
 			/* Find the Authentication type used */
-			$authAddress = self::getFederatedSecurityAddress( $this->organizationSecurityPolicy );
+			$this->security['organization_authuri'] = self::getSecurityAddress( $this->organizationSecurityPolicy, 'Federation' );
 
-			$this->security['organization_authuri'] = $authAddress;
-
-			return $authAddress;
+			return $this->security['organization_authuri'];
 		} catch ( Exception $e ) {
 			Logger::log( "Exception", $e );
 			throw $e;
@@ -357,105 +350,56 @@ class Client extends AbstractClient {
 	}
 
 	/**
-	 * Search a Microsoft Dynamics CRM Security Policy for the Address for the Federated Security
-	 *
-	 * @ignore
+	 * Search for the security address
 	 *
 	 * @param DOMNode $securityPolicyNode
+	 * @param string $authMode
 	 *
 	 * @return string
 	 * @throws Exception
 	 */
-	protected static function getFederatedSecurityAddress( DOMNode $securityPolicyNode ) {
-		try {
-			$securityURL = null;
-			/* Find the EndorsingSupportingTokens tag */
-			if ( $securityPolicyNode->getElementsByTagName( 'EndorsingSupportingTokens' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens tag in provided security policy XML' );
-			}
-			$estNode = $securityPolicyNode->getElementsByTagName( 'EndorsingSupportingTokens' )->item( 0 );
-			/* Find the Policy tag */
-			if ( $estNode->getElementsByTagName( 'Policy' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy tag in provided security policy XML' );
-			}
-			$estPolicyNode = $estNode->getElementsByTagName( 'Policy' )->item( 0 );
-			/* Find the IssuedToken tag */
-			if ( $estPolicyNode->getElementsByTagName( 'IssuedToken' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken tag in provided security policy XML' );
-			}
-			$issuedTokenNode = $estPolicyNode->getElementsByTagName( 'IssuedToken' )->item( 0 );
-			/* Find the Issuer tag */
-			if ( $issuedTokenNode->getElementsByTagName( 'Issuer' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken/Issuer tag in provided security policy XML' );
-			}
-			$issuerNode = $issuedTokenNode->getElementsByTagName( 'Issuer' )->item( 0 );
-			/* Find the Metadata tag */
-			if ( $issuerNode->getElementsByTagName( 'Metadata' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken/Issuer/Metadata tag in provided security policy XML' );
-			}
-			$metadataNode = $issuerNode->getElementsByTagName( 'Metadata' )->item( 0 );
-			/* Find the Address tag */
-			if ( $metadataNode->getElementsByTagName( 'Address' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken/Issuer/Metadata/.../Address tag in provided security policy XML' );
-			}
-			$addressNode = $metadataNode->getElementsByTagName( 'Address' )->item( 0 );
-			/* Get the URI */
-			$securityURL = $addressNode->textContent;
-			if ( $securityURL == null ) {
-				throw new Exception( 'Could not find Security URL in provided security policy WSDL' );
-			}
-
-			return $securityURL;
-		} catch ( Exception $e ) {
-			Logger::log( "Exception", $e );
-			throw $e;
+	protected static function getSecurityAddress( DOMNode $securityPolicyNode, $authMode ) {
+		if ( $authMode === 'OnlineFederation' ) {
+			$tokenElementName = 'SignedSupportingTokens';
+		} elseif ( $authMode === 'Federation' ) {
+			$tokenElementName = 'EndorsingSupportingTokens';
+		} else {
+			throw new \InvalidArgumentException( 'Authentication mode "' . $authMode . '" is not supported' );
 		}
-	}
 
-	/**
-	 * Search a Microsoft Dynamics CRM 2011 Security Policy for the Address for the Federated Security
-	 *
-	 * @ignore
-	 *
-	 * @param DOMNode $securityPolicyNode
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-	protected static function getOnlineFederationSecurityAddress( DOMNode $securityPolicyNode ) {
 		try {
 			$securityURL = null;
 
 			/* Find the SignedSupportingTokens tag */
-			if ( $securityPolicyNode->getElementsByTagName( 'SignedSupportingTokens' )->length == 0 ) {
-				throw new Exception( 'Could not find SignedSupportingTokens tag in provided security policy XML' );
+			if ( $securityPolicyNode->getElementsByTagName( $tokenElementName )->length == 0 ) {
+				throw new Exception( 'Could not find ' . $tokenElementName . ' tag in provided security policy XML' );
 			}
 			$estNode = $securityPolicyNode->getElementsByTagName( 'SignedSupportingTokens' )->item( 0 );
 
 			/* Find the Policy tag */
 			if ( $estNode->getElementsByTagName( 'Policy' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy tag in provided security policy XML' );
+				throw new Exception( 'Could not find ' . $tokenElementName . '/Policy tag in provided security policy XML' );
 			}
 			$estPolicyNode = $estNode->getElementsByTagName( 'Policy' )->item( 0 );
 			/* Find the IssuedToken tag */
 			if ( $estPolicyNode->getElementsByTagName( 'IssuedToken' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken tag in provided security policy XML' );
+				throw new Exception( 'Could not find ' . $tokenElementName . '/Policy/IssuedToken tag in provided security policy XML' );
 			}
 			$issuedTokenNode = $estPolicyNode->getElementsByTagName( 'IssuedToken' )->item( 0 );
 			/* Find the Issuer tag */
 			if ( $issuedTokenNode->getElementsByTagName( 'Issuer' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken/Issuer tag in provided security policy XML' );
+				throw new Exception( 'Could not find ' . $tokenElementName . '/Policy/IssuedToken/Issuer tag in provided security policy XML' );
 			}
 			$issuerNode = $issuedTokenNode->getElementsByTagName( 'Issuer' )->item( 0 );
 			/* Find the Metadata tag */
 			if ( $issuerNode->getElementsByTagName( 'Metadata' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken/Issuer/Metadata tag in provided security policy XML' );
+				throw new Exception( 'Could not find ' . $tokenElementName . '/Policy/IssuedToken/Issuer/Metadata tag in provided security policy XML' );
 			}
 
 			$metadataNode = $issuerNode->getElementsByTagName( 'Metadata' )->item( 0 );
 			/* Find the Address tag */
 			if ( $metadataNode->getElementsByTagName( 'Address' )->length == 0 ) {
-				throw new Exception( 'Could not find EndorsingSupportingTokens/Policy/IssuedToken/Issuer/Metadata/.../Address tag in provided security policy XML' );
+				throw new Exception( 'Could not find ' . $tokenElementName . '/Policy/IssuedToken/Issuer/Metadata/.../Address tag in provided security policy XML' );
 			}
 			$addressNode = $metadataNode->getElementsByTagName( 'Address' )->item( 0 );
 

@@ -121,7 +121,7 @@ class Settings {
 
 	/**
 	 * Unique name of organization, can be retrieved by RetrieveOrganizationsRequest
-	 * Or In Dynamics CRM Settings -> Customizations -> Developer Reources
+	 * Or In Dynamics CRM Settings -> Customizations -> Developer Resources
 	 *
 	 * @var string
 	 */
