@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
         colors="true"
-        bootstrap="./init.php">
+        bootstrap="./vendor/autoload.php">
     <testsuites>
         <testsuite name="PHP CRM Toolkit Test Suite">
             <directory>./tests/</directory>

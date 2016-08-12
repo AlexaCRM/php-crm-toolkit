@@ -15,13 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-define( 'ALEXACRM_CRMTOOLKIT_DIR', __DIR__ );
-define( 'ALEXACRM_CRMTOOLKIT_STORAGE', ALEXACRM_CRMTOOLKIT_DIR . '/storage' );
-
 spl_autoload_register( function( $className ) {
 	$namespacePrefix = 'AlexaCRM\\CRMToolkit\\';
 
-	$baseDirectory = ALEXACRM_CRMTOOLKIT_DIR . '/src/';
+	$baseDirectory = __DIR__ . '/src/';
 
 	$namespacePrefixLength = strlen( $namespacePrefix );
 	if ( strncmp( $namespacePrefix, $className, $namespacePrefixLength ) !== 0 ) {
