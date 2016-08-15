@@ -1129,8 +1129,14 @@ class Client extends AbstractClient {
 	/**
 	 * Send the SOAP message, and get the response
 	 *
-	 * @ignore
+	 * @param $soapUrl
+	 * @param $content
+	 * @param bool $throwException
+	 *
 	 * @return string response XML
+	 * @throws Exception
+	 * @throws NotAuthorizedException
+	 * @throws SoapFault
 	 */
 	public static function getSoapResponse( $soapUrl, $content, $throwException = true ) {
 		/* Format cUrl headers */
@@ -1162,13 +1168,11 @@ class Client extends AbstractClient {
 		if ( $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->length < 1 ) {
 			throw new Exception( 'Invalid SOAP Response: HTTP Response ' . $httpResponse . PHP_EOL . $responseXML );
 		}
-		/* Fast fix for CRM expiration, sets plugin connection to false */
-		if ( $responseDOM->getElementsByTagNameNS( 'http://schemas.microsoft.com/Passport/SoapServices/SOAPFault', 'value' )->length > 0 && function_exists( "ASDK" ) && ASDK() ) {
+		/* Authentication error */
+		if ( $responseDOM->getElementsByTagNameNS( 'http://schemas.microsoft.com/Passport/SoapServices/SOAPFault', 'value' )->length > 0 ) {
 			$errorCode = $responseDOM->getElementsByTagNameNS( 'http://schemas.microsoft.com/Passport/SoapServices/SOAPFault', 'value' )->item( 0 )->textContent;
 			if ( $errorCode == "0x80048831" ) {
-				$options              = get_option( ACRM()->prefix . 'options' );
-				$options["connected"] = false;
-				update_option( ACRM()->prefix . 'options', $options );
+				throw new NotAuthorizedException( $errorCode, 'Not authorized.' );
 			}
 		}
 		/* Check we have a SOAP Header */
