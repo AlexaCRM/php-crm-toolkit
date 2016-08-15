@@ -374,7 +374,7 @@ class Client extends AbstractClient {
 			if ( $securityPolicyNode->getElementsByTagName( $tokenElementName )->length == 0 ) {
 				throw new Exception( 'Could not find ' . $tokenElementName . ' tag in provided security policy XML' );
 			}
-			$estNode = $securityPolicyNode->getElementsByTagName( 'SignedSupportingTokens' )->item( 0 );
+			$estNode = $securityPolicyNode->getElementsByTagName( $tokenElementName )->item( 0 );
 
 			/* Find the Policy tag */
 			if ( $estNode->getElementsByTagName( 'Policy' )->length == 0 ) {
