@@ -30,18 +30,18 @@ namespace AlexaCRM\CRMToolkit;
  */
 interface ClientInterface {
 
-	/**
-	 * Default GUID for "not known" or new Entities
-	 *
-	 * @var String Parameter based on Dynamics CRM guid format
-	 */
-	const EmptyGUID = '00000000-0000-0000-0000-000000000000';
+    /**
+     * Default GUID for "not known" or new Entities
+     *
+     * @var String Parameter based on Dynamics CRM guid format
+     */
+    const EmptyGUID = '00000000-0000-0000-0000-000000000000';
 
-	/**
-	 * Maximum number of records in a single RetrieveMultiple
-	 *
-	 * @var Integer
-	 */
-	const MAX_CRM_RECORDS = 5000;
+    /**
+     * Maximum number of records in a single RetrieveMultiple
+     *
+     * @var Integer
+     */
+    const MAX_CRM_RECORDS = 5000;
 
 }

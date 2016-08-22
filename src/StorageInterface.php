@@ -18,44 +18,44 @@
 namespace AlexaCRM\CRMToolkit;
 
 /**
- * Interface CacheInterface defines an interface for SDK to perform caching of CRM data
+ * Interface StorageInterface defines an interface for SDK to perform storing of CRM data
  */
 interface StorageInterface {
 
-	/**
-	 * Retrieves a value from cache by key
-	 *
-	 * @param string $key Cache item key
-	 * @param mixed $default Default value if not found
-	 *
-	 * @return mixed
-	 */
-	public function get( $key, $default = null );
+    /**
+     * Retrieves a value from cache by key
+     *
+     * @param string $key Cache item key
+     * @param mixed $default Default value if not found
+     *
+     * @return mixed
+     */
+    public function get( $key, $default = null );
 
-	/**
-	 * Saves a value in cache by key
-	 *
-	 * @param string $key Cache item key
-	 * @param mixed $value Cache item value
-	 *
-	 * @return void
-	 */
-	public function set( $key, $value );
+    /**
+     * Saves a value in cache by key
+     *
+     * @param string $key Cache item key
+     * @param mixed $value Cache item value
+     *
+     * @return void
+     */
+    public function set( $key, $value );
 
-	/**
-	 * Checks whether given cache key exists and is valid
-	 *
-	 * @param string $key
-	 *
-	 * @return bool
-	 */
-	public function exists( $key );
+    /**
+     * Checks whether given cache key exists and is valid
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function exists( $key );
 
-	/**
-	 * Purges cache storage
-	 *
-	 * @return void
-	 */
-	public function cleanup();
+    /**
+     * Purges cache storage
+     *
+     * @return void
+     */
+    public function cleanup();
 
 }

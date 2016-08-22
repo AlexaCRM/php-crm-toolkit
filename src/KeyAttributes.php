@@ -19,29 +19,29 @@ namespace AlexaCRM\CRMToolkit;
 
 class KeyAttributes {
 
-	private $keys = array();
+    private $keys = array();
 
-	public function __construct() {
-		;
-	}
+    public function __construct() {
+        ;
+    }
 
-	public function add( $key, $attribute ) {
-		$this->keys[ $key ] = $attribute;
-	}
+    public function add( $key, $attribute ) {
+        $this->keys[ $key ] = $attribute;
+    }
 
-	public function count() {
-		return count( $this->keyAttributes );
-	}
+    public function count() {
+        return count( $this->keyAttributes );
+    }
 
-	public function getKeys() {
-		return $this->keys;
-	}
+    public function getKeys() {
+        return $this->keys;
+    }
 
-	public function __get( $name ) {
-		if ( strtolower( $name ) == "keys" ) {
-			return $this->keys;
-		}
-	}
+    public function __get( $name ) {
+        if ( strtolower( $name ) == "keys" ) {
+            return $this->keys;
+        }
+    }
 
 }
 

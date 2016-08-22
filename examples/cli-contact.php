@@ -42,44 +42,44 @@ require_once '../init.php';
 $isRetrievedByEmail = false;
 
 if ( $argc > 1 ) {
-	$contactKeyValue = $argv[1];
-	if ( filter_var( $contactKeyValue, FILTER_VALIDATE_EMAIL ) ) {
-		$isRetrievedByEmail = true;
-	} elseif ( Client::isGuid( $contactKeyValue ) ) {
-		$isRetrievedByEmail = false;
-	} else {
-		die( 'Error: invalid Contact ID or e-mail specified.' . PHP_EOL );
-	}
+    $contactKeyValue = $argv[1];
+    if ( filter_var( $contactKeyValue, FILTER_VALIDATE_EMAIL ) ) {
+        $isRetrievedByEmail = true;
+    } elseif ( Client::isGuid( $contactKeyValue ) ) {
+        $isRetrievedByEmail = false;
+    } else {
+        die( 'Error: invalid Contact ID or e-mail specified.' . PHP_EOL );
+    }
 } else {
-	die( 'Error: Contact ID or e-mail not specified.' . PHP_EOL );
+    die( 'Error: Contact ID or e-mail not specified.' . PHP_EOL );
 }
 
-$clientOptions = include( 'config.php' );
+$clientOptions  = include( 'config.php' );
 $clientSettings = new Settings( $clientOptions );
-$client = new Client( $clientSettings );
-$metadata = MetadataCollection::instance( $client );
+$client         = new Client( $clientSettings );
+$metadata       = MetadataCollection::instance( $client );
 
-echo 'Retrieving contact information for ' . ( $isRetrievedByEmail? 'e-mail' : 'ID' ) . ' ' . $contactKeyValue . PHP_EOL;
+echo 'Retrieving contact information for ' . ( $isRetrievedByEmail ? 'e-mail' : 'ID' ) . ' ' . $contactKeyValue . PHP_EOL;
 
 $contactKey = null;
 if ( $isRetrievedByEmail ) {
-	$contactKey = new \AlexaCRM\CRMToolkit\KeyAttributes();
-	$contactKey->add( 'emailaddress1', $contactKeyValue );
+    $contactKey = new \AlexaCRM\CRMToolkit\KeyAttributes();
+    $contactKey->add( 'emailaddress1', $contactKeyValue );
 } else {
-	$contactKey = $contactKeyValue;
+    $contactKey = $contactKeyValue;
 }
 
 $contact = $client->entity( 'contact', $contactKey );
 if ( !$contact->exists ) {
-	die( 'Contact not found. Aborting...' . PHP_EOL );
+    die( 'Contact not found. Aborting...' . PHP_EOL );
 }
 
 echo PHP_EOL . '------------------' . PHP_EOL;
 echo "{$contact->fullname} <{$contact->emailaddress1}>" . PHP_EOL;
 if ( !is_null( $contact->jobtitle ) && !is_null( $contact->parentcustomeridname ) ) {
-	echo $contact->jobtitle . ' at ' . $contact->parentcustomeridname . PHP_EOL;
+    echo $contact->jobtitle . ' at ' . $contact->parentcustomeridname . PHP_EOL;
 }
 echo PHP_EOL . $contact->address1_composite . PHP_EOL;
 if ( !is_null( $contact->telephone1 ) ) {
-	echo PHP_EOL . 'Phone: ' . $contact->telephone1 . PHP_EOL;
+    echo PHP_EOL . 'Phone: ' . $contact->telephone1 . PHP_EOL;
 }

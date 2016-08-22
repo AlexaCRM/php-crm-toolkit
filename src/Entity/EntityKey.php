@@ -19,49 +19,49 @@ namespace AlexaCRM\CRMToolkit\Entity;
 
 class EntityKey {
 
-	/**
-	 * EntityKey display name
-	 *
-	 * @var string
-	 */
-	public $displayName = '';
+    /**
+     * EntityKey display name
+     *
+     * @var string
+     */
+    public $displayName = '';
 
-	/**
-	 * Key attributes of the EntityKey
-	 * List of strings
-	 *
-	 * @var array|string
-	 */
-	public $keyAttributes = [];
+    /**
+     * Key attributes of the EntityKey
+     * List of strings
+     *
+     * @var array|string
+     */
+    public $keyAttributes = [ ];
 
-	/**
-	 * Logical name of the EntityKey
-	 *
-	 * @var string
-	 */
-	public $logicalName = '';
+    /**
+     * Logical name of the EntityKey
+     *
+     * @var string
+     */
+    public $logicalName = '';
 
-	/**
-	 * EntityKey constructor.
-	 *
-	 * @param string $logicalName
-	 * @param string $displayName
-	 * @param array|string $keyAttributes
-	 */
-	public function __construct( $logicalName, $displayName, $keyAttributes ) {
-		$this->logicalName = $logicalName;
-		$this->displayName = $displayName;
-		$this->keyAttributes = $keyAttributes;
-	}
+    /**
+     * EntityKey constructor.
+     *
+     * @param string $logicalName
+     * @param string $displayName
+     * @param array|string $keyAttributes
+     */
+    public function __construct( $logicalName, $displayName, $keyAttributes ) {
+        $this->logicalName   = $logicalName;
+        $this->displayName   = $displayName;
+        $this->keyAttributes = $keyAttributes;
+    }
 
-	/**
-	 * @return array|string
-	 */
-	public function getKeyAttributes() {
-		if ( is_array( $this->keyAttributes ) && count( $this->keyAttributes ) === 1 ) {
-			return $this->keyAttributes[0];
-		} else {
-			return $this->keyAttributes;
-		}
-	}
+    /**
+     * @return array|string
+     */
+    public function getKeyAttributes() {
+        if ( is_array( $this->keyAttributes ) && count( $this->keyAttributes ) === 1 ) {
+            return $this->keyAttributes[0];
+        } else {
+            return $this->keyAttributes;
+        }
+    }
 }

@@ -16,15 +16,15 @@
  */
 
 return [
-	// Dynamics CRM URL
-	'serverUrl' => 'https://example.crmN.dynamics.com',
+    // Dynamics CRM URL
+    'serverUrl' => 'https://example.crmN.dynamics.com',
 
-	// System user name
-	'username' => 'example@example.onmicrosoft.com',
+    // System user name
+    'username'  => 'example@example.onmicrosoft.com',
 
-	// System user password
-	'password' => 'example',
+    // System user password
+    'password'  => 'example',
 
-	// CRM type (OnlineFederation for CRM Online, Federation for IFD)
-	'authMode' => 'OnlineFederation',
+    // CRM type (OnlineFederation for CRM Online, Federation for IFD)
+    'authMode'  => 'OnlineFederation',
 ];

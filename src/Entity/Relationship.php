@@ -21,37 +21,44 @@ use SimpleXMLElement;
 
 class Relationship {
 
-	public $metadataId;
-	/**
-	 *
-	 */
-	public $schemaName;
-	public $relationshipType;
-	public $isCustomRelationship;
-	public $referencedAttribute;
-	public $referencedEntity;
-	public $referencingAttribute;
-	public $referencingEntity;
+    public $metadataId;
 
-	public function __construct( $relationshipData ) {
-		if ( $relationshipData instanceof SimpleXMLElement ) {
-			$this->constructFromSimpleXMLElement( $relationshipData );
-		}
-	}
+    /**
+     *
+     */
+    public $schemaName;
 
-	public function constructFromSimpleXMLElement( $relationshipData ) {
+    public $relationshipType;
 
-		$this->metadataId = (string) $relationshipData->MetadataId;
+    public $isCustomRelationship;
 
-		$this->schemaName = (string) $relationshipData->SchemaName;
+    public $referencedAttribute;
 
-		$this->relationshipType = (string) $relationshipData->RelationshipType;
+    public $referencedEntity;
 
-		$this->isCustomRelationship = (string) $relationshipData->IsCustomRelationship;
-		$this->referencedAttribute  = (string) $relationshipData->ReferencedAttribute;
-		$this->referencedEntity     = (string) $relationshipData->ReferencedEntity;
-		$this->referencingAttribute = (string) $relationshipData->ReferencingAttribute;
-		$this->referencingEntity    = (string) $relationshipData->ReferencingEntity;
-	}
+    public $referencingAttribute;
+
+    public $referencingEntity;
+
+    public function __construct( $relationshipData ) {
+        if ( $relationshipData instanceof SimpleXMLElement ) {
+            $this->constructFromSimpleXMLElement( $relationshipData );
+        }
+    }
+
+    public function constructFromSimpleXMLElement( $relationshipData ) {
+
+        $this->metadataId = (string) $relationshipData->MetadataId;
+
+        $this->schemaName = (string) $relationshipData->SchemaName;
+
+        $this->relationshipType = (string) $relationshipData->RelationshipType;
+
+        $this->isCustomRelationship = (string) $relationshipData->IsCustomRelationship;
+        $this->referencedAttribute  = (string) $relationshipData->ReferencedAttribute;
+        $this->referencedEntity     = (string) $relationshipData->ReferencedEntity;
+        $this->referencingAttribute = (string) $relationshipData->ReferencingAttribute;
+        $this->referencingEntity    = (string) $relationshipData->ReferencingEntity;
+    }
 
 }

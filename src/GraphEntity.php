@@ -26,16 +26,15 @@ namespace AlexaCRM\CRMToolkit;
  */
 class GraphEntity {
 
-	private $odataType;
+    private $odataType;
 
-	private $objectType;
+    private $objectType;
 
-	private $objectId;
+    private $objectId;
 
-	private $displayName;
+    private $displayName;
 
-	private $values = array();
-
+    private $values = array();
 
 }
 

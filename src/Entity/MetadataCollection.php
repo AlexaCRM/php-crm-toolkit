@@ -22,43 +22,43 @@ use AlexaCRM\CRMToolkit\StorageInterface;
 
 class MetadataCollection {
 
-	/**
-	 * @var Client
-	 */
-	protected static $_instance = null;
+    /**
+     * @var Client
+     */
+    protected static $_instance = null;
 
     /**
      * @var StorageInterface
      */
     protected $storage = null;
 
-	/**
-	 * Cached Entity Definitions
-	 *
-	 * @var Metadata[] associative array of cached entities
-	 */
-	private $cachedEntityDefinitions = array();
+    /**
+     * Cached Entity Definitions
+     *
+     * @var Metadata[] associative array of cached entities
+     */
+    private $cachedEntityDefinitions = array();
 
-	private $cachedEntitiesList = array();
+    private $cachedEntitiesList = array();
 
-	/**
-	 * @var Client
-	 */
-	private $client;
+    /**
+     * @var Client
+     */
+    private $client;
 
-	/**
-	 * @param Client $client
+    /**
+     * @param Client $client
      * @param StorageInterface $storage Persistent metadata storage
-	 *
-	 * @return MetadataCollection
-	 */
-	public static function instance( Client $client = null, StorageInterface $storage = null ) {
-		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self( $client, $storage );
-		}
+     *
+     * @return MetadataCollection
+     */
+    public static function instance( Client $client = null, StorageInterface $storage = null ) {
+        if ( is_null( self::$_instance ) ) {
+            self::$_instance = new self( $client, $storage );
+        }
 
-		return self::$_instance;
-	}
+        return self::$_instance;
+    }
 
     /**
      * AlexaCRM\CRMToolkit\Entity\EntityMetadataCollection constructor.
@@ -66,83 +66,83 @@ class MetadataCollection {
      * @param Client $client
      * @param StorageInterface $storage
      */
-	private function __construct( Client $client, StorageInterface $storage = null ) {
-		$this->client = $client;
+    private function __construct( Client $client, StorageInterface $storage = null ) {
+        $this->client = $client;
 
         if ( $storage instanceof StorageInterface ) {
             $this->setStorage( $storage );
         }
-	}
-
-	/**
-	 * @return Client
-	 */
-	public function getClient() {
-		return $this->client;
-	}
-
-	/**
-	 * Get specified Entity definition (metadata)
-	 *
-	 * @param string $entityLogicalName
-	 *
-	 * @return Metadata
-	 */
-	public function __get( $entityLogicalName ) {
-		return $this->getEntityDefinition( $entityLogicalName );
-	}
-
-	public function setStorage( StorageInterface $storage ) {
-	    $this->storage = $storage;
     }
 
-	/**
-	 * Get specified Entity definition (metadata)
-	 *
-	 * @param string $entityLogicalName
-	 *
-	 * @return Metadata
-	 */
-	public function getEntityDefinition( $entityLogicalName ) {
-		$entityLogicalName = strtolower( $entityLogicalName );
+    /**
+     * @return Client
+     */
+    public function getClient() {
+        return $this->client;
+    }
 
-		return $this->retrieveMetadata( $entityLogicalName );
-	}
+    /**
+     * Get specified Entity definition (metadata)
+     *
+     * @param string $entityLogicalName
+     *
+     * @return Metadata
+     */
+    public function __get( $entityLogicalName ) {
+        return $this->getEntityDefinition( $entityLogicalName );
+    }
 
-	/**
-	 * Retrieves a list of entities logicalName -> displayName
-	 *
-	 * @return array
-	 */
-	public function getEntitiesList() {
-		return $this->retrieveEntitiesList();
-	}
+    public function setStorage( StorageInterface $storage ) {
+        $this->storage = $storage;
+    }
 
-	private function retrieveEntitiesList() {
+    /**
+     * Get specified Entity definition (metadata)
+     *
+     * @param string $entityLogicalName
+     *
+     * @return Metadata
+     */
+    public function getEntityDefinition( $entityLogicalName ) {
+        $entityLogicalName = strtolower( $entityLogicalName );
+
+        return $this->retrieveMetadata( $entityLogicalName );
+    }
+
+    /**
+     * Retrieves a list of entities logicalName -> displayName
+     *
+     * @return array
+     */
+    public function getEntitiesList() {
+        return $this->retrieveEntitiesList();
+    }
+
+    private function retrieveEntitiesList() {
         $entitiesListKey = '__entities';
 
-		if ( count( $this->cachedEntitiesList ) ) {
-			return $this->cachedEntitiesList;
-		}
+        if ( count( $this->cachedEntitiesList ) ) {
+            return $this->cachedEntitiesList;
+        }
 
-		if ( $this->isStorageAvailable() && $this->storage->exists( $entitiesListKey ) ) {
-			$this->cachedEntitiesList = $this->storage->get( $entitiesListKey );
+        if ( $this->isStorageAvailable() && $this->storage->exists( $entitiesListKey ) ) {
+            $this->cachedEntitiesList = $this->storage->get( $entitiesListKey );
 
             return $this->cachedEntitiesList;
-		}
+        }
 
         // perform CRM request to retrieve all entities' metadata
         $client               = $this->client;
         $entitiesMetadataList = $client->retrieveAllEntities( 'Entity' );
 
-        $entitiesList = [];
+        $entitiesList = [ ];
 
         foreach ( $entitiesMetadataList as $entityMetadataPlain ) {
             $entityLogicalName = (string) $entityMetadataPlain->LogicalName;
             $entityMetadata    = new Metadata( $entityLogicalName, $entityMetadataPlain );
 
             // make a list
-            $entitiesList[$entityLogicalName] = $entityMetadata->entityDisplayName;
+            $entitiesList[ $entityLogicalName ] = $entityMetadata->entityDisplayName;
         }
 
         $this->cachedEntitiesList = $entitiesList;
@@ -151,27 +151,27 @@ class MetadataCollection {
             $this->storage->set( $entitiesListKey, $entitiesList );
         }
 
-		return $this->cachedEntitiesList;
-	}
+        return $this->cachedEntitiesList;
+    }
 
-	/**
-	 * Retrieve Entity Metadata via CRM
-	 *
-	 * @param string $entityLogicalName
-	 * @param bool $force Bypass cache if true
-	 *
-	 * @return Metadata
-	 */
-	private function retrieveMetadata( $entityLogicalName, $force = false ) {
-	    // check memory
-	    if ( array_key_exists( $entityLogicalName, $this->cachedEntityDefinitions ) ) {
-	        return $this->cachedEntityDefinitions[$entityLogicalName];
+    /**
+     * Retrieve Entity Metadata via CRM
+     *
+     * @param string $entityLogicalName
+     * @param bool $force Bypass cache if true
+     *
+     * @return Metadata
+     */
+    private function retrieveMetadata( $entityLogicalName, $force = false ) {
+        // check memory
+        if ( array_key_exists( $entityLogicalName, $this->cachedEntityDefinitions ) ) {
+            return $this->cachedEntityDefinitions[ $entityLogicalName ];
         }
 
         // check storage
-	    if ( $this->isStorageAvailable() && $this->storage->exists( $entityLogicalName ) ) {
-	        $entityMetadata = $this->storage->get( $entityLogicalName );
-            $this->cachedEntityDefinitions[$entityLogicalName] = $entityMetadata;
+        if ( $this->isStorageAvailable() && $this->storage->exists( $entityLogicalName ) ) {
+            $entityMetadata                                      = $this->storage->get( $entityLogicalName );
+            $this->cachedEntityDefinitions[ $entityLogicalName ] = $entityMetadata;
 
             return $entityMetadata;
         }
@@ -182,22 +182,22 @@ class MetadataCollection {
          * If no storage is available, data will be fetched from the CRM on every SDK execution
          * (web request, cli run).
          */
-        $client       = $this->client;
-        $entityObject = $client->retrieveEntity( $entityLogicalName );
-        $metadata     = new Metadata( $entityLogicalName, $entityObject );
-        $this->cachedEntityDefinitions[$entityLogicalName] = $metadata;
+        $client                                              = $this->client;
+        $entityObject                                        = $client->retrieveEntity( $entityLogicalName );
+        $metadata                                            = new Metadata( $entityLogicalName, $entityObject );
+        $this->cachedEntityDefinitions[ $entityLogicalName ] = $metadata;
         if ( $this->isStorageAvailable() ) {
             $this->storage->set( $entityLogicalName, $metadata );
         }
 
-		return $metadata;
-	}
+        return $metadata;
+    }
 
     /**
      * @return bool
      */
-	private function isStorageAvailable() {
-	    return ( $this->storage instanceof StorageInterface );
+    private function isStorageAvailable() {
+        return ( $this->storage instanceof StorageInterface );
     }
 
 }

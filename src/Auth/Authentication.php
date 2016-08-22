@@ -30,64 +30,64 @@ use AlexaCRM\CRMToolkit\Client;
  */
 class Authentication extends Client {
 
-	/**
-	 * Global SDK settings
-	 *
-	 * @var Settings Instance of AlexaCRM\CRMToolkit\Settings class
-	 */
-	public $settings;
+    /**
+     * Global SDK settings
+     *
+     * @var Settings Instance of AlexaCRM\CRMToolkit\Settings class
+     */
+    public $settings;
 
-	/**
-	 * Object of AlexaCRM\CRMToolkit\Client class
-	 *
-	 * @var Client
-	 */
-	protected $client;
+    /**
+     * Object of AlexaCRM\CRMToolkit\Client class
+     *
+     * @var Client
+     */
+    protected $client;
 
-	/**
-	 *  Security token for requests to Organization service
-	 *
-	 * @var array
-	 */
-	protected $organizationSecurityToken = null;
+    /**
+     *  Security token for requests to Organization service
+     *
+     * @var array
+     */
+    protected $organizationSecurityToken = null;
 
-	/**
-	 *  Security token for requests to Discovery service
-	 *
-	 * @var array
-	 */
-	protected $discoverySecurityToken = null;
+    /**
+     *  Security token for requests to Discovery service
+     *
+     * @var array
+     */
+    protected $discoverySecurityToken = null;
 
-	public function setCachedSecurityToken( $service, $token ) {
-		if ( $this->client->isCacheEnabled() ) {
-			$cacheKey = $this->getSecurityTokenCacheKey( $service );
-			$this->client->cache->set( $cacheKey, $token, floor( $token['expiryTime'] - time() ) );
-		}
-	}
+    public function setCachedSecurityToken( $service, $token ) {
+        if ( $this->client->isCacheEnabled() ) {
+            $cacheKey = $this->getSecurityTokenCacheKey( $service );
+            $this->client->cache->set( $cacheKey, $token, floor( $token['expiryTime'] - time() ) );
+        }
+    }
 
-	public function getCachedSecurityToken( $service, &$securityToken ) {
-		if ( $this->client->isCacheEnabled() ) {
-			$cacheKey = $this->getSecurityTokenCacheKey( $service );
-			$isDefined = $this->client->cache->exists( $cacheKey );
-			if ( $isDefined ) {
-				$securityToken = $this->client->cache->get( $cacheKey );
-			}
+    public function getCachedSecurityToken( $service, &$securityToken ) {
+        if ( $this->client->isCacheEnabled() ) {
+            $cacheKey  = $this->getSecurityTokenCacheKey( $service );
+            $isDefined = $this->client->cache->exists( $cacheKey );
+            if ( $isDefined ) {
+                $securityToken = $this->client->cache->get( $cacheKey );
+            }
 
-			return $isDefined;
-		}
+            return $isDefined;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * Generates a security token cache key for given service (discovery, organization)
-	 *
-	 * @param string $service
-	 *
-	 * @return string
-	 */
-	protected function getSecurityTokenCacheKey( $service ) {
-		return strtolower( $service . '_security_token' );
-	}
+    /**
+     * Generates a security token cache key for given service (discovery, organization)
+     *
+     * @param string $service
+     *
+     * @return string
+     */
+    protected function getSecurityTokenCacheKey( $service ) {
+        return strtolower( $service . '_security_token' );
+    }
 
 }

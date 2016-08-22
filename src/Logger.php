@@ -24,16 +24,16 @@ use Exception;
  */
 class Logger {
 
-	/**
-	 * Log the message or full exception stack trace
-	 *
-	 * @param string $message The message to log
-	 * @param Exception $exception the object of Exception class to write stack trace
-	 *
-	 * @throws Exception
-	 */
-	public static function log( $message, $exception = null ) {
-		// nop
-	}
+    /**
+     * Log the message or full exception stack trace
+     *
+     * @param string $message The message to log
+     * @param Exception $exception the object of Exception class to write stack trace
+     *
+     * @throws Exception
+     */
+    public static function log( $message, $exception = null ) {
+        // nop
+    }
 
 }

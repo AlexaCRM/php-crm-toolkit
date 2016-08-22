@@ -31,19 +31,19 @@ use AlexaCRM\CRMToolkit\Settings;
 
 require_once '../init.php';
 
-$clientOptions = include( 'config.php' );
+$clientOptions  = include( 'config.php' );
 $clientSettings = new Settings( $clientOptions );
-$client = new Client( $clientSettings );
-$metadata = MetadataCollection::instance( $client );
+$client         = new Client( $clientSettings );
+$metadata       = MetadataCollection::instance( $client );
 
 /*
  * When Client is instantiated, it connects to the CRM and retrieves
  * additional organization data. It is then stored in $clientSettings.
  */
 if ( $clientSettings->hasOrganizationData() ) {
-	echo "You have connected to the organization '{$clientSettings->organizationName}' [{$clientSettings->organizationUniqueName}]" . PHP_EOL;
+    echo "You have connected to the organization '{$clientSettings->organizationName}' [{$clientSettings->organizationUniqueName}]" . PHP_EOL;
 } else {
-	die( 'There was an error retrieving organization data for the CRM. Please check connection settings.' );
+    die( 'There was an error retrieving organization data for the CRM. Please check connection settings.' );
 }
 
 // retrieve "WhoAmI" information
