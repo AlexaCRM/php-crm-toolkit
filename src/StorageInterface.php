@@ -20,7 +20,7 @@ namespace AlexaCRM\CRMToolkit;
 /**
  * Interface CacheInterface defines an interface for SDK to perform caching of CRM data
  */
-interface CacheInterface extends StorageInterface {
+interface StorageInterface {
 
 	/**
 	 * Retrieves a value from cache by key
@@ -37,11 +37,10 @@ interface CacheInterface extends StorageInterface {
 	 *
 	 * @param string $key Cache item key
 	 * @param mixed $value Cache item value
-	 * @param int $expiresAfter
 	 *
 	 * @return void
 	 */
-	public function set( $key, $value, $expiresAfter = null );
+	public function set( $key, $value );
 
 	/**
 	 * Checks whether given cache key exists and is valid
@@ -54,9 +53,6 @@ interface CacheInterface extends StorageInterface {
 
 	/**
 	 * Purges cache storage
-	 *
-	 * This may be performed for the SDK only if proper tagging is
-	 * implemented by the consuming software.
 	 *
 	 * @return void
 	 */
