@@ -47,14 +47,14 @@ class Metadata {
      *
      * @var Attribute[]
      */
-    public $attributes = null;
+    public $attributes = [];
 
     /**
      * Entity keys
      *
      * @var EntityKey[]
      */
-    public $keys = null;
+    public $keys = [];
 
     public $optionSets;
 
@@ -71,17 +71,17 @@ class Metadata {
     /**
      * @var Relationship[]
      */
-    public $oneToManyRelationships = array();
+    public $oneToManyRelationships = [];
 
     /**
      * @var Relationship[]
      */
-    public $manyToOneRelationships = array();
+    public $manyToOneRelationships = [];
 
     /**
      * @var Relationship[]
      */
-    public $manyToManyRelationships = array();
+    public $manyToManyRelationships = [];
 
     public $autoCreateAccessTeams;
 
