@@ -1189,20 +1189,19 @@ class Client extends AbstractClient {
         Logger::log( __FUNCTION__ . ': SOAP Action in returned XML is "' . $actionString . '"' );
         /* Handle known Error Actions */
         if ( in_array( $actionString, self::$SOAPFaultActions ) && $throwException ) {
-            // Get the Fault Code
-            $faultCode = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
-                                     ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Body' )->item( 0 )
-                                     ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Fault' )->item( 0 )
-                                     ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Detail' )->item( 0 )
-                                     ->getElementsByTagName( 'OrganizationServiceFault' )->item( 0 )
-                                     ->getElementsByTagName( 'ErrorCode' )->item( 0 )->nodeValue;
 
-            // Get the Fault String
-            $faultString = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
-                                       ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Body' )->item( 0 )
-                                       ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Fault' )->item( 0 )
-                                       ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Reason' )->item( 0 )
-                                       ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Text' )->item( 0 )->nodeValue;
+            $q = new \DOMXPath( $responseDOM );
+            $q->registerNamespace( 'c', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+
+            $faultCode = $q->query( '/s:Envelope/s:Body/s:Fault/s:Detail/c:OrganizationServiceFault/c:ErrorCode' );
+            if ( !$faultCode->length ) {
+                $faultCode = $q->query( '/s:Envelope/s:Body/s:Fault/s:Code/s:Value' )->item( 0 )->nodeValue;
+            } else {
+                $faultCode = $faultCode->item( 0 )->nodeValue;
+            }
+
+            $faultString = $q->query( '/s:Envelope/s:Body/s:Fault/s:Reason/s:Text' )->item( 0 )->nodeValue;
+
             throw new SoapFault( (string) $faultCode, $faultString );
         }
 
