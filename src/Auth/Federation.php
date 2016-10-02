@@ -228,8 +228,15 @@ class Federation extends Authentication {
         $loginTimestamp->appendChild( $loginSoapRequest->createElement( 'u:Expires', self::getExpiryTime() . 'Z' ) );
         $loginUsernameToken = $loginSecurity->appendChild( $loginSoapRequest->createElement( 'o:UsernameToken' ) );
         $loginUsernameToken->setAttribute( 'u:Id', 'user' );
-        $loginUsernameToken->appendChild( $loginSoapRequest->createElement( 'o:Username', $loginUsername ) );
-        $loginUsernameToken->appendChild( $loginSoapRequest->createElement( 'o:Password', $loginPassword ) )->setAttribute( 'Type', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText' );
+
+        $usernameNode = $loginSoapRequest->createElement( 'o:Username' );
+        $usernameNode->appendChild( $loginSoapRequest->createTextNode( $loginUsername ) );
+        $loginUsernameToken->appendChild( $usernameNode );
+
+        $passwordNode = $loginSoapRequest->createElement( 'o:Password' );
+        $passwordNode->setAttribute( 'Type', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText' );
+        $passwordNode->appendChild( $loginSoapRequest->createTextNode( $loginPassword ) );
+        $loginUsernameToken->appendChild( $passwordNode );
 
         $loginBody              = $loginEnvelope->appendChild( $loginSoapRequest->createElementNS( 'http://www.w3.org/2003/05/soap-envelope', 's:Body' ) );
         $loginRST               = $loginBody->appendChild( $loginSoapRequest->createElementNS( 'http://docs.oasis-open.org/ws-sx/ws-trust/200512', 'trust:RequestSecurityToken' ) );
