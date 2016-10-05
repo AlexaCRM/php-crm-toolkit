@@ -923,6 +923,11 @@ class Client extends AbstractClient {
         $entity = $fetch->appendChild( $queryXML->createElement( 'entity' ) );
         $entity->setAttribute( 'name', $entityType );
         $entity->appendChild( $queryXML->createElement( 'all-attributes' ) );
+
+        $order = $entity->appendChild( $queryXML->createElement( 'order' ) );
+        $order->setAttribute( 'attribute', MetadataCollection::instance( $this, $this->cache )->getEntityDefinition( $entityType )->primaryNameAttribute );
+        $order->setAttribute( 'descending', 'false' );
+
         $queryXML->saveXML( $fetch );
 
         return $this->retrieveMultiple( $queryXML->C14N(), $allPages, $pagingCookie, $limitCount, $pageNumber, $simpleMode );
