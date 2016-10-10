@@ -1278,12 +1278,21 @@ class Entity extends EntityReference {
 
     /**
      * Generates a cache key for the volatile entity cache.
+     *
      * @param string $logicalName Entity logical name
      * @param string $id Record ID
+     * @param array $columnSet Optional. List of entity fields to retrieve
      *
      * @return string
      */
-    public static function generateCacheKey( $logicalName, $id ) {
-        return sha1( "{$logicalName}_{$id}" );
+    public static function generateCacheKey( $logicalName, $id, $columnSet = null ) {
+        $columnSetString = '';
+
+        if ( is_array( $columnSet ) && count( $columnSet ) ) {
+            sort( $columnSet );
+            $columnSetString = '_' . serialize( $columnSet );
+        }
+
+        return sha1( "{$logicalName}_{$id}{$columnSetString}" );
     }
 }

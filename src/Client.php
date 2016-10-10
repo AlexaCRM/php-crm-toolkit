@@ -130,6 +130,13 @@ class Client extends AbstractClient {
     protected static $entityCache = [];
 
     /**
+     * Stores a map of LogicalName => {Key,...} associations for cached records
+     *
+     * @var array
+     */
+    protected static $entityCacheRefs = [];
+
+    /**
      * @var CacheInterface
      */
     public $cache;
@@ -1048,22 +1055,39 @@ class Client extends AbstractClient {
      *
      * @param string $logicalName Entity logical name
      * @param string|KeyAttributes $id Entity record ID or key attribute
-     * @param array $fieldSet List of field values to retrieve
+     * @param array $columnSet List of field values to retrieve
      *
      * @return Entity
      */
-    public function entity( $logicalName, $id = null, $fieldSet = null ) {
-        if ( is_string( $id ) && is_null( $fieldSet ) ) {
-            $cacheKey = sha1( $logicalName . '_' . $id );
-            if ( !array_key_exists( $cacheKey, static::$entityCache )
-                 || !( static::$entityCache[$cacheKey] instanceof Entity ) ) {
-                static::$entityCache[$cacheKey] = new Entity( $this, $logicalName, $id );
-            }
-
-            return static::$entityCache[$cacheKey];
+    public function entity( $logicalName, $id = null, $columnSet = null ) {
+        if ( is_null( $id ) ) {
+            return new Entity( $this, $logicalName, null, $columnSet );
         }
 
-        return new Entity( $this, $logicalName, $id, $fieldSet );
+        if ( is_array( $columnSet ) && count( $columnSet ) ) {
+            $emptyColumnSetCacheKey = Entity::generateCacheKey( $logicalName, $id );
+
+            if ( array_key_exists( $emptyColumnSetCacheKey, static::$entityCache ) ) {
+                var_dump( "Retrieved {$logicalName} {$id} without columnset from cache" );
+                /*
+                 * If we have a record with all fields retrieved, return it instead of retrieving
+                 * a limited amount of fields from the CRM.
+                 */
+                return static::$entityCache[$emptyColumnSetCacheKey];
+            }
+        }
+
+        $cacheKey = Entity::generateCacheKey( $logicalName, $id, $columnSet );
+
+        if ( !array_key_exists( $cacheKey, static::$entityCache ) ) {
+            var_dump( "Retrieved {$logicalName} {$id} with columnset from crm" );
+            static::$entityCache[$cacheKey] = new Entity( $this, $logicalName, $id, $columnSet );
+            static::$entityCacheRefs[$logicalName][] = $cacheKey;
+        } else {
+            var_dump( "Retrieved {$logicalName} {$id} with columnset from cache" );
+        }
+
+        return static::$entityCache[$cacheKey];
     }
 
     /**
@@ -1672,10 +1696,7 @@ class Client extends AbstractClient {
      * @throws Exception
      */
     public function create( Entity &$entity ) {
-        $cacheKey = $entity->getCacheKey();
-        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
-            unset( static::$entityCache[$cacheKey] );
-        }
+        $this->purgeEntityCache( $entity->logicalName );
 
         /* Only allow "Create" for an Entity with no ID */
         if ( $entity->ID != self::EmptyGUID ) {
@@ -1723,10 +1744,7 @@ class Client extends AbstractClient {
      * @return string Formatted raw XML response of update request
      */
     public function update( Entity &$entity ) {
-        $cacheKey = $entity->getCacheKey();
-        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
-            unset( static::$entityCache[$cacheKey] );
-        }
+        $this->purgeEntityCache( $entity->logicalName );
 
         /* Only allow "Update" for an Entity with an ID */
         if ( $entity->ID == self::EmptyGUID ) {
@@ -1769,10 +1787,7 @@ class Client extends AbstractClient {
      * @return boolean TRUE on successful delete, false on failure
      */
     public function delete( Entity &$entity ) {
-        $cacheKey = $entity->getCacheKey();
-        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
-            unset( static::$entityCache[$cacheKey] );
-        }
+        $this->purgeEntityCache( $entity->logicalName );
 
         /* Only allow "Delete" for an Entity with an ID */
         if ( $entity->ID == self::EmptyGUID ) {
@@ -1809,10 +1824,7 @@ class Client extends AbstractClient {
     }
 
     public function upsert( Entity &$entity ) {
-        $cacheKey = $entity->getCacheKey();
-        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
-            unset( static::$entityCache[$cacheKey] );
-        }
+        $this->purgeEntityCache( $entity->logicalName );
 
         /* Check the Dynamics CRM version, if it less then 7.1.0, throw exception */
         if ( version_compare( $this->settings->organizationVersion, "7.1.0", "<" ) ) {
@@ -1963,5 +1975,28 @@ class Client extends AbstractClient {
      */
     public function isCacheEnabled() {
         return ( $this->cache instanceof CacheInterface );
+    }
+
+    /**
+     * Purges the volatile entity cache entirely or by specific logical name.
+     *
+     * @param string $logicalName
+     */
+    private function purgeEntityCache( $logicalName = null ) {
+        if ( is_null( $logicalName ) ) {
+            static::$entityCache = [];
+            static::$entityCacheRefs = [];
+
+            return;
+        }
+
+        if ( !array_key_exists( $logicalName, static::$entityCacheRefs ) ) {
+            return;
+        }
+
+        $doomedRecords = static::$entityCacheRefs[$logicalName];
+        foreach ( $doomedRecords as $cacheKey ) {
+            unset( static::$entityCache[$cacheKey] );
+        }
     }
 }
