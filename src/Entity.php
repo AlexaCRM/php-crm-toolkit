@@ -78,11 +78,11 @@ class Entity extends EntityReference {
      * @param Client $_client
      * @param String $_logicalName Allows constructing arbitrary Entities by setting the EntityLogicalName directly
      * @param String $IDorKeyAttributes Allows constructing arbitrary Entities by setting the EntityLogicalName directly
-     * @param array $fieldset List of Entity fields to retrieve
+     * @param array $columnSet List of Entity fields to retrieve
      *
      * @internal param AlexaCRM\CRMToolkit\AlexaSDK $_auth Connection to the Dynamics CRM server - should be active already.
      */
-    public function __construct( Client $_client, $_logicalName = null, $IDorKeyAttributes = null, $fieldset = null ) {
+    public function __construct( Client $_client, $_logicalName = null, $IDorKeyAttributes = null, $columnSet = null ) {
         try {
             /* Store AlexaCRM\CRMToolkit\AlexaSDK object */
             $this->client = $_client;
@@ -114,7 +114,7 @@ class Entity extends EntityReference {
                     /* Set the ID of Entity record */
                     $this->setID( $IDorKeyAttributes );
                     /* Get the raw XML data */
-                    $rawSoapResponse = $this->client->retrieveRaw( $this, $fieldset );
+                    $rawSoapResponse = $this->client->retrieveRaw( $this, $columnSet );
                     /* NOTE: ParseRetrieveResponse method of AlexaCRM\CRMToolkit\AlexaSDK_Entity class, not the AlexaCRM\CRMToolkit\AlexaSDK class */
                     $this->parseRetrieveResponse( $this->client, $this->LogicalName, $rawSoapResponse );
                 } else if ( $IDorKeyAttributes instanceof KeyAttributes ) {
@@ -132,7 +132,7 @@ class Entity extends EntityReference {
                     }
                     /* Get the raw XML data */
                     try {
-                        $rawSoapResponse = $this->client->retrieveRaw( $this, $fieldset );
+                        $rawSoapResponse = $this->client->retrieveRaw( $this, $columnSet );
                         /* NOTE: ParseRetrieveResponse method of AlexaCRM\CRMToolkit\AlexaSDK_Entity class, not the AlexaCRM\CRMToolkit\AlexaSDK class */
                         $this->parseExecuteRetrieveResponse( $this->client, $this->LogicalName, $rawSoapResponse );
                     } catch ( SoapFault $sf ) {
@@ -1267,4 +1267,23 @@ class Entity extends EntityReference {
         }
     }
 
+    /**
+     * Returns a cache key for the volatile entity cache.
+     *
+     * @return string
+     */
+    public function getCacheKey() {
+        return static::generateCacheKey( $this->entityLogicalName, $this->entityID );
+    }
+
+    /**
+     * Generates a cache key for the volatile entity cache.
+     * @param string $logicalName Entity logical name
+     * @param string $id Record ID
+     *
+     * @return string
+     */
+    public static function generateCacheKey( $logicalName, $id ) {
+        return sha1( "{$logicalName}_{$id}" );
+    }
 }

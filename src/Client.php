@@ -123,6 +123,13 @@ class Client extends AbstractClient {
     protected static $maximumRecords = self::MAX_CRM_RECORDS;
 
     /**
+     * Volatile entity cache
+     *
+     * @var Entity[]
+     */
+    protected static $entityCache = [];
+
+    /**
      * @var CacheInterface
      */
     public $cache;
@@ -941,12 +948,12 @@ class Client extends AbstractClient {
      * This is particularly useful when debugging the responses from the server
      *
      * @param Entity $entity the Entity to retrieve - must have an ID specified
-     * @param array $fieldSet array listing all fields to be fetched, or null to get all fields
+     * @param array $columnSet array listing all fields to be fetched, or null to get all fields
      *
      * @return string the raw XML returned by the server, including all SOAP Envelope, Header and Body data.
      * @throws Exception
      */
-    public function retrieveRaw( Entity $entity, $fieldSet = null ) {
+    public function retrieveRaw( Entity $entity, $columnSet = null ) {
         /* Determine the Type & ID of the Entity */
         $entityType = $entity->LogicalName;
         /* Send the security request and get a security token */
@@ -954,10 +961,10 @@ class Client extends AbstractClient {
         /* Check if entity have and ID */
         if ( $entity->ID != self::EmptyGUID ) {
             $entityId    = $entity->ID;
-            $executeNode = SoapRequestsGenerator::generateRetrieveRequest( $entityType, $entityId, $fieldSet );
+            $executeNode = SoapRequestsGenerator::generateRetrieveRequest( $entityType, $entityId, $columnSet );
             $action      = "Retrieve";
         } else if ( $entity->keyAttributes ) {
-            $executeNode = SoapRequestsGenerator::generateExecuteRetrieveRequest( $entityType, $entity->keyAttributes, $fieldSet );
+            $executeNode = SoapRequestsGenerator::generateExecuteRetrieveRequest( $entityType, $entity->keyAttributes, $columnSet );
             $action      = "Execute";
         } else {
             /* Only allow "Retrieve" for an Entity with an ID */
@@ -1039,13 +1046,24 @@ class Client extends AbstractClient {
     /**
      * Create a new usable Dynamics CRM Entity object
      *
-     * @param String $logicalName Allows constructing arbritrary Entities by setting the EntityLogicalName directly
-     * @param String $ID Allows constructing arbritrary Entities by setting the EntityLogicalName directly
+     * @param string $logicalName Entity logical name
+     * @param string|KeyAttributes $id Entity record ID or key attribute
+     * @param array $fieldSet List of field values to retrieve
      *
-     * @return Entity usable Dynamics CRM Entity object
+     * @return Entity
      */
-    public function entity( $logicalName, $ID = null, $colmnset = null ) {
-        return new Entity( $this, $logicalName, $ID, $colmnset );
+    public function entity( $logicalName, $id = null, $fieldSet = null ) {
+        if ( is_string( $id ) && is_null( $fieldSet ) ) {
+            $cacheKey = sha1( $logicalName . '_' . $id );
+            if ( !array_key_exists( $cacheKey, static::$entityCache )
+                 || !( static::$entityCache[$cacheKey] instanceof Entity ) ) {
+                static::$entityCache[$cacheKey] = new Entity( $this, $logicalName, $id );
+            }
+
+            return static::$entityCache[$cacheKey];
+        }
+
+        return new Entity( $this, $logicalName, $id, $fieldSet );
     }
 
     /**
@@ -1591,13 +1609,13 @@ class Client extends AbstractClient {
      * you don't already have the ID.
      *
      * @param Entity $entity the Entity to retrieve - must have an ID specified
-     * @param array $fieldSet array listing all fields to be fetched, or null to get all fields
+     * @param array $columnSet array listing all fields to be fetched, or null to get all fields
      *
      * @return Entity (subclass) a Strongly-Typed Entity containing all the data retrieved.
      */
-    public function retrieve( Entity $entity, $fieldSet = null ) {
+    public function retrieve( Entity $entity, $columnSet = null ) {
         /* Get the raw XML data */
-        $rawSoapResponse = $this->retrieveRaw( $entity, $fieldSet );
+        $rawSoapResponse = $this->retrieveRaw( $entity, $columnSet );
         /* Parse the raw XML data into an Object */
         $newEntity = self::parseRetrieveResponse( $this, $entity->LogicalName, $rawSoapResponse );
 
@@ -1654,6 +1672,11 @@ class Client extends AbstractClient {
      * @throws Exception
      */
     public function create( Entity &$entity ) {
+        $cacheKey = $entity->getCacheKey();
+        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
+            unset( static::$entityCache[$cacheKey] );
+        }
+
         /* Only allow "Create" for an Entity with no ID */
         if ( $entity->ID != self::EmptyGUID ) {
             throw new Exception( 'Cannot Create an Entity that already exists.' );
@@ -1700,6 +1723,11 @@ class Client extends AbstractClient {
      * @return string Formatted raw XML response of update request
      */
     public function update( Entity &$entity ) {
+        $cacheKey = $entity->getCacheKey();
+        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
+            unset( static::$entityCache[$cacheKey] );
+        }
+
         /* Only allow "Update" for an Entity with an ID */
         if ( $entity->ID == self::EmptyGUID ) {
             throw new Exception( 'Cannot Update an Entity without an ID.' );
@@ -1741,6 +1769,11 @@ class Client extends AbstractClient {
      * @return boolean TRUE on successful delete, false on failure
      */
     public function delete( Entity &$entity ) {
+        $cacheKey = $entity->getCacheKey();
+        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
+            unset( static::$entityCache[$cacheKey] );
+        }
+
         /* Only allow "Delete" for an Entity with an ID */
         if ( $entity->ID == self::EmptyGUID ) {
             throw new Exception( 'Cannot Delete an Entity without an ID.' );
@@ -1776,6 +1809,11 @@ class Client extends AbstractClient {
     }
 
     public function upsert( Entity &$entity ) {
+        $cacheKey = $entity->getCacheKey();
+        if ( array_key_exists( $cacheKey, static::$entityCache ) ) {
+            unset( static::$entityCache[$cacheKey] );
+        }
+
         /* Check the Dynamics CRM version, if it less then 7.1.0, throw exception */
         if ( version_compare( $this->settings->organizationVersion, "7.1.0", "<" ) ) {
             throw new Exception( 'Upsert request is not supported for the organization version lower then 7.1.0' );
