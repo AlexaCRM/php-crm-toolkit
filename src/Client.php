@@ -1068,7 +1068,6 @@ class Client extends AbstractClient {
             $emptyColumnSetCacheKey = Entity::generateCacheKey( $logicalName, $id );
 
             if ( array_key_exists( $emptyColumnSetCacheKey, static::$entityCache ) ) {
-                var_dump( "Retrieved {$logicalName} {$id} without columnset from cache" );
                 /*
                  * If we have a record with all fields retrieved, return it instead of retrieving
                  * a limited amount of fields from the CRM.
@@ -1080,11 +1079,9 @@ class Client extends AbstractClient {
         $cacheKey = Entity::generateCacheKey( $logicalName, $id, $columnSet );
 
         if ( !array_key_exists( $cacheKey, static::$entityCache ) ) {
-            var_dump( "Retrieved {$logicalName} {$id} with columnset from crm" );
             static::$entityCache[$cacheKey] = new Entity( $this, $logicalName, $id, $columnSet );
             static::$entityCacheRefs[$logicalName][] = $cacheKey;
         } else {
-            var_dump( "Retrieved {$logicalName} {$id} with columnset from cache" );
         }
 
         return static::$entityCache[$cacheKey];

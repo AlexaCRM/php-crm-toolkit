@@ -321,19 +321,4 @@ abstract class AbstractClient implements ClientInterface {
         }
     }
 
-    /**
-     * Debug function. Outputs variable wrapped in html "pre" tags
-     *
-     * @param Mixed $variable Variable to be outputted using var_dump function
-     */
-    public static function dump( $variable ) {
-        echo "<pre>";
-        if ( is_string( $variable ) ) {
-            var_dump( htmlentities( $variable ) );
-        } else {
-            var_dump( $variable );
-        }
-        echo "</pre>";
-    }
-
 }
