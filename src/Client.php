@@ -514,7 +514,16 @@ class Client extends AbstractClient {
                     if ( $importURI != null ) {
                         Logger::log( "\tImporting data from: " . $importURI );
                         $importDOM = new DOMDocument();
-                        @$importDOM->load( $importURI );
+
+                        $wsdlCurl = curl_init( $importURI );
+                        curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+                        curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
+                        curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+                        $importXML = curl_exec( $wsdlCurl );
+                        curl_close( $wsdlCurl );
+
+                        $importDOM->loadXML( $importXML );
+
                         /* Find the "Definitions" on this imported node */
                         $importDefinitions = $importDOM->getElementsByTagName( 'definitions' )->item( 0 );
                         /* If we have "Definitions", import them one by one - Otherwise, just import at this level */
