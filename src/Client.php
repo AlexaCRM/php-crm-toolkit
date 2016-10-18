@@ -518,6 +518,7 @@ class Client extends AbstractClient {
                         $wsdlCurl = curl_init( $importURI );
                         curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
                         curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
+                        curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
                         curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
                         $importXML = curl_exec( $wsdlCurl );
                         curl_close( $wsdlCurl );
