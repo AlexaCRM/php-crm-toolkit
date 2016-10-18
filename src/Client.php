@@ -1081,7 +1081,6 @@ class Client extends AbstractClient {
         if ( !array_key_exists( $cacheKey, static::$entityCache ) ) {
             static::$entityCache[$cacheKey] = new Entity( $this, $logicalName, $id, $columnSet );
             static::$entityCacheRefs[$logicalName][] = $cacheKey;
-        } else {
         }
 
         return static::$entityCache[$cacheKey];
