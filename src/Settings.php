@@ -175,6 +175,11 @@ class Settings {
     public $oauthMultiTenant = false;
 
     /**
+     * @var bool
+     */
+    public $ignoreSslErrors = false;
+
+    /**
      * @var mixed
      */
     public $cache = array( "server" => "localhost", "port" => 11211 );
@@ -240,6 +245,10 @@ class Settings {
 
         $this->useSsl = ( $serverUrlParts['scheme'] === 'https' );
         $this->port   = isset ( $serverUrlParts['port'] ) ? $serverUrlParts['port'] : '';
+
+        if ( $this->useSsl && isset( $settings['ignoreSslErrors'] ) ) {
+            $this->ignoreSslErrors = (bool)$settings['ignoreSslErrors'];
+        }
 
         $serverHostParts = explode( '.', $serverUrlParts['host'] );
 

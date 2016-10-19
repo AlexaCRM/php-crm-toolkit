@@ -267,7 +267,20 @@ class Client extends AbstractClient {
 
             $discoveryDOM = new DOMDocument();
 
-            @$discoveryDOM->load( $this->settings->discoveryUrl . '?wsdl' );
+            $wsdlCurl = curl_init( $this->settings->discoveryUrl . '?wsdl' );
+            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+
+            if ( $this->settings->ignoreSslErrors ) {
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+            }
+
+            $importXML = curl_exec( $wsdlCurl );
+            curl_close( $wsdlCurl );
+
+            $discoveryDOM->loadXML( $importXML );
 
             /* Flatten the WSDL and include all the Imports */
             $this->mergeWSDLImports( $discoveryDOM );
@@ -518,8 +531,13 @@ class Client extends AbstractClient {
                         $wsdlCurl = curl_init( $importURI );
                         curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
                         curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
-                        curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
                         curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+
+                        if ( $this->settings->ignoreSslErrors ) {
+                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                        }
+
                         $importXML = curl_exec( $wsdlCurl );
                         curl_close( $wsdlCurl );
 
@@ -723,7 +741,21 @@ class Client extends AbstractClient {
             /* Fetch the WSDL for the Authentication Service as a parseable DOM Document */
             Logger::log( 'Getting WSDL data for Federation Security URI from: ' . $authUri );
             $authenticationDOM = new DOMDocument();
-            @$authenticationDOM->load( $authUri );
+
+            $wsdlCurl = curl_init( $authUri );
+            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+
+            if ( $this->settings->ignoreSslErrors ) {
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+            }
+
+            $importXML = curl_exec( $wsdlCurl );
+            curl_close( $wsdlCurl );
+
+            $authenticationDOM->loadXML( $importXML );
             /* Flatten the WSDL and include all the Imports */
             $this->mergeWSDLImports( $authenticationDOM );
 
@@ -755,7 +787,21 @@ class Client extends AbstractClient {
             /* Fetch the WSDL for the Authentication Service as a parseable DOM Document */
             Logger::log( 'Getting WSDL data for OnlineFederation Security URI from: ' . $this->security[ $service . '_authuri' ] );
             $authenticationDOM = new DOMDocument();
-            @$authenticationDOM->load( $this->security[ $service . '_authuri' ] );
+
+            $wsdlCurl = curl_init( $this->security[ $service . '_authuri' ] );
+            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+
+            if ( $this->settings->ignoreSslErrors ) {
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+            }
+
+            $importXML = curl_exec( $wsdlCurl );
+            curl_close( $wsdlCurl );
+
+            $authenticationDOM->loadXML( $importXML );
             /* Flatten the WSDL and include all the Imports */
             $this->mergeWSDLImports( $authenticationDOM );
 
@@ -869,7 +915,19 @@ class Client extends AbstractClient {
             /* Fetch the WSDL for the Organization Service as a parseable DOM Document */
             Logger::log( 'Getting WSDL data for Organization DOM from: ' . $this->settings->organizationUrl . '?wsdl' );
             $organizationDOM = new DOMDocument();
-            @$organizationDOM->load( $this->settings->organizationUrl . '?wsdl' );
+            $wsdlCurl = curl_init( $this->settings->organizationUrl . '?wsdl' );
+            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+
+            if ( $this->settings->ignoreSslErrors ) {
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+            }
+
+            $importXML = curl_exec( $wsdlCurl );
+            curl_close( $wsdlCurl );
+            $organizationDOM->loadXML( $importXML );
             /* Flatten the WSDL and include all the Imports */
             $this->mergeWSDLImports( $organizationDOM );
 
@@ -1201,6 +1259,7 @@ class Client extends AbstractClient {
         curl_setopt( $cURLHandle, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt( $cURLHandle, CURLOPT_TIMEOUT, self::$connectorTimeout );
         curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYPEER, 0 );
+        curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
         curl_setopt( $cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
         curl_setopt( $cURLHandle, CURLOPT_HTTPHEADER, $headers );
         curl_setopt( $cURLHandle, CURLOPT_POST, 1 );
