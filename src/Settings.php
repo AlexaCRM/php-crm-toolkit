@@ -192,6 +192,7 @@ class Settings {
     private static $crmRegionMapping = [
         'crm'  => 'crmna:dynamics.com',
         'crm2' => 'crmsam:dynamics.com',
+        'crm3' => 'crmcan:dynamics.com',
         'crm4' => 'crmemea:dynamics.com',
         'crm5' => 'crmapac:dynamics.com',
         'crm6' => 'crmoce:dynamics.com',
