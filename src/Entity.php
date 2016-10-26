@@ -610,7 +610,7 @@ class Entity extends EntityReference {
                         if ( $this->propertyValues[ $property ]['Value'] ) {
                             $valueNode->setAttribute( 'i:type', 'd:OptionSetValue' );
                             $valueNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
-                            $valueNode->appendChild( $entityDOM->createElement( 'b:Value', $this->propertyValues[ $property ]['Value'] ) );
+                            $valueNode->appendChild( $entityDOM->createElement( 'b:Value', $this->propertyValues[ $property ]['Value']->value ) );
                         } else {
                             $valueNode->setAttribute( 'i:nil', 'true' );
                         }
@@ -640,7 +640,7 @@ class Entity extends EntityReference {
                                 $xmlType       = 'OptionSetValue';
                                 $xmlTypeNS     = 'http://schemas.microsoft.com/xrm/2011/Contracts';
                                 $xmlValue      = null;
-                                $xmlValueChild = $entityDOM->createElement( 'b:Value', $this->propertyValues[ $property ]['Value'] );
+                                $xmlValueChild = $entityDOM->createElement( 'b:Value', $this->propertyValues[ $property ]['Value']->value );
                                 break;
                             case 'boolean':
                                 /* Boolean - Just get the numerical value */
