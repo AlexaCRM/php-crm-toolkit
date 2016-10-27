@@ -312,16 +312,11 @@ class Entity extends EntityReference {
                     }
                 }
                 /* Handle passing an Integer value */
-                if ( is_int( $value ) ) {
+                if ( is_int( $value ) || is_bool( $value ) ) {
                     /* Look for an option with this value */
-                    if ( array_key_exists( $value, $this->attributes[ $property ]->optionSet->options ) ) {
+                    if ( array_key_exists( (int)$value, $this->attributes[ $property ]->optionSet->options ) ) {
                         /* Create the Value object */
-                        $optionSetValue = new OptionSetValue( $value, $this->attributes[ $property ]->optionSet->options[ $value ] );
-                    } else {
-                        if ( array_key_exists( $value, $this->attributes[ $property ]->optionSet->options ) ) {
-                            /* Copy the Value object */
-                            $optionSetValue = $value;
-                        }
+                        $optionSetValue = new OptionSetValue( (int)$value, $this->attributes[ $property ]->optionSet->options[ (int)$value ] );
                     }
                 }
                 /* Handle passing an OptionSetValue */
@@ -644,7 +639,8 @@ class Entity extends EntityReference {
                                 break;
                             case 'boolean':
                                 /* Boolean - Just get the numerical value */
-                                $xmlValue = $this->propertyValues[ $property ]['Value'];
+                                $xmlValue = $this->propertyValues[ $property ]['Value']->value;
+
                                 break;
                             case 'string':
                             case 'int':
@@ -667,7 +663,7 @@ class Entity extends EntityReference {
                             $valueNode->appendChild( $xmlValueChild );
                         }
                         /* If there is a value, set it */
-                        if ( $xmlValue != null ) {
+                        if ( isset( $xmlValue ) ) {
                             $valueNode->appendChild( new DOMText( $xmlValue ) );
                         }
                     }
