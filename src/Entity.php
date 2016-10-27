@@ -312,16 +312,11 @@ class Entity extends EntityReference {
                     }
                 }
                 /* Handle passing an Integer value */
-                if ( is_int( $value ) ) {
+                if ( is_int( $value ) || is_bool( $value ) ) {
                     /* Look for an option with this value */
-                    if ( array_key_exists( $value, $this->attributes[ $property ]->optionSet->options ) ) {
+                    if ( array_key_exists( (int)$value, $this->attributes[ $property ]->optionSet->options ) ) {
                         /* Create the Value object */
-                        $optionSetValue = new OptionSetValue( $value, $this->attributes[ $property ]->optionSet->options[ $value ] );
-                    } else {
-                        if ( array_key_exists( $value, $this->attributes[ $property ]->optionSet->options ) ) {
-                            /* Copy the Value object */
-                            $optionSetValue = $value;
-                        }
+                        $optionSetValue = new OptionSetValue( (int)$value, $this->attributes[ $property ]->optionSet->options[ (int)$value ] );
                     }
                 }
                 /* Handle passing an OptionSetValue */
@@ -668,7 +663,7 @@ class Entity extends EntityReference {
                             $valueNode->appendChild( $xmlValueChild );
                         }
                         /* If there is a value, set it */
-                        if ( isset($xmlValue) ) {
+                        if ( isset( $xmlValue ) ) {
                             $valueNode->appendChild( new DOMText( $xmlValue ) );
                         }
                     }
