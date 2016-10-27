@@ -644,7 +644,8 @@ class Entity extends EntityReference {
                                 break;
                             case 'boolean':
                                 /* Boolean - Just get the numerical value */
-                                $xmlValue = $this->propertyValues[ $property ]['Value'];
+                                $xmlValue = $this->propertyValues[ $property ]['Value']->value;
+
                                 break;
                             case 'string':
                             case 'int':
@@ -667,7 +668,7 @@ class Entity extends EntityReference {
                             $valueNode->appendChild( $xmlValueChild );
                         }
                         /* If there is a value, set it */
-                        if ( $xmlValue != null ) {
+                        if ( isset($xmlValue) ) {
                             $valueNode->appendChild( new DOMText( $xmlValue ) );
                         }
                     }
