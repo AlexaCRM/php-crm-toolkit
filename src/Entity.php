@@ -345,7 +345,7 @@ class Entity extends EntityReference {
                 }
             }
 
-            if ( $this->propertyValues[ $property ]['Value'] != $value ) {
+            if ( $this->propertyValues[ $property ]['Value'] !== $value ) {
                 /* Update the property value with whatever value was passed */
                 $this->propertyValues[ $property ]['Value'] = $value;
                 /* Mark the property as changed */
@@ -639,7 +639,7 @@ class Entity extends EntityReference {
                                 break;
                             case 'boolean':
                                 /* Boolean - Just get the numerical value */
-                                $xmlValue = $this->propertyValues[ $property ]['Value']->value;
+                                $xmlValue = $this->propertyValues[ $property ]['Value']->value? '1' : '0';
 
                                 break;
                             case 'string':
@@ -681,6 +681,11 @@ class Entity extends EntityReference {
             /* Related Entities */
             $relatedEntitiesNode = $entityNode->appendChild( $entityDOM->createElement( 'b:RelatedEntities' ) );
             $relatedEntitiesNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic' );
+
+            if ( version_compare( $this->client->organizationVersion, '7.0.0', '>' ) ) {
+                $rowVersion = $entityNode->appendChild( $entityDOM->createElement( 'b:RowVersion' ) );
+                $rowVersion->setAttribute( 'i:nil', 'true' );
+            }
 
             /* Return the root node for the Entity */
 

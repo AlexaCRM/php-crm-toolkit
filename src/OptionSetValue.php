@@ -27,9 +27,9 @@
 namespace AlexaCRM\CRMToolkit;
 
 /**
- * This class represents ket/value (or label/value) object for Entities selectboxes and boolean
+ * This class represents key/value (or label/value) object for Entities selectboxes and boolean
  */
-class OptionSetValue extends AbstractClient {
+class OptionSetValue {
 
     /**
      * Value of the option set element
