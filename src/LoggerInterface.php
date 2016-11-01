@@ -34,7 +34,7 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function emergency( $message, $context );
+    public function emergency( $message, $context = null );
 
     /**
      * Alert: action must be taken immediately.
@@ -44,7 +44,7 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function alert( $message, $context );
+    public function alert( $message, $context = null );
 
     /**
      * Critical: critical conditions.
@@ -54,7 +54,7 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function critical( $message, $context );
+    public function critical( $message, $context = null );
 
     /**
      * Error: error conditions.
@@ -64,7 +64,7 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function error( $message, $context );
+    public function error( $message, $context = null );
 
     /**
      * Warning: warning conditions.
@@ -74,7 +74,7 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function warning( $message, $context );
+    public function warning( $message, $context = null );
 
     /**
      * Notice: normal but significant condition.
@@ -84,7 +84,7 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function notice( $message, $context );
+    public function notice( $message, $context = null );
 
     /**
      * Informational: informational messages.
@@ -94,7 +94,7 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function info( $message, $context );
+    public function info( $message, $context = null );
 
     /**
      * Debug: debug-level messages.
@@ -104,6 +104,6 @@ interface LoggerInterface {
      *
      * @return void
      */
-    public function debug( $message, $context );
+    public function debug( $message, $context = null );
 
 }
