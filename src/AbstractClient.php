@@ -30,27 +30,6 @@ use DOMNodeList;
 abstract class AbstractClient implements ClientInterface {
 
     /**
-     * Internal details
-     *
-     * @var bool $debugMode if TRUE will outputs debug information, default FALSE
-     */
-    protected static $debugMode = false;
-
-    /**
-     * Limits the maximum execution time
-     *
-     * @var int
-     */
-    protected static $timeLimit = 240;
-
-    /**
-     * Enables or disables logging
-     *
-     * @var bool
-     */
-    public static $enableLogs = false;
-
-    /**
      * List of recognised SOAP Faults that can be returned by MS Dynamics CRM
      *
      * @var array $SOAPFaultActions List of SOAP Fault actions that returned from Dyanmics CRM
@@ -145,32 +124,6 @@ abstract class AbstractClient implements ClientInterface {
      */
     public static function isGuid( $guid ) {
         return ( preg_match( '/^\{?[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}\}?$/', strtoupper( $guid ) ) == 1 );
-    }
-
-    /**
-     * Enable or Disable DEBUG for the Class
-     *
-     * @param Boolean $_debugMode
-     */
-    public static function setDebug( $_debugMode ) {
-        self::$debugMode = $_debugMode;
-    }
-
-    public static function setLogging( $_enableLogs ) {
-        self::$enableLogs = $_enableLogs;
-    }
-
-    public static function getDebugMode() {
-        return self::$debugMode;
-    }
-
-    /**
-     * Set the maximum script execution time
-     *
-     * @param Integer $_timeLimit
-     */
-    public static function setTimeLimit( $_timeLimit ) {
-        self::$timeLimit = $_timeLimit;
     }
 
     /**

@@ -58,13 +58,6 @@ class Client extends AbstractClient {
     private $organizationUniqueName;
 
     /**
-     * Organization domain
-     *
-     * @var string
-     */
-    //private $domain;
-
-    /**
      * Organization Service url
      * This refers to the organization that you specify in the URL when you access the web application.
      * For example, for Contoso.crm.dynamics.com, the OrganizationName is Contoso.
@@ -99,11 +92,6 @@ class Client extends AbstractClient {
      */
     private $organizationSecurityPolicy;
 
-    /**
-     * @ignore
-     */
-    private $organizationSecurityToken;
-
     /* Security Details */
     private $security = array();
 
@@ -119,7 +107,11 @@ class Client extends AbstractClient {
      */
     protected static $connectorTimeout = 300;
 
-    /* Maximum record to retrieve */
+    /**
+     * Maximum record to retrieve
+     *
+     * @var int
+     */
     protected static $maximumRecords = self::MAX_CRM_RECORDS;
 
     /**
@@ -142,28 +134,29 @@ class Client extends AbstractClient {
     public $cache;
 
     /**
+     * @var LoggerInterface
+     */
+    public $logger;
+
+    /**
      * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
      *
      * @param Settings $settings
      * @param CacheInterface $cache
-     * @param bool $_debug Enable debug mode (default false)
-     * @param bool $_log Enable logging (default false)
+     * @param LoggerInterface $logger
      *
-     * @throws Exception if provided $_settings not instance of Settings class
+     * @throws Exception
      */
-    function __construct( Settings $settings, CacheInterface $cache = null, $_debug = false, $_log = false ) {
+    function __construct( Settings $settings, CacheInterface $cache = null, LoggerInterface $logger = null ) {
         try {
-            /* Enable or disable debug mode */
-            self::$debugMode = $_debug;
-
-            /* Enable or disable log mode */
-            self::$enableLogs = $_log;
-
-            /* Create settings object */
+            // Create settings object
             $this->settings = $settings;
 
-            // Store CacheInterface implementation object
+            // Inject CacheInterface implementation
             $this->cache = $cache;
+
+            // Inject LoggerInterface implementation
+            $this->logger = $logger;
 
             /* If either mandatory parameter is NULL, throw an Exception */
             if ( !$this->checkConnectionSettings() ) {
@@ -269,8 +262,8 @@ class Client extends AbstractClient {
 
             $wsdlCurl = curl_init( $this->settings->discoveryUrl . '?wsdl' );
             curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
             if ( $this->settings->ignoreSslErrors ) {
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
@@ -530,8 +523,8 @@ class Client extends AbstractClient {
 
                         $wsdlCurl = curl_init( $importURI );
                         curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-                        curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
-                        curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+                        curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+                        curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
                         if ( $this->settings->ignoreSslErrors ) {
                             curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
@@ -744,8 +737,8 @@ class Client extends AbstractClient {
 
             $wsdlCurl = curl_init( $authUri );
             curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
             if ( $this->settings->ignoreSslErrors ) {
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
@@ -790,8 +783,8 @@ class Client extends AbstractClient {
 
             $wsdlCurl = curl_init( $this->security[ $service . '_authuri' ] );
             curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
             if ( $this->settings->ignoreSslErrors ) {
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
@@ -917,8 +910,8 @@ class Client extends AbstractClient {
             $organizationDOM = new DOMDocument();
             $wsdlCurl = curl_init( $this->settings->organizationUrl . '?wsdl' );
             curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, 120 );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, 120 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
             if ( $this->settings->ignoreSslErrors ) {
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
