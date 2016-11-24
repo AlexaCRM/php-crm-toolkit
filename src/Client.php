@@ -1978,23 +1978,6 @@ class Client extends AbstractClient {
         }
     }
 
-    /**
-     * UNFINISHED METHOD
-     * Retrieves changes in metadata
-     *
-     * @todo
-     */
-    public function retrieveMetadataChanges1() {
-        /* Send the security request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
-        /* Generate the XML for the Body of a Retrieve Metadata Changes request */
-        $retrieveMetadataChangesNode = SoapRequestsGenerator::generateRetrieveMetadataChangesRequest();
-        /* Turn this into a SOAP request, and send it */
-        $retrieveMetadataChangesRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $retrieveMetadataChangesNode );
-
-        $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $retrieveMetadataChangesRequest );
-    }
-
     public function retrieveAllEntitiesRaw( $entityFilters = null, $retrieveAsIfPublished = false ) {
         /* Send the security request and get a security token */
         $securityToken = $this->authentication->getOrganizationSecurityToken();
