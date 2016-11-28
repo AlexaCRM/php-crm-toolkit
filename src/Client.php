@@ -190,7 +190,7 @@ class Client extends AbstractClient {
             /* Initialize the entity metadata instance */
             MetadataCollection::instance( $this );
         } catch ( Exception $e ) {
-            $this->logger->critical( 'Caught an exception while initializing PHP CRM Toolkit.', [ 'exception' => $e ] );
+            Logger::log( "Exception", $e );
             throw $e;
         }
     }
