@@ -439,18 +439,20 @@ class SoapRequestsGenerator {
         $queryDOM = new DOMDocument();
         $queryDOM->loadXML( $queryXML );
 
-        $newPage = $pageNumber;
-        if ( $pageNumber == null ) {
+        $newPage = 1;
+        if ( $queryDOM->documentElement->hasAttribute( 'page' ) ) {
+            $newPage = (int)$queryDOM->documentElement->getAttribute( 'page' );
+        }
+
+        if ( $pagingCookie !== null ) {
             $newPage = Client::getPageNo( $pagingCookie ) + 1;
+            $queryDOM->documentElement->setAttribute( 'paging-cookie', $pagingCookie );
+        } elseif ( $pageNumber !== null ) {
+            $newPage = $pageNumber;
         }
 
         /* Modify the query that we send: Add the Page number */
         $queryDOM->documentElement->setAttribute( 'page', $newPage );
-
-        /* Modify the query that we send: Add the Paging-Cookie (note - HTML entities automatically converted by DOMDocument!) */
-        if ( $pagingCookie != null ) {
-            $queryDOM->documentElement->setAttribute( 'paging-cookie', $pagingCookie );
-        }
 
         /* Find the current limit, if there is one */
         $currentLimit = Client::getMaximumRecords() + 1;
