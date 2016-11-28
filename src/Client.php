@@ -1386,6 +1386,7 @@ class Client extends AbstractClient {
      * @param boolean $allPages indicates if the query should be resent until all possible data is retrieved
      * @param string $pagingCookie if multiple pages are returned, send the paging cookie to get pages 2 and onwards.  Use NULL to get the first page.  Ignored if $allPages is specified.
      * @param integer $limitCount maximum number of records to be returned per page
+     * @param int $pageNumber
      * @param boolean $simpleMode indicates if we should just use stdClass, instead of creating Entities
      *
      * @return stdClass a PHP Object containing all the data retrieved.
@@ -1483,7 +1484,7 @@ class Client extends AbstractClient {
     public function retrieveMultipleRaw( $queryXML, $pagingCookie = null, $limitCount = null, $pageNumber = null ) {
         /* Send the sequrity request and get a security token */
         $securityToken = $this->authentication->getOrganizationSecurityToken();
-        /* Generate the XML for the Body of a RetrieveMulitple request */
+        /* Generate the XML for the Body of a RetrieveMultiple request */
         $executeNode = SoapRequestsGenerator::generateRetrieveMultipleRequest( $queryXML, $pagingCookie, $limitCount, $pageNumber );
         /* Turn this into a SOAP request, and send it */
         $retrieveMultipleSoapRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'RetrieveMultiple' ), $securityToken, $executeNode );
@@ -1668,13 +1669,17 @@ class Client extends AbstractClient {
     }
 
     /**
-     * Find the PageNumber in a PagingCookie
+     * Find the PageNumber in a PagingCookie.
      *
-     * @param String $pagingCookie
+     * @param string $pagingCookie
      *
-     * @ignore
+     * @return int
      */
     public static function getPageNo( $pagingCookie ) {
+        if ( is_null( $pagingCookie ) ) {
+            return 0;
+        }
+
         /* Turn the pagingCookie into a DOMDocument so we can read it */
         $pagingDOM = new DOMDocument();
         $pagingDOM->loadXML( $pagingCookie );

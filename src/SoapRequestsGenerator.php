@@ -435,45 +435,44 @@ class SoapRequestsGenerator {
      * @ignore
      */
     public static function generateRetrieveMultipleRequest( $queryXML, $pagingCookie = null, $limitCount = null, $pageNumber = null ) {
-        if ( $pagingCookie != null ) {
-            /* Turn the queryXML into a DOMDocument so we can manipulate it */
-            $queryDOM = new DOMDocument();
-            $queryDOM->loadXML( $queryXML );
-            if ( $pageNumber == null ) {
-                $newPage = Client::getPageNo( $pagingCookie ) + 1;
-                //echo 'Doing paging - Asking for page: '.$newPage.PHP_EOL;
-            } else {
-                $newPage = $pageNumber;
-            }
-            /* Modify the query that we send: Add the Page number */
-            $queryDOM->documentElement->setAttribute( 'page', $newPage );
-            /* Modify the query that we send: Add the Paging-Cookie (note - HTMLENTITIES automatically applied by DOMDocument!) */
-            $queryDOM->documentElement->setAttribute( 'paging-cookie', $pagingCookie );
-            /* Update the Query XML with the new structure */
-            $queryXML = $queryDOM->saveXML( $queryDOM->documentElement );
-            //echo PHP_EOL.PHP_EOL.$queryXML.PHP_EOL.PHP_EOL;
-        }
         /* Turn the queryXML into a DOMDocument so we can manipulate it */
         $queryDOM = new DOMDocument();
         $queryDOM->loadXML( $queryXML );
+
+        $newPage = $pageNumber;
+        if ( $pageNumber == null ) {
+            $newPage = Client::getPageNo( $pagingCookie ) + 1;
+        }
+
+        /* Modify the query that we send: Add the Page number */
+        $queryDOM->documentElement->setAttribute( 'page', $newPage );
+
+        /* Modify the query that we send: Add the Paging-Cookie (note - HTML entities automatically converted by DOMDocument!) */
+        if ( $pagingCookie != null ) {
+            $queryDOM->documentElement->setAttribute( 'paging-cookie', $pagingCookie );
+        }
+
         /* Find the current limit, if there is one */
         $currentLimit = Client::getMaximumRecords() + 1;
         if ( $queryDOM->documentElement->hasAttribute( 'count' ) ) {
             $currentLimit = $queryDOM->documentElement->getAttribute( 'count' );
         }
+
         /* Determine the preferred limit (passed by argument, or 5000 if not set) */
         $preferredLimit = ( $limitCount == null ) ? $currentLimit : $limitCount;
         if ( $preferredLimit > Client::getMaximumRecords() ) {
             $preferredLimit = Client::getMaximumRecords();
         }
-        /* If the current limit is not set, or is greater than the preferred limit, over-ride it */
+
+        /* If the current limit is not set, or is greater than the preferred limit, override it */
         if ( $currentLimit > $preferredLimit ) {
             /* Modify the query that we send: Change the Count */
             $queryDOM->documentElement->setAttribute( 'count', $preferredLimit );
             /* Update the Query XML with the new structure */
-            $queryXML = $queryDOM->saveXML( $queryDOM->documentElement );
-            //echo PHP_EOL.PHP_EOL.$queryXML.PHP_EOL.PHP_EOL;
         }
+
+        $queryXML = $queryDOM->saveXML( $queryDOM->documentElement );
+
         /* Generate the RetrieveMultipleRequest message */
         $retrieveMultipleRequestDOM = new DOMDocument();
         $retrieveMultipleNode       = $retrieveMultipleRequestDOM->appendChild( $retrieveMultipleRequestDOM->createElementNS( 'http://schemas.microsoft.com/xrm/2011/Contracts/Services', 'RetrieveMultiple' ) );
