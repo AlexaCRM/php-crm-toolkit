@@ -51,33 +51,6 @@ class Client extends AbstractClient {
     private $settings;
 
     /**
-     * Unique name of organization to connect
-     *
-     * @var string
-     */
-    private $organizationUniqueName;
-
-    /**
-     * Organization Service url
-     * This refers to the organization that you specify in the URL when you access the web application.
-     * For example, for Contoso.crm.dynamics.com, the OrganizationName is Contoso.
-     * ServerName refers to the name of the server, including the port number, for example, myserver or myserver:5555.
-     *
-     * @var string
-     */
-    private $organizationUrl;
-
-    /**
-     * Discovery service url
-     * The IDiscoveryService web service provides information about the organizations available
-     * on the Microsoft Dynamics CRM server using the SOAP protocol. This information includes
-     * the web address (URL) for each organization.
-     *
-     * @var string
-     */
-    private $discoveryUrl;
-
-    /**
      * @var SoapActions
      */
     private $soapActions;
@@ -1183,7 +1156,7 @@ class Client extends AbstractClient {
      * @return string the Unique Name of the Organization
      */
     public function getOrganization() {
-        return $this->organizationUniqueName;
+        return $this->settings->organizationUniqueName;
     }
 
     /**
