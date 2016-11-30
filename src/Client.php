@@ -27,6 +27,8 @@ use DOMNode;
 use DOMNodeList;
 use AlexaCRM\CRMToolkit\Entity\MetadataCollection;
 use Exception;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SimpleXMLElement;
 use SoapFault;
 use stdClass;
@@ -130,6 +132,10 @@ class Client extends AbstractClient {
 
             // Inject LoggerInterface implementation
             $this->logger = $logger;
+            if ( !( $this->logger instanceof LoggerInterface ) ) {
+                // Provide a dummy logger if no logger supplied.
+                $this->logger = new NullLogger();
+            }
 
             /* If either mandatory parameter is NULL, throw an Exception */
             if ( !$this->checkConnectionSettings() ) {
@@ -163,7 +169,7 @@ class Client extends AbstractClient {
             /* Initialize the entity metadata instance */
             MetadataCollection::instance( $this );
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->critical( 'Exception during instantiation of the CRM Toolkit.', [ 'exception' => $e ] );
             throw $e;
         }
     }
