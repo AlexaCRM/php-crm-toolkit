@@ -10,7 +10,9 @@
             "email": "info@alexacrm.com"
         }
     ],
-    "require": {},
+    "require": {
+        "psr/log": "dev-master"
+    },
     "require-dev": {
         "phpunit/phpunit": "5.5.*"
     },
