@@ -145,7 +145,7 @@ class Entity extends EntityReference {
                 }
             }
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while creating an Entity object', [ 'exception' => $e ] );
         }
     }
 
@@ -160,7 +160,6 @@ class Entity extends EntityReference {
      */
     public function __get( $property ) {
         try {
-            Logger::log( "__get() entity property: " . $this->entityLogicalName . " > " . $property );
             /* Handle special fields */
             switch ( strtoupper( $property ) ) {
                 case 'ID':
@@ -212,13 +211,14 @@ class Entity extends EntityReference {
                 return null;
             }
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while accessing Entity::__get()', [ 'exception' => $e, 'property' => $property ] );
         }
 
         /* Property doesn't exist - standard error */
-        $trace = debug_backtrace();
-        trigger_error( 'Undefined property via __get(): ' . $property
-                       . ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'], E_USER_NOTICE );
+        $this->client->logger->notice( 'Accessing undefined property via Entity::__get()', [
+            'property' => $property,
+            'trace' => debug_backtrace(),
+        ] );
 
         return null;
     }
@@ -237,7 +237,6 @@ class Entity extends EntityReference {
      */
     public function __set( $property, $value ) {
         try {
-            //AlexaCRM\CRMToolkit\AlexaSDK_Logger::log("__set() entity property: ".$this->entityLogicalName." > ".$property."; value:".$value);
             /* Handle special fields */
             switch ( strtoupper( $property ) ) {
                 case 'ID':
@@ -352,7 +351,7 @@ class Entity extends EntityReference {
                 $this->propertyValues[ $property ]['Changed'] = true;
             }
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while accessing Entity::__set()', [ 'exception' => $e, 'property' => $property, 'value' => $value ] );
         }
     }
 
@@ -460,29 +459,24 @@ class Entity extends EntityReference {
     /**
      * Check if a property has been changed since creation of the Entity
      *
-     * @param String $property
+     * @param string $property
      *
      * @return boolean
      */
     public function isChanged( $property ) {
-        try {
-            /* Dynamic properties are all stored in lowercase */
-            $property = strtolower( $property );
-            /* Property doesn't exist - standard error */
-            if ( !array_key_exists( $property, $this->propertyValues ) ) {
-                $trace = debug_backtrace();
-                trigger_error( 'Undefined property via isChanged(): ' . $property
-                               . ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'], E_USER_NOTICE );
+        /* Dynamic properties are all stored in lowercase */
+        $property = strtolower( $property );
 
-                return false;
-            }
+        /* Property doesn't exist - standard error */
+        if ( !array_key_exists( $property, $this->propertyValues ) ) {
+            $trace = debug_backtrace();
+            trigger_error( 'Undefined property via isChanged(): ' . $property
+                           . ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'], E_USER_NOTICE );
 
-            return $this->propertyValues[ $property ]['Changed'];
-        } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            return false;
         }
 
-        return false;
+        return $this->propertyValues[ $property ]['Changed'];
     }
 
     /**
@@ -691,7 +685,7 @@ class Entity extends EntityReference {
 
             return $entityNode;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while generating Entity DOM', [ 'exception' => $e ] );
         }
     }
 
@@ -719,7 +713,7 @@ class Entity extends EntityReference {
     /**
      * Generate an Entity from the DOM object that describes its properties
      *
-     * @param Client $auth instanse of AlexaCRM\CRMToolkit\Client class object
+     * @param Client $auth instance of AlexaCRM\CRMToolkit\Client class object
      * @param String $entityLogicalName
      * @param DOMElement $domNode
      *
@@ -729,6 +723,7 @@ class Entity extends EntityReference {
         try {
             /* Create a new instance of the appropriate Class */
             $entity = self::fromLogicalName( $auth, $entityLogicalName );
+
             /* Store values from the main RetrieveResult node */
             $relatedEntitiesNode = null;
             $attributesNode      = null;
@@ -759,20 +754,21 @@ class Entity extends EntityReference {
                         break;
                 }
             }
+
             /* Verify that the Retrieved Entity Name matches the expected one */
             if ( $retrievedEntityName != $entityLogicalName ) {
                 trigger_error( 'Expected to get a ' . $entityLogicalName . ' but actually received a ' . $retrievedEntityName . ' from the server!', E_USER_WARNING );
             }
-            /* Log the Entity State */
-            //AlexaCRM\CRMToolkit\AlexaSDK_Logger::log('Entity <'.$entity->ID.'> has EntityState: '.$entityState);
+
             /* Parse the Attributes & FormattedValues to set the properties of the Entity */
             $entity->setAttributesFromDOM( $auth, $attributesNode, $formattedValuesNode );
+
             /* Before returning the Entity, reset it so all fields are marked unchanged */
             $entity->reset();
 
             return $entity;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $auth->logger->error( 'Caught exception while creating an Entity object from DOM', [ 'exception' => $e ] );
         }
     }
 
@@ -1012,7 +1008,7 @@ class Entity extends EntityReference {
                 }
             }
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while setting entity attributes from DOM', [ 'exception' => $e ] );
         }
     }
 
@@ -1105,7 +1101,7 @@ class Entity extends EntityReference {
 
             return null;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while retrieving a formatted value', [ 'exception' => $e, 'property' => $property ] );
         }
     }
 
@@ -1264,7 +1260,7 @@ class Entity extends EntityReference {
             $this->reset();
             $this->exists = true;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while settings entity values from DOM', [ 'exception' => $e ] );
         }
     }
 

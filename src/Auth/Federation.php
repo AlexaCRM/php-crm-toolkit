@@ -26,7 +26,6 @@
 namespace AlexaCRM\CRMToolkit\Auth;
 
 use AlexaCRM\CRMToolkit\Settings;
-use AlexaCRM\CRMToolkit\Logger;
 use AlexaCRM\CRMToolkit\Client;
 use DOMDocument;
 use Exception;
@@ -190,18 +189,19 @@ class Federation extends Authentication {
                 'keyIdentifier'  => $keyIdentifier,
                 'expiryTime'     => $expiryTime
             );
-            /* DEBUG logging */
-            Logger::log( 'Got Security Token - Expires at: ' . date( 'r', $securityToken['expiryTime'] ) );
-            Logger::log( "\tKey Identifier\t: " . $securityToken['keyIdentifier'] );
-            Logger::log( "\tSecurity Token 0\t: " . substr( $securityToken['securityToken0'], 0, 25 ) . '...' . substr( $securityToken['securityToken0'], - 25 ) . ' (' . strlen( $securityToken['securityToken0'] ) . ')' );
-            Logger::log( "\tSecurity Token 1\t: " . substr( $securityToken['securityToken1'], 0, 25 ) . '...' . substr( $securityToken['securityToken1'], - 25 ) . ' (' . strlen( $securityToken['securityToken1'] ) . ')' );
-            Logger::log( "\tBinary Secret\t: " . $securityToken['binarySecret'] . PHP_EOL );
+
+            $this->client->logger->info( 'Got Federation security token - expires at: ' . date( 'r', $securityToken['expiryTime'] ) );
 
             /* Return an associative Array */
 
             return $securityToken;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->client->logger->error( 'Caught exception while requesting Federation security token', [
+                'exception' => $e,
+                'securityUri' => $securityServerURI,
+                'loginEndpoint' => $loginEndpoint,
+                'username' => $loginUsername,
+            ] );
             throw $e;
         }
     }

@@ -199,7 +199,7 @@ class Client extends AbstractClient {
             /* Get the Discovery DOM */
             $discoveryDOM = $this->getDiscoveryDOM();
             /* Get the Security Policy for the Organization Service from the WSDL */
-            $this->discoverySecurityPolicy = self::findSecurityPolicy( $discoveryDOM, 'DiscoveryService' );
+            $this->discoverySecurityPolicy = $this->findSecurityPolicy( $discoveryDOM, 'DiscoveryService' );
             /* Check the Authentication node existence */
             if ( $this->discoverySecurityPolicy->getElementsByTagName( 'Authentication' )->length == 0 ) {
                 throw new Exception( 'Could not find Authentication tag in provided Discovery Security policy XML' );
@@ -218,7 +218,7 @@ class Client extends AbstractClient {
 
             return $authMode;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while finding DiscoveryService authentication mode', [ 'exception' => $e ] );
             throw $e;
         }
     }
@@ -234,8 +234,6 @@ class Client extends AbstractClient {
             if ( $this->discoveryDOM != null ) {
                 return $this->discoveryDOM;
             }
-            /* Fetch the WSDL for the Discovery Service as a parseable DOM Document */
-            Logger::log( 'Getting Discovery DOM WSDL data from: ' . $this->settings->discoveryUrl . '?wsdl' );
 
             $discoveryDOM = new DOMDocument();
 
@@ -261,7 +259,7 @@ class Client extends AbstractClient {
 
             return $discoveryDOM;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while retrieving DiscoveryService WSDL', [ 'exception' => $e ] );
             throw $e;
         }
     }
@@ -282,14 +280,14 @@ class Client extends AbstractClient {
                 /* Get the Discovery DOM */
                 $discoveryDOM = $this->getDiscoveryDOM();
                 /* Get the Security Policy for the Organization Service from the WSDL */
-                $this->discoverySecurityPolicy = self::findSecurityPolicy( $discoveryDOM, 'DiscoveryService' );
+                $this->discoverySecurityPolicy = $this->findSecurityPolicy( $discoveryDOM, 'DiscoveryService' );
             }
 
-            $authAddress = self::getSecurityAddress( $this->discoverySecurityPolicy, $this->security['discovery_authmode'] );
+            $authAddress = $this->getSecurityAddress( $this->discoverySecurityPolicy, $this->security['discovery_authmode'] );
 
             return $authAddress;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while finding DiscoveryService authentication address', [ 'exception' => $e ] );
             throw $e;
         }
     }
@@ -311,40 +309,14 @@ class Client extends AbstractClient {
                 /* Get the Organization DOM */
                 $organizationDOM = $this->getOrganizationDOM();
                 /* Get the Security Policy for the Organization Service from the WSDL */
-                $this->organizationSecurityPolicy = self::findSecurityPolicy( $organizationDOM, 'OrganizationService' );
+                $this->organizationSecurityPolicy = $this->findSecurityPolicy( $organizationDOM, 'OrganizationService' );
             }
             /* Find the Authentication type used */
-            $this->security['organization_authuri'] = self::getSecurityAddress( $this->organizationSecurityPolicy, 'Federation' );
+            $this->security['organization_authuri'] = $this->getSecurityAddress( $this->organizationSecurityPolicy, 'Federation' );
 
             return $this->security['organization_authuri'];
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
-            throw $e;
-        }
-    }
-
-    /**
-     * Return the Authentication Mode used by the Organization service
-     *
-     * @ignore
-     */
-    public function getOrganizationAuthenticationMode() {
-        try {
-            /* If it's set, return the details from the Security array */
-            if ( isset( $this->security['organization_authmode'] ) ) {
-                return $this->security['organization_authmode'];
-            }
-
-            /* Get the Organization DOM */
-            $organizationDOM = $this->getOrganizationDOM();
-            /* Get the Security Policy for the Organization Service from the WSDL */
-            $this->organizationSecurityPolicy = self::findSecurityPolicy( $organizationDOM, 'OrganizationService' );
-            /* Find the Authentication type used */
-            $authType = $this->organizationSecurityPolicy->getElementsByTagName( 'Authentication' )->item( 0 )->textContent;
-
-            return $authType;
-        } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while finding OrganizationService security endpoint', [ 'exception' => $e ] );
             throw $e;
         }
     }
@@ -358,7 +330,7 @@ class Client extends AbstractClient {
      * @return string
      * @throws Exception
      */
-    protected static function getSecurityAddress( DOMNode $securityPolicyNode, $authMode ) {
+    protected function getSecurityAddress( DOMNode $securityPolicyNode, $authMode ) {
         if ( $authMode === 'OnlineFederation' ) {
             $tokenElementName = 'SignedSupportingTokens';
         } elseif ( $authMode === 'Federation' ) {
@@ -411,7 +383,7 @@ class Client extends AbstractClient {
 
             return $securityURL;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while retrieving the security endpoint', [ 'exception' => $e, 'authMode' => $authMode ] );
             throw $e;
         }
     }
@@ -421,8 +393,8 @@ class Client extends AbstractClient {
      *
      * @ignore
      */
-    protected static function getTrust13UsernameAddress( DOMDocument $authenticationDOM ) {
-        return self::getTrustAddress( $authenticationDOM, 'UserNameWSTrustBinding_IWSTrust13Async' );
+    protected function getTrust13UsernameAddress( DOMDocument $authenticationDOM ) {
+        return $this->getTrustAddress( $authenticationDOM, 'UserNameWSTrustBinding_IWSTrust13Async' );
     }
 
     /**
@@ -431,7 +403,7 @@ class Client extends AbstractClient {
      *
      * @ignore
      */
-    protected static function getTrustAddress( DOMDocument $authenticationDOM, $trustName ) {
+    protected function getTrustAddress( DOMDocument $authenticationDOM, $trustName ) {
         try {
             /* Search the available Ports on the WSDL */
             $trustAuthNode = null;
@@ -457,7 +429,7 @@ class Client extends AbstractClient {
 
             return $authenticationURI;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while retrieving token issuer endpoint', [ 'exception' => $e ] );
             throw $e;
         }
     }
@@ -472,82 +444,89 @@ class Client extends AbstractClient {
         try {
             static $rootNode = null;
             static $rootDocument = null;
-            /* If this is an external call, find the "root" defintions node */
-            if ( $continued == false ) {
+
+            /* If this is an external call, find the "root" definitions node */
+            if ( !$continued ) {
                 $rootNode     = $wsdlDOM->getElementsByTagName( 'definitions' )->item( 0 );
                 $rootDocument = $wsdlDOM;
             }
+
             if ( $newRootDocument == null ) {
                 $newRootDocument = $rootDocument;
             }
-            Logger::log( "Processing Node: " . $wsdlDOM->nodeName . " which has " . $wsdlDOM->childNodes->length . " child nodes" );
-            $nodesToRemove = Array();
+
+            $nodesToRemove = [];
+
             /* Loop through the Child nodes of the provided DOM */
             foreach ( $wsdlDOM->childNodes as $childNode ) {
-                Logger::log( "\tProcessing Child Node: " . $childNode->nodeName . " " . ( isset( $childNode->localName ) ? "(" . $childNode->localName . "). " : "" ) . ( ( isset( $childNode->childNodes ) && $childNode->childNodes ) ? "which has " . $childNode->childNodes->length . " child nodes" . PHP_EOL : "" ) );
+                /**
+                 * @var DOMElement $childNode
+                 */
+
                 /* If this child is an IMPORT node, get the referenced WSDL, and remove the Import */
                 if ( $childNode->localName == 'import' ) {
                     /* Get the location of the imported WSDL */
+                    $importURI = null;
                     if ( $childNode->hasAttribute( 'location' ) ) {
                         $importURI = $childNode->getAttribute( 'location' );
                     } else if ( $childNode->hasAttribute( 'schemaLocation' ) ) {
                         $importURI = $childNode->getAttribute( 'schemaLocation' );
-                    } else {
-                        $importURI = null;
                     }
-                    /* Only import if we found a URI - otherwise, don't change it! */
-                    if ( $importURI != null ) {
-                        Logger::log( "\tImporting data from: " . $importURI );
-                        $importDOM = new DOMDocument();
 
-                        $wsdlCurl = curl_init( $importURI );
-                        curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-                        curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-                        curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
+                    if ( is_null( $importURI ) ) {
+                        continue; // import URI wasn't found - no import performed then
+                    }
 
-                        if ( $this->settings->ignoreSslErrors ) {
-                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                    $importDOM = new DOMDocument();
+
+                    $wsdlCurl = curl_init( $importURI );
+                    curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+                    curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+                    curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
+
+                    if ( $this->settings->ignoreSslErrors ) {
+                        curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                        curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                    }
+
+                    $importXML = curl_exec( $wsdlCurl );
+                    curl_close( $wsdlCurl );
+
+                    $importDOM->loadXML( $importXML );
+
+                    /* Find the "Definitions" on this imported node */
+                    $importDefinitions = $importDOM->getElementsByTagName( 'definitions' )->item( 0 );
+
+                    /* If we have "Definitions", import them one by one - Otherwise, just import at this level */
+                    if ( $importDefinitions != null ) {
+                        /* Add all the attributes (namespace definitions) to the root definitions node */
+                        foreach ( $importDefinitions->attributes as $attribute ) {
+                            /* Don't copy the "TargetNamespace" attribute */
+                            if ( $attribute->name != 'targetNamespace' ) {
+                                $rootNode->setAttributeNode( $attribute );
+                            }
                         }
 
-                        $importXML = curl_exec( $wsdlCurl );
-                        curl_close( $wsdlCurl );
+                        $this->mergeWSDLImports( $importDefinitions, true, $importDOM );
 
-                        $importDOM->loadXML( $importXML );
-
-                        /* Find the "Definitions" on this imported node */
-                        $importDefinitions = $importDOM->getElementsByTagName( 'definitions' )->item( 0 );
-                        /* If we have "Definitions", import them one by one - Otherwise, just import at this level */
-                        if ( $importDefinitions != null ) {
-                            /* Add all the attributes (namespace definitions) to the root definitions node */
-                            foreach ( $importDefinitions->attributes as $attribute ) {
-                                /* Don't copy the "TargetNamespace" attribute */
-                                if ( $attribute->name != 'targetNamespace' ) {
-                                    $rootNode->setAttributeNode( $attribute );
-                                }
-                            }
-                            $this->mergeWSDLImports( $importDefinitions, true, $importDOM );
-                            foreach ( $importDefinitions->childNodes as $importNode ) {
-                                if ( isset( $importNode ) && $importNode ) {
-                                    Logger::log( "\t\tInserting Child: " . $importNode->C14N( true ) );
-                                }
-                                $importNode = $newRootDocument->importNode( $importNode, true );
-                                $wsdlDOM->insertBefore( $importNode, $childNode );
-                            }
-                        } else {
-                            $importNode = $newRootDocument->importNode( $importDOM->firstChild, true );
+                        foreach ( $importDefinitions->childNodes as $importNode ) {
+                            $importNode = $newRootDocument->importNode( $importNode, true );
                             $wsdlDOM->insertBefore( $importNode, $childNode );
                         }
-                        Logger::log( "\t\tRemoving Child: " . $childNode->C14N( true ) );
-                        $nodesToRemove[] = $childNode;
+                    } else {
+                        $importNode = $newRootDocument->importNode( $importDOM->firstChild, true );
+                        $wsdlDOM->insertBefore( $importNode, $childNode );
                     }
+
+                    $nodesToRemove[] = $childNode;
                 } else {
-                    Logger::log( 'Preserving node: ' . $childNode->localName );
+                    // preserving the node
                     if ( $childNode->hasChildNodes() ) {
                         $this->mergeWSDLImports( $childNode, true );
                     }
                 }
             }
+
             /* Actually remove the nodes (not done in the loop, as it messes up the ForEach pointer!) */
             foreach ( $nodesToRemove as $node ) {
                 $wsdlDOM->removeChild( $node );
@@ -555,17 +534,17 @@ class Client extends AbstractClient {
 
             return $wsdlDOM;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while merging WSDL imports', [ 'exception' => $e ] );
             throw $e;
         }
     }
 
     /**
-     * Parse the results of a RetrieveEntity into a useable PHP object
+     * Parse the results of a RetrieveEntity into a usable PHP object
      *
      * @ignore
      */
-    protected static function parseRetrieveEntityResponse( $soapResponse ) {
+    protected function parseRetrieveEntityResponse( $soapResponse ) {
         try {
             /* Load the XML into a DOMDocument */
             $soapResponseDOM = new DOMDocument();
@@ -612,7 +591,7 @@ class Client extends AbstractClient {
 
             return $entityMetadataElement;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while parsing RetrieveEntity response', [ 'exception' => $e, 'response' => $soapResponse ] );
             throw $e;
         }
     }
@@ -620,14 +599,13 @@ class Client extends AbstractClient {
     /**
      * Parse the results of a RetrieveMultipleRequest into a usable PHP object
      *
-     * @param String $soapResponse
+     * @param string $soapResponse
      *
      * @return SimpleXMLElement[]
+     *
      * @throws Exception
-     * @internal param bool $simpleMode
-     * @ignore
      */
-    protected static function parseRetrieveAllEntitiesResponse( $soapResponse ) {
+    protected function parseRetrieveAllEntitiesResponse( $soapResponse ) {
         try {
             /* Load the XML into a DOMDocument */
             $soapResponseDOM = new DOMDocument();
@@ -684,7 +662,7 @@ class Client extends AbstractClient {
 
             return $responseDataArray;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while parsing RetrieveAllEntities response', [ 'exception' => $e, 'response' => $soapResponse ] );
             throw $e;
         }
     }
@@ -693,6 +671,11 @@ class Client extends AbstractClient {
      * Get the SOAP Endpoint for the Federation Security service
      *
      * @ignore
+     *
+     * @param string $service Lower-case service name (organization, discovery)
+     *
+     * @return null
+     * @throws Exception
      */
     public function getFederationSecurityURI( $service ) {
         try {
@@ -710,8 +693,6 @@ class Client extends AbstractClient {
                 $authUri = $this->security[ $service . '_authuri' ];
             }
 
-            /* Fetch the WSDL for the Authentication Service as a parseable DOM Document */
-            Logger::log( 'Getting WSDL data for Federation Security URI from: ' . $authUri );
             $authenticationDOM = new DOMDocument();
 
             $wsdlCurl = curl_init( $authUri );
@@ -733,55 +714,13 @@ class Client extends AbstractClient {
 
             // Note: Find the real end-point to use for my security request - for now, we hard-code to Trust13 Username & Password using known values
             // See http://code.google.com/p/php-dynamics-crm-2011/issues/detail?id=4
-            $authEndpoint = self::getTrust13UsernameAddress( $authenticationDOM );
+            $authEndpoint = $this->getTrust13UsernameAddress( $authenticationDOM );
 
             $this->security[ $securityEndpointKey ] = $authEndpoint;
 
             return $authEndpoint;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
-            throw $e;
-        }
-    }
-
-    /**
-     * Get the SOAP Endpoint for the OnlineFederation Security service
-     *
-     * @ignore
-     */
-    protected function getOnlineFederationSecurityURI( $service ) {
-        try {
-            /* If it's set, return the details from the Security array */
-            if ( isset( $this->security[ $service . '_authendpoint' ] ) ) {
-                return $this->security[ $service . '_authendpoint' ];
-            }
-
-            /* Fetch the WSDL for the Authentication Service as a parseable DOM Document */
-            Logger::log( 'Getting WSDL data for OnlineFederation Security URI from: ' . $this->security[ $service . '_authuri' ] );
-            $authenticationDOM = new DOMDocument();
-
-            $wsdlCurl = curl_init( $this->security[ $service . '_authuri' ] );
-            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
-
-            if ( $this->settings->ignoreSslErrors ) {
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
-            }
-
-            $importXML = curl_exec( $wsdlCurl );
-            curl_close( $wsdlCurl );
-
-            $authenticationDOM->loadXML( $importXML );
-            /* Flatten the WSDL and include all the Imports */
-            $this->mergeWSDLImports( $authenticationDOM );
-
-            $authEndpoint = self::getLoginOnmicrosoftAddress( $authenticationDOM ); //FIXME
-
-            return $authEndpoint;
-        } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while finding Federation security endpoint', [ 'exception' => $e ] );
             throw $e;
         }
     }
@@ -797,7 +736,7 @@ class Client extends AbstractClient {
      * @return DOMElement
      * @throws Exception
      */
-    protected static function findSecurityPolicy( DOMDocument $wsdlDocument, $serviceName ) {
+    protected function findSecurityPolicy( DOMDocument $wsdlDocument, $serviceName ) {
         try {
             /* Find the selected Service definition from the WSDL */
             $selectedServiceNode = null;
@@ -864,7 +803,7 @@ class Client extends AbstractClient {
 
             return $securityPolicyNode;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while finding security policy', [ 'exception' => $e, 'wsdl' => $wsdlDocument->saveXML(), 'service' => $serviceName ] );
             throw $e;
         }
     }
@@ -884,9 +823,8 @@ class Client extends AbstractClient {
                 throw new Exception( 'Cannot get Organization DOM before determining Organization URI' );
             }
 
-            /* Fetch the WSDL for the Organization Service as a parseable DOM Document */
-            Logger::log( 'Getting WSDL data for Organization DOM from: ' . $this->settings->organizationUrl . '?wsdl' );
             $organizationDOM = new DOMDocument();
+
             $wsdlCurl = curl_init( $this->settings->organizationUrl . '?wsdl' );
             curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
             curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
@@ -908,7 +846,7 @@ class Client extends AbstractClient {
 
             return $organizationDOM;
         } catch ( Exception $e ) {
-            Logger::log( "Exception", $e );
+            $this->logger->error( 'Caught exception while retrieving OrganizationService WSDL', [ 'exception' => $e ] );
             throw $e;
         }
     }
@@ -927,7 +865,7 @@ class Client extends AbstractClient {
         /* Get the raw XML data */
         $rawSoapResponse = $this->retrieveEntityRaw( $entityType, $entityId, $entityFilters, $showUnpublished );
         /* Parse the raw XML data into an Object */
-        $soapData = self::parseRetrieveEntityResponse( $rawSoapResponse );
+        $soapData = $this->parseRetrieveEntityResponse( $rawSoapResponse );
 
         /* Return the structured object */
 
@@ -1270,7 +1208,7 @@ class Client extends AbstractClient {
         $actionString = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
                                     ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Header' )->item( 0 )
                                     ->getElementsByTagNameNS( 'http://www.w3.org/2005/08/addressing', 'Action' )->item( 0 )->textContent;
-        Logger::log( __FUNCTION__ . ': SOAP Action in returned XML is "' . $actionString . '"' );
+
         /* Handle known Error Actions */
         if ( in_array( $actionString, self::$SOAPFaultActions ) && $throwException ) {
 
@@ -1749,13 +1687,13 @@ class Client extends AbstractClient {
         /* Generate the XML for the Body of a Create request */
         $createNode = SoapRequestsGenerator::generateCreateRequest( $entity );
 
-        Logger::log( PHP_EOL . 'Create Request: ' . PHP_EOL . $createNode->C14N() . PHP_EOL );
+        $this->logger->debug( 'Executing Create request', [ 'request' => $createNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
         $createRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Create' ), $securityToken, $createNode );
 
         $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $createRequest );
 
-        Logger::log( PHP_EOL . 'Create Response: ' . PHP_EOL . $soapResponse . PHP_EOL );
+        $this->logger->debug( 'Finished executing Create request', [ 'response' => $soapResponse ] );
 
         /* Load the XML into a DOMDocument */
         $soapResponseDOM = new DOMDocument();
@@ -1796,12 +1734,14 @@ class Client extends AbstractClient {
         $securityToken = $this->authentication->getOrganizationSecurityToken();
         /* Generate the XML for the Body of an Update request */
         $updateNode = SoapRequestsGenerator::generateUpdateRequest( $entity );
-        Logger::log( PHP_EOL . 'Update Request: ' . PHP_EOL . $updateNode->C14N() . PHP_EOL );
+
+        $this->logger->debug( 'Executing Update request', [ 'request' => $updateNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
         $updateRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Update' ), $securityToken, $updateNode );
         /* Get response */
         $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $updateRequest );
-        Logger::log( PHP_EOL . 'Update Response: ' . PHP_EOL . $soapResponse . PHP_EOL );
+        $this->logger->debug( 'Finished executing Update request', [ 'response' => $soapResponse ] );
+
         /* Load the XML into a DOMDocument */
         $soapResponseDOM = new DOMDocument();
         $soapResponseDOM->loadXML( $soapResponse );
@@ -1840,12 +1780,12 @@ class Client extends AbstractClient {
         /* Generate the XML for the Body of a Delete request */
         $deleteNode = SoapRequestsGenerator::generateDeleteRequest( $entity );
 
-        Logger::log( PHP_EOL . 'Delete Request: ' . PHP_EOL . $deleteNode->C14N() . PHP_EOL );
+        $this->logger->debug( 'Executing Delete Request', [ 'request' => $deleteNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
         $deleteRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Delete' ), $securityToken, $deleteNode );
         $soapResponse  = self::getSoapResponse( $this->settings->organizationUrl, $deleteRequest );
 
-        Logger::log( PHP_EOL . 'Delete Response: ' . PHP_EOL . $soapResponse . PHP_EOL );
+        $this->logger->debug( 'Finished executing Delete request', [ 'response' => $soapResponse ] );
         /* Load the XML into a DOMDocument */
         $soapResponseDOM = new DOMDocument();
         $soapResponseDOM->loadXML( $soapResponse );
@@ -1876,10 +1816,14 @@ class Client extends AbstractClient {
         $securityToken = $this->authentication->getOrganizationSecurityToken();
         /* Generate the XML for the Body of an Update request */
         $upsertNode = SoapRequestsGenerator::generateUpsertRequest( $entity );
-        Logger::log( PHP_EOL . 'Upsert Request: ' . PHP_EOL . $upsertNode->C14N() . PHP_EOL );
+
+        $this->logger->debug( 'Executing Upsert request', [ 'request' => $upsertNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
         $upsertRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $upsertNode );
         $soapResponse  = self::getSoapResponse( $this->settings->organizationUrl, $upsertRequest );
+
+        $this->logger->debug( 'Finished executing Upsert request', [ 'request' => $soapResponse ] );
+
         /* Load the XML into a DOMDocument */
         $soapResponseDOM = new DOMDocument();
         $soapResponseDOM->loadXML( $soapResponse );
@@ -1923,13 +1867,13 @@ class Client extends AbstractClient {
             /* Generate the XML for the Body of a Execute Action request */
             $executeActionNode = SoapRequestsGenerator::generateExecuteActionRequest( $requestName, $parameters, $requestType );
 
-            Logger::log( PHP_EOL . 'ExecuteAction Request: ' . PHP_EOL . $executeActionNode->C14N() . PHP_EOL );
+            $this->logger->debug( 'Executing Execute request', ['request' => $executeActionNode->C14N() ] );
             /* Turn this into a SOAP request, and send it */
             $executeActionRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $executeActionNode );
 
             $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $executeActionRequest );
 
-            Logger::log( PHP_EOL . 'ExecuteAction Response: ' . PHP_EOL . $soapResponse . PHP_EOL );
+            $this->logger->debug( 'Finished executing Execute request', [ 'response' => $soapResponse ] );
 
             /* Load the XML into a DOMDocument */
             $soapResponseDOM = new DOMDocument();
@@ -1957,7 +1901,7 @@ class Client extends AbstractClient {
 
             return $responseDataArray;
         } catch ( Exception $ex ) {
-            Logger::log( "Exception:", $ex );
+            $this->logger->error( 'Caught exception during Execute request', [ 'exception' => $ex ] );
             throw $ex;
         }
     }
@@ -1986,7 +1930,7 @@ class Client extends AbstractClient {
         /* Get the raw XML data */
         $rawSoapResponse = $this->retrieveAllEntitiesRaw( $entityFilters, $retrieveAsIfPublished );
         /* Parse the raw XML data into an Object */
-        $soapData = self::parseRetrieveAllEntitiesResponse( $rawSoapResponse );
+        $soapData = $this->parseRetrieveAllEntitiesResponse( $rawSoapResponse );
 
         /* Return the structured object */
 
