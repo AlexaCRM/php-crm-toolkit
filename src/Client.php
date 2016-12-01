@@ -887,7 +887,7 @@ class Client extends AbstractClient {
         $executeNode = SoapRequestsGenerator::generateRetrieveEntityRequest( $entityType, $entityId, $entityFilters, $showUnpublished );
         /* Turn this into a SOAP request, and send it */
         $retrieveEntityRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $executeNode );
-        $soapResponse          = self::getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
+        $soapResponse          = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
 
         return $soapResponse;
     }
@@ -958,7 +958,7 @@ class Client extends AbstractClient {
         /* Turn this into a SOAP request, and send it */
         $retrieveRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', $action ), $securityToken, $executeNode );
 
-        $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $retrieveRequest );
+        $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveRequest );
 
         return $soapResponse;
     }
@@ -969,7 +969,7 @@ class Client extends AbstractClient {
         /* Generate a Soap Request for the Retrieve Organization Request method of the Discovery Service */
         $discoverySoapRequest = $this->generateSoapRequest( $this->settings->discoveryUrl, $this->soapActions->getSoapAction( 'discovery', 'Execute' ), $securityToken, SoapRequestsGenerator::generateRetrieveOrganizationRequest() );
 
-        $discovery_data = self::getSoapResponse( $this->settings->discoveryUrl, $discoverySoapRequest );
+        $discovery_data = $this->getSoapResponse( $this->settings->discoveryUrl, $discoverySoapRequest );
 
         $organizationDetails = array();
         $discoveryDOM        = new DOMDocument();
@@ -1160,7 +1160,9 @@ class Client extends AbstractClient {
      * @throws NotAuthorizedException
      * @throws SoapFault
      */
-    public static function getSoapResponse( $soapUrl, $content, $throwException = true ) {
+    public function getSoapResponse( $soapUrl, $content, $throwException = true ) {
+        $measureStart = microtime( true );
+
         /* Format cUrl headers */
         $headers = self::formatHeaders( $soapUrl, $content );
 
@@ -1184,6 +1186,12 @@ class Client extends AbstractClient {
         /* Check for HTTP errors */
         $httpResponse = curl_getinfo( $cURLHandle, CURLINFO_HTTP_CODE );
         curl_close( $cURLHandle );
+
+        $this->logger->debug( 'Executed a SOAP request in ' . ( microtime( true ) - $measureStart ) . ' seconds', [
+            'request' => $content,
+            'response' => $responseXML,
+        ] );
+
         /* Determine the Action in the SOAP Response */
         $responseDOM = new DOMDocument();
         $responseDOM->loadXML( $responseXML );
@@ -1408,7 +1416,7 @@ class Client extends AbstractClient {
 
         /* Execute request to Dynamics CRM Soap web service and get response */
 
-        return self::getSoapResponse( $this->settings->organizationUrl, $retrieveMultipleSoapRequest );
+        return $this->getSoapResponse( $this->settings->organizationUrl, $retrieveMultipleSoapRequest );
     }
 
     /**
@@ -1691,7 +1699,7 @@ class Client extends AbstractClient {
         /* Turn this into a SOAP request, and send it */
         $createRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Create' ), $securityToken, $createNode );
 
-        $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $createRequest );
+        $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $createRequest );
 
         $this->logger->debug( 'Finished executing Create request', [ 'response' => $soapResponse ] );
 
@@ -1739,7 +1747,7 @@ class Client extends AbstractClient {
         /* Turn this into a SOAP request, and send it */
         $updateRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Update' ), $securityToken, $updateNode );
         /* Get response */
-        $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $updateRequest );
+        $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $updateRequest );
         $this->logger->debug( 'Finished executing Update request', [ 'response' => $soapResponse ] );
 
         /* Load the XML into a DOMDocument */
@@ -1783,7 +1791,7 @@ class Client extends AbstractClient {
         $this->logger->debug( 'Executing Delete Request', [ 'request' => $deleteNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
         $deleteRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Delete' ), $securityToken, $deleteNode );
-        $soapResponse  = self::getSoapResponse( $this->settings->organizationUrl, $deleteRequest );
+        $soapResponse  = $this->getSoapResponse( $this->settings->organizationUrl, $deleteRequest );
 
         $this->logger->debug( 'Finished executing Delete request', [ 'response' => $soapResponse ] );
         /* Load the XML into a DOMDocument */
@@ -1820,7 +1828,7 @@ class Client extends AbstractClient {
         $this->logger->debug( 'Executing Upsert request', [ 'request' => $upsertNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
         $upsertRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $upsertNode );
-        $soapResponse  = self::getSoapResponse( $this->settings->organizationUrl, $upsertRequest );
+        $soapResponse  = $this->getSoapResponse( $this->settings->organizationUrl, $upsertRequest );
 
         $this->logger->debug( 'Finished executing Upsert request', [ 'request' => $soapResponse ] );
 
@@ -1871,7 +1879,7 @@ class Client extends AbstractClient {
             /* Turn this into a SOAP request, and send it */
             $executeActionRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $executeActionNode );
 
-            $soapResponse = self::getSoapResponse( $this->settings->organizationUrl, $executeActionRequest );
+            $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $executeActionRequest );
 
             $this->logger->debug( 'Finished executing Execute request', [ 'response' => $soapResponse ] );
 
@@ -1913,7 +1921,7 @@ class Client extends AbstractClient {
         $executeNode = SoapRequestsGenerator::generateRetrieveAllEntitiesRequest( $entityFilters, $retrieveAsIfPublished );
         /* Turn this into a SOAP request, and send it */
         $retrieveEntityRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $executeNode );
-        $soapResponse          = self::getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
+        $soapResponse          = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
 
         return $soapResponse;
     }
