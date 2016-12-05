@@ -1223,14 +1223,18 @@ class Client extends AbstractClient {
             $q = new \DOMXPath( $responseDOM );
             $q->registerNamespace( 'c', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
 
+            $faultString = $q->query( '/s:Envelope/s:Body/s:Fault/s:Reason/s:Text' )->item( 0 )->nodeValue;
+
             $faultCode = $q->query( '/s:Envelope/s:Body/s:Fault/s:Detail/c:OrganizationServiceFault/c:ErrorCode' );
             if ( !$faultCode->length ) {
                 $faultCode = $q->query( '/s:Envelope/s:Body/s:Fault/s:Code/s:Value' )->item( 0 )->nodeValue;
             } else {
                 $faultCode = $faultCode->item( 0 )->nodeValue;
-            }
 
-            $faultString = $q->query( '/s:Envelope/s:Body/s:Fault/s:Reason/s:Text' )->item( 0 )->nodeValue;
+                if ( $faultCode === '-2147180284' ) {
+                    throw new OrganizationDisabledException( (string)$faultCode, $faultString );
+                }
+            }
 
             throw new SoapFault( (string) $faultCode, $faultString );
         }
