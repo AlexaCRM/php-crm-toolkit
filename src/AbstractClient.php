@@ -89,16 +89,12 @@ abstract class AbstractClient implements ClientInterface {
             $namespace,
             array_key_exists( 'REQUEST_TIME_FLOAT', $_SERVER ) ? $_SERVER['REQUEST_TIME_FLOAT'] : $_SERVER['REQUEST_TIME'],
         ];
-        $requestDependentData = [ ];
+        $requestDependentData = [];
         if ( php_sapi_name() !== 'cli' ) {
             $requestDependentData = [
                 $_SERVER['HTTP_USER_AGENT'],
                 $_SERVER['REMOTE_ADDR'],
                 $_SERVER['REMOTE_PORT']
-            ];
-        } else {
-            $requestDependentData = [
-                $_SERVER['PWD'],
             ];
         }
         $data = array_merge( $data, $requestDependentData );
