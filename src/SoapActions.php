@@ -70,7 +70,7 @@ class SoapActions {
         }
 
         $cache = $this->client->cache;
-        $cache->set( $service . "_soap_actions", $soapActions, 4 * WEEK_IN_SECONDS );
+        $cache->set( $service . "_soap_actions", $soapActions );
     }
 
     /**
