@@ -28,7 +28,7 @@ use AlexaCRM\CRMToolkit\Client;
  * @package AlexaCRM\CRMToolkit\AlexaSDK\Authentication
  * @subpackage Authentication
  */
-class Authentication extends Client {
+abstract class Authentication extends Client {
 
     /**
      * Global SDK settings
