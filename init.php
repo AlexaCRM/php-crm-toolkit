@@ -15,21 +15,23 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-spl_autoload_register( function( $className ) {
-	$namespacePrefix = 'AlexaCRM\\CRMToolkit\\';
+if ( !@require_once( __DIR__ . '/vendor/autoload.php' ) && !@require_once( __DIR__ . '/../../autoload.php' ) ) {
+    spl_autoload_register( function( $className ) {
+        $namespacePrefix = 'AlexaCRM\\CRMToolkit\\';
 
-	$baseDirectory = __DIR__ . '/src/';
+        $baseDirectory = __DIR__ . '/src/';
 
-	$namespacePrefixLength = strlen( $namespacePrefix );
-	if ( strncmp( $namespacePrefix, $className, $namespacePrefixLength ) !== 0 ) {
-		return;
-	}
+        $namespacePrefixLength = strlen( $namespacePrefix );
+        if ( strncmp( $namespacePrefix, $className, $namespacePrefixLength ) !== 0 ) {
+            return;
+        }
 
-	$relativeClassName = substr( $className, $namespacePrefixLength );
+        $relativeClassName = substr( $className, $namespacePrefixLength );
 
-	$classFilename = $baseDirectory . str_replace( '\\', '/', $relativeClassName ) . '.php';
+        $classFilename = $baseDirectory . str_replace( '\\', '/', $relativeClassName ) . '.php';
 
-	if ( file_exists( $classFilename ) ) {
-		require $classFilename;
-	}
-} );
+        if ( file_exists( $classFilename ) ) {
+            require $classFilename;
+        }
+    } );
+}
