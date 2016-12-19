@@ -1290,6 +1290,10 @@ class Entity extends EntityReference {
             $columnSetString = '_' . serialize( $columnSet );
         }
 
+        if ( !is_string( $id ) ) {
+            $id = serialize( $id );
+        }
+
         return sha1( "{$logicalName}_{$id}{$columnSetString}" );
     }
 }
