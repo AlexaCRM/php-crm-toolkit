@@ -15,7 +15,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-if ( !@require_once( __DIR__ . '/vendor/autoload.php' ) && !@require_once( __DIR__ . '/../../autoload.php' ) ) {
+$standalonePath = __DIR__ . '/vendor/autoload.php';
+$vendoredPath = __DIR__ . '/../../autoload.php';
+if ( is_readable( $standalonePath ) ) {
+    require_once $standalonePath;
+} elseif ( is_readable( $vendoredPath ) ) {
+    require_once $vendoredPath;
+} else {
     spl_autoload_register( function( $className ) {
         $namespacePrefix = 'AlexaCRM\\CRMToolkit\\';
 
