@@ -344,7 +344,7 @@ class Entity extends EntityReference {
                 }
             }
 
-            if ( $this->propertyValues[ $property ]['Value'] !== $value ) {
+            if ( $this->propertyValues[ $property ]['Value'] != $value ) {
                 /* Update the property value with whatever value was passed */
                 $this->propertyValues[ $property ]['Value'] = $value;
                 /* Mark the property as changed */
@@ -657,7 +657,7 @@ class Entity extends EntityReference {
                             $valueNode->appendChild( $xmlValueChild );
                         }
                         /* If there is a value, set it */
-                        if ( isset( $xmlValue ) ) {
+                        if ( $xmlValue != null ) {
                             $valueNode->appendChild( new DOMText( $xmlValue ) );
                         }
                     }
