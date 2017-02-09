@@ -479,18 +479,23 @@ class Client extends AbstractClient {
 
                     $importDOM = new DOMDocument();
 
-                    $wsdlCurl = curl_init( $importURI );
-                    curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-                    curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-                    curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
+                    $importXML = $this->cache->get( 'toolkit_wsdl_' . sha1( $importURI ) );
+                    if ( is_null( $importXML ) ) {
+                        $wsdlCurl = curl_init( $importURI );
+                        curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+                        curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+                        curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
-                    if ( $this->settings->ignoreSslErrors ) {
-                        curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                        curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                        if ( $this->settings->ignoreSslErrors ) {
+                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                        }
+
+                        $importXML = curl_exec( $wsdlCurl );
+                        curl_close( $wsdlCurl );
+
+                        $this->cache->set( 'toolkit_wsdl_' . sha1( $importURI ), $importXML, 30*24*60*60 );
                     }
-
-                    $importXML = curl_exec( $wsdlCurl );
-                    curl_close( $wsdlCurl );
 
                     $importDOM->loadXML( $importXML );
 
@@ -695,18 +700,23 @@ class Client extends AbstractClient {
 
             $authenticationDOM = new DOMDocument();
 
-            $wsdlCurl = curl_init( $authUri );
-            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
+            $importXML = $this->cache->get( 'toolkit_wsdl_' . sha1( $authUri ) );
+            if ( is_null( $importXML ) ) {
+                $wsdlCurl = curl_init( $authUri );
+                curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+                curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+                curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
-            if ( $this->settings->ignoreSslErrors ) {
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                if ( $this->settings->ignoreSslErrors ) {
+                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                }
+
+                $importXML = curl_exec( $wsdlCurl );
+                curl_close( $wsdlCurl );
+
+                $this->cache->set( 'toolkit_wsdl_' . sha1( $authUri ), $importXML, 30*24*60*60 );
             }
-
-            $importXML = curl_exec( $wsdlCurl );
-            curl_close( $wsdlCurl );
 
             $authenticationDOM->loadXML( $importXML );
             /* Flatten the WSDL and include all the Imports */
@@ -825,18 +835,25 @@ class Client extends AbstractClient {
 
             $organizationDOM = new DOMDocument();
 
-            $wsdlCurl = curl_init( $this->settings->organizationUrl . '?wsdl' );
-            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
+            $wsdlUrl = $this->settings->organizationUrl . '?wsdl';
+            $importXML = $this->cache->get( 'toolkit_wsdl_' . sha1( $wsdlUrl ) );
+            if ( is_null( $importXML ) ) {
+                $wsdlCurl = curl_init( $wsdlUrl );
+                curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+                curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+                curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
-            if ( $this->settings->ignoreSslErrors ) {
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                if ( $this->settings->ignoreSslErrors ) {
+                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+                }
+
+                $importXML = curl_exec( $wsdlCurl );
+                curl_close( $wsdlCurl );
+
+                $this->cache->set( 'toolkit_wsdl_' . sha1( $wsdlUrl ), $importXML, 30*24*60*60 );
             }
 
-            $importXML = curl_exec( $wsdlCurl );
-            curl_close( $wsdlCurl );
             $organizationDOM->loadXML( $importXML );
             /* Flatten the WSDL and include all the Imports */
             $this->mergeWSDLImports( $organizationDOM );
