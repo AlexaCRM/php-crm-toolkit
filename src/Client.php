@@ -237,7 +237,8 @@ class Client extends AbstractClient {
 
             $discoveryDOM = new DOMDocument();
 
-            $wsdlCurl = curl_init( $this->settings->discoveryUrl . '?wsdl' );
+            $wsdlUrl = $this->settings->discoveryUrl . '?wsdl';
+            $wsdlCurl = curl_init( $wsdlUrl );
             curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
             curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
             curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
@@ -248,7 +249,13 @@ class Client extends AbstractClient {
             }
 
             $importXML = curl_exec( $wsdlCurl );
+            $curlInfo = curl_getinfo( $wsdlCurl );
             curl_close( $wsdlCurl );
+
+            if ( empty( $importXML ) ) {
+                $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
+                throw new Exception( 'Could not retrieve WSDL at ' . $wsdlUrl );
+            }
 
             $discoveryDOM->loadXML( $importXML );
 
@@ -492,7 +499,13 @@ class Client extends AbstractClient {
                         }
 
                         $importXML = curl_exec( $wsdlCurl );
+                        $curlInfo = curl_getinfo( $wsdlCurl );
                         curl_close( $wsdlCurl );
+
+                        if ( empty( $importXML ) ) {
+                            $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
+                            throw new Exception( 'Could not retrieve WSDL at ' . $importURI );
+                        }
 
                         $this->cache->set( 'toolkit_wsdl_' . sha1( $importURI ), $importXML, 30*24*60*60 );
                     }
@@ -713,7 +726,13 @@ class Client extends AbstractClient {
                 }
 
                 $importXML = curl_exec( $wsdlCurl );
+                $curlInfo = curl_getinfo( $wsdlCurl );
                 curl_close( $wsdlCurl );
+
+                if ( empty( $importXML ) ) {
+                    $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
+                    throw new Exception( 'Could not retrieve WSDL at ' . $authUri );
+                }
 
                 $this->cache->set( 'toolkit_wsdl_' . sha1( $authUri ), $importXML, 30*24*60*60 );
             }
@@ -849,7 +868,13 @@ class Client extends AbstractClient {
                 }
 
                 $importXML = curl_exec( $wsdlCurl );
+                $curlInfo = curl_getinfo( $wsdlCurl );
                 curl_close( $wsdlCurl );
+
+                if ( empty( $importXML ) ) {
+                    $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
+                    throw new Exception( 'Could not retrieve WSDL at ' . $wsdlUrl );
+                }
 
                 $this->cache->set( 'toolkit_wsdl_' . sha1( $wsdlUrl ), $importXML, 30*24*60*60 );
             }
@@ -1202,12 +1227,18 @@ class Client extends AbstractClient {
         }
         /* Check for HTTP errors */
         $httpResponse = curl_getinfo( $cURLHandle, CURLINFO_HTTP_CODE );
+        $curlInfo = curl_getinfo( $cURLHandle );
         curl_close( $cURLHandle );
 
         $this->logger->debug( 'Executed a SOAP request in ' . ( microtime( true ) - $measureStart ) . ' seconds', [
             'request' => $content,
             'response' => $responseXML,
         ] );
+
+        if ( empty( $responseXML ) ) {
+            $this->logger->error( 'Received an empty response from the SOAP service.', [ 'curl' => $curlInfo, 'request' => $content ] );
+            throw new Exception( 'Empty response from the SOAP service.' );
+        }
 
         /* Determine the Action in the SOAP Response */
         $responseDOM = new DOMDocument();
@@ -1622,7 +1653,7 @@ class Client extends AbstractClient {
      * @return int
      */
     public static function getPageNo( $pagingCookie ) {
-        if ( is_null( $pagingCookie ) ) {
+        if ( is_null( $pagingCookie ) || trim( $pagingCookie ) === '' ) {
             return 0;
         }
 
