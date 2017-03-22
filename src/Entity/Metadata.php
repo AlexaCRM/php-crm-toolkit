@@ -155,7 +155,7 @@ class Metadata {
             }
         }
 
-        if ( count( $entityData->Keys[0]->EntityKeyMetadata ) ) {
+        if ( isset( $entityData->Keys ) && count( $entityData->Keys[0]->EntityKeyMetadata ) ) {
             if ( is_null( $this->keys ) ) {
                 $this->keys = [ ];
             }
