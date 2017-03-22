@@ -129,6 +129,10 @@ class Client extends AbstractClient {
 
             // Inject CacheInterface implementation
             $this->cache = $cache;
+            if ( !( $this->cache instanceof CacheInterface ) ) {
+                // Provide a dummy cache if no cache supplied
+                $this->cache = new NullCache();
+            }
 
             // Inject LoggerInterface implementation
             $this->logger = $logger;

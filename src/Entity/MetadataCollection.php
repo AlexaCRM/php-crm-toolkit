@@ -18,6 +18,7 @@
 namespace AlexaCRM\CRMToolkit\Entity;
 
 use AlexaCRM\CRMToolkit\Client;
+use AlexaCRM\CRMToolkit\NullCache;
 use AlexaCRM\CRMToolkit\StorageInterface;
 
 class MetadataCollection {
@@ -69,9 +70,11 @@ class MetadataCollection {
     private function __construct( Client $client, StorageInterface $storage = null ) {
         $this->client = $client;
 
-        if ( $storage instanceof StorageInterface ) {
-            $this->setStorage( $storage );
+        if ( !( $storage instanceof StorageInterface ) ) {
+            $storage = new NullCache();
         }
+
+        $this->setStorage( $storage );
     }
 
     /**
@@ -92,6 +95,11 @@ class MetadataCollection {
         return $this->getEntityDefinition( $entityLogicalName );
     }
 
+    /**
+     * Sets the metadata storage.
+     *
+     * @param StorageInterface $storage
+     */
     public function setStorage( StorageInterface $storage ) {
         $this->storage = $storage;
     }
@@ -125,7 +133,7 @@ class MetadataCollection {
             return $this->cachedEntitiesList;
         }
 
-        if ( $this->isStorageAvailable() && $this->storage->exists( $entitiesListKey ) ) {
+        if ( $this->storage->exists( $entitiesListKey ) ) {
             $this->cachedEntitiesList = $this->storage->get( $entitiesListKey );
 
             return $this->cachedEntitiesList;
@@ -147,9 +155,7 @@ class MetadataCollection {
 
         $this->cachedEntitiesList = $entitiesList;
 
-        if ( $this->isStorageAvailable() ) {
-            $this->storage->set( $entitiesListKey, $entitiesList );
-        }
+        $this->storage->set( $entitiesListKey, $entitiesList );
 
         return $this->cachedEntitiesList;
     }
@@ -169,7 +175,7 @@ class MetadataCollection {
         }
 
         // check storage
-        if ( $this->isStorageAvailable() && $this->storage->exists( $entityLogicalName ) ) {
+        if ( $this->storage->exists( $entityLogicalName ) ) {
             $entityMetadata                                      = $this->storage->get( $entityLogicalName );
             $this->cachedEntityDefinitions[ $entityLogicalName ] = $entityMetadata;
 
@@ -186,18 +192,10 @@ class MetadataCollection {
         $entityObject                                        = $client->retrieveEntity( $entityLogicalName );
         $metadata                                            = new Metadata( $entityLogicalName, $entityObject );
         $this->cachedEntityDefinitions[ $entityLogicalName ] = $metadata;
-        if ( $this->isStorageAvailable() ) {
-            $this->storage->set( $entityLogicalName, $metadata );
-        }
+
+        $this->storage->set( $entityLogicalName, $metadata );
 
         return $metadata;
-    }
-
-    /**
-     * @return bool
-     */
-    private function isStorageAvailable() {
-        return ( $this->storage instanceof StorageInterface );
     }
 
 }
