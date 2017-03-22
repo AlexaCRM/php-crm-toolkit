@@ -1,6 +1,14 @@
 # php-crm-toolkit
 CRM Toolkit for PHP provides integration with Microsoft Dynamics CRM in PHP applications.
 
+## Installation
+
+Install the latest version with
+
+```bash
+$ composer require alexacrm/php-crm-toolkit
+```
+
 # Examples
 ```php
 
