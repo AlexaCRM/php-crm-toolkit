@@ -997,12 +997,24 @@ class Client extends AbstractClient {
             /* Only allow "Retrieve" for an Entity with an ID */
             throw new Exception( 'Cannot Retrieve an Entity without an ID or KeyAttributes.' );
         }
+
         /* Turn this into a SOAP request, and send it */
-        $retrieveRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', $action ), $securityToken, $executeNode );
+        $attemptsLeft = 3;
+        while ( $attemptsLeft > 0 ) {
+            try {
+                $retrieveRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', $action ), $securityToken, $executeNode );
 
-        $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveRequest );
+                $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveRequest );
 
-        return $soapResponse;
+                return $soapResponse;
+            } catch ( InvalidSecurityException $e ) {
+                $securityToken = $this->authentication->getOrganizationSecurityToken( true );
+                $attemptsLeft--;
+            }
+        }
+
+        $this->logger->alert( 'Service returned an InvalidSecurity exception due to invalid security token, and the toolkit was not able to renew the token after 3 attempts.' );
+        throw new InvalidSecurityException( 'InvalidSecurity', 'An error occurred when verifying security for the message.' );
     }
 
     public function retrieveOrganizations() {
@@ -1271,6 +1283,17 @@ class Client extends AbstractClient {
             $q = new \DOMXPath( $responseDOM );
             $q->registerNamespace( 'c', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
 
+            // check InvalidSecurity
+            $subcodeValue = $q->query( '/s:Envelope/s:Body/s:Fault/s:Code/s:Subcode/s:Value' )->item( 0 );
+            if ( $subcodeValue ) {
+                $subcodeValueNode = $subcodeValue->firstChild;
+                $wssPrefix = $subcodeValueNode->lookupPrefix( 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd' );
+                if ( $subcodeValueNode->nodeValue === ( $wssPrefix . ':' . 'InvalidSecurity' ) ) {
+                    $this->logger->error( 'Service returned an InvalidSecurity exception due to invalid security token.' );
+                    throw new InvalidSecurityException( 'InvalidSecurity', $q->query( '/s:Envelope/s:Body/s:Fault/s:Reason/s:Text' )->item( 0 )->nodeValue );
+                }
+            }
+
             $faultString = $q->query( '/s:Envelope/s:Body/s:Fault/s:Reason/s:Text' )->item( 0 )->nodeValue;
 
             $faultCode = $q->query( '/s:Envelope/s:Body/s:Fault/s:Detail/c:OrganizationServiceFault/c:ErrorCode' );
@@ -1464,11 +1487,23 @@ class Client extends AbstractClient {
         /* Generate the XML for the Body of a RetrieveMultiple request */
         $executeNode = SoapRequestsGenerator::generateRetrieveMultipleRequest( $queryXML, $pagingCookie, $limitCount, $pageNumber );
         /* Turn this into a SOAP request, and send it */
-        $retrieveMultipleSoapRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'RetrieveMultiple' ), $securityToken, $executeNode );
 
-        /* Execute request to Dynamics CRM Soap web service and get response */
+        $attemptsLeft = 3;
+        while ( $attemptsLeft > 0 ) {
+            try {
+                $retrieveMultipleSoapRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'RetrieveMultiple' ), $securityToken, $executeNode );
 
-        return $this->getSoapResponse( $this->settings->organizationUrl, $retrieveMultipleSoapRequest );
+                /* Execute request to Dynamics CRM Soap web service and get response */
+
+                return $this->getSoapResponse( $this->settings->organizationUrl, $retrieveMultipleSoapRequest );
+            } catch ( InvalidSecurityException $e ) {
+                $securityToken = $this->authentication->getOrganizationSecurityToken( true );
+                $attemptsLeft--;
+            }
+        }
+
+        $this->logger->alert( 'Service returned an InvalidSecurity exception due to invalid security token, and the toolkit was not able to renew the token after 3 attempts.' );
+        throw new InvalidSecurityException( 'InvalidSecurity', 'An error occurred when verifying security for the message.' );
     }
 
     /**

@@ -54,23 +54,26 @@ class Federation extends Authentication {
      * @todo Make this methods common to authentication classes, make abstract AlexaCRM\CRMToolkit\Auth\AlexaSDK_Authentication class
      * @ignore
      */
-    public function getOrganizationSecurityToken() {
+    public function getOrganizationSecurityToken( $force = false ) {
         /* Check if there is an existing token */
-        if ( $this->organizationSecurityToken != null ) {
-            /* Check if the Security Token is still valid */
-            if ( $this->organizationSecurityToken['expiryTime'] > time() ) {
-                /* Use the existing token */
-                return $this->organizationSecurityToken;
-            }
-        } else {
-            /* Check if Security Token cached  */
-            $isDefined = $this->getCachedSecurityToken( "organization", $this->organizationSecurityToken );
-            /* Check if the Security Token is still valid */
-            if ( $isDefined && $this->organizationSecurityToken['expiryTime'] > time() ) {
-                /* Use cached token */
-                return $this->organizationSecurityToken;
+        if ( !$force ) {
+            if ( $this->organizationSecurityToken != null ) {
+                /* Check if the Security Token is still valid */
+                if ( $this->organizationSecurityToken['expiryTime'] > time() ) {
+                    /* Use the existing token */
+                    return $this->organizationSecurityToken;
+                }
+            } else {
+                /* Check if Security Token cached  */
+                $isDefined = $this->getCachedSecurityToken( "organization", $this->organizationSecurityToken );
+                /* Check if the Security Token is still valid */
+                if ( $isDefined && $this->organizationSecurityToken['expiryTime'] > time() ) {
+                    /* Use cached token */
+                    return $this->organizationSecurityToken;
+                }
             }
         }
+
         /* Request a new Security Token for the Organization Service */
         $this->organizationSecurityToken = $this->requestSecurityToken( $this->settings->loginUrl, $this->settings->organizationUrl, $this->settings->username, $this->settings->password );
         /* Cache retrieved token */
