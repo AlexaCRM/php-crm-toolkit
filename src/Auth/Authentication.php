@@ -48,20 +48,6 @@ abstract class Authentication extends Client {
     protected $tokens = [];
 
     /**
-     *  Security token for requests to Organization service
-     *
-     * @var array
-     */
-    protected $organizationSecurityToken = null;
-
-    /**
-     *  Security token for requests to Discovery service
-     *
-     * @var array
-     */
-    protected $discoverySecurityToken = null;
-
-    /**
      * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
      *
      * @param Settings $settings
