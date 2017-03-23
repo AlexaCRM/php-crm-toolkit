@@ -840,12 +840,10 @@ class Client extends AbstractClient {
      * @return string the raw XML returned by the server, including all SOAP Envelope, Header and Body data.
      */
     public function retrieveEntityRaw( $entityType, $entityId = null, $entityFilters = null, $showUnpublished = false ) {
-        /* Send the sequrity request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
         /* Generate the XML for the Body of a RetrieveEntity request */
         $executeNode = SoapRequestsGenerator::generateRetrieveEntityRequest( $entityType, $entityId, $entityFilters, $showUnpublished );
         /* Turn this into a SOAP request, and send it */
-        $retrieveEntityRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $executeNode );
+        $retrieveEntityRequest = $this->generateSoapRequest( 'organization', 'Execute', $executeNode );
         $soapResponse          = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
 
         return $soapResponse;
@@ -900,8 +898,7 @@ class Client extends AbstractClient {
     public function retrieveRaw( Entity $entity, $columnSet = null ) {
         /* Determine the Type & ID of the Entity */
         $entityType = $entity->LogicalName;
-        /* Send the security request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
+
         /* Check if entity have and ID */
         if ( $entity->ID != self::EmptyGUID ) {
             $entityId    = $entity->ID;
@@ -919,13 +916,13 @@ class Client extends AbstractClient {
         $attemptsLeft = 3;
         while ( $attemptsLeft > 0 ) {
             try {
-                $retrieveRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', $action ), $securityToken, $executeNode );
+                $retrieveRequest = $this->generateSoapRequest( 'organization', $action, $executeNode );
 
                 $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveRequest );
 
                 return $soapResponse;
             } catch ( InvalidSecurityException $e ) {
-                $securityToken = $this->authentication->getOrganizationSecurityToken( true );
+                $this->authentication->invalidateToken( 'organization' );
                 $attemptsLeft--;
             }
         }
@@ -935,10 +932,8 @@ class Client extends AbstractClient {
     }
 
     public function retrieveOrganizations() {
-        /* Request a Security Token for the Discovery Service */
-        $securityToken = $this->authentication->getDiscoverySecurityToken();
         /* Generate a Soap Request for the Retrieve Organization Request method of the Discovery Service */
-        $discoverySoapRequest = $this->generateSoapRequest( $this->settings->discoveryUrl, $this->soapActions->getSoapAction( 'discovery', 'Execute' ), $securityToken, SoapRequestsGenerator::generateRetrieveOrganizationRequest() );
+        $discoverySoapRequest = $this->generateSoapRequest( 'discovery', 'Execute', SoapRequestsGenerator::generateRetrieveOrganizationRequest() );
 
         $discovery_data = $this->getSoapResponse( $this->settings->discoveryUrl, $discoverySoapRequest );
 
@@ -1235,15 +1230,19 @@ class Client extends AbstractClient {
     /**
      * Create the XML String for a Soap Request
      *
-     * @ignore
+     * @param string $service           'organization' or 'discovery'
+     * @param string $soapAction        Service action for which the request is generated
+     * @param DOMNode $bodyContentNode  SOAP-Envelope body
+     *
+     * @return string
      */
-    protected function generateSoapRequest( $serviceURI, $soapAction, $securityToken, DOMNode $bodyContentNode ) {
+    protected function generateSoapRequest( $service, $soapAction, DOMNode $bodyContentNode ) {
         $soapRequestDOM = new DOMDocument();
         $soapEnvelope   = $soapRequestDOM->appendChild( $soapRequestDOM->createElementNS( 'http://www.w3.org/2003/05/soap-envelope', 's:Envelope' ) );
         $soapEnvelope->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:a', 'http://www.w3.org/2005/08/addressing' );
         $soapEnvelope->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:u', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd' );
         /* Get the SOAP Header */
-        $soapHeaderNode = $this->generateSoapHeader( $serviceURI, $soapAction, $securityToken );
+        $soapHeaderNode = $this->generateSoapHeader( $service, $soapAction );
         $soapEnvelope->appendChild( $soapRequestDOM->importNode( $soapHeaderNode, true ) );
         /* Create the SOAP Body */
         $soapBodyNode = $soapEnvelope->appendChild( $soapRequestDOM->createElement( 's:Body' ) );
@@ -1253,23 +1252,33 @@ class Client extends AbstractClient {
     }
 
     /**
-     * Generate a Soap Header using the specified service URI and SoapAction
-     * Include the details from the Security Token for login
+     * Generate a Soap Header for the specified service and action.
      *
-     * @ignore
+     * @param string $service       'organization' or 'discovery'
+     * @param string $soapAction    One of actions that the service provides
+     *
+     * @return DOMNode
      */
-    protected function generateSoapHeader( $serviceURI, $soapAction, $securityToken ) {
+    protected function generateSoapHeader( $service, $soapAction ) {
+        $serviceEndpoint = $this->settings->organizationUrl;
+        if ( $service === 'discovery' ) {
+            $serviceEndpoint = $this->settings->discoveryUrl;
+        }
+
+        // SOAP Action URI
+        $actionUri = $this->soapActions->getSoapAction( $service, $soapAction );
+
         $soapHeaderDOM = new DOMDocument();
         $headerNode    = $soapHeaderDOM->appendChild( $soapHeaderDOM->createElement( 's:Header' ) );
-        $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:Action', $soapAction ) )->setAttribute( 's:mustUnderstand', '1' );
+        $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:Action', $actionUri ) )->setAttribute( 's:mustUnderstand', '1' );
 
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'SdkClientVersion', "8.1.0.383" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'UserType', "CrmUser" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
 
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:ReplyTo' ) )->appendChild( $soapHeaderDOM->createElement( 'a:Address', 'http://www.w3.org/2005/08/addressing/anonymous' ) );
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:MessageId', 'urn:uuid:' . parent::getUuid() ) );
-        $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:To', $serviceURI ) )->setAttribute( 's:mustUnderstand', '1' );
-        $securityHeaderNode = $this->authentication->getSecurityHeaderNode( $securityToken );
+        $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:To', $serviceEndpoint ) )->setAttribute( 's:mustUnderstand', '1' );
+        $securityHeaderNode = $this->authentication->generateTokenHeader( $service );
         $headerNode->appendChild( $soapHeaderDOM->importNode( $securityHeaderNode, true ) );
 
         return $headerNode;
@@ -1399,8 +1408,6 @@ class Client extends AbstractClient {
      * @return string the raw XML returned by the server, including all SOAP Envelope, Header and Body data.
      */
     public function retrieveMultipleRaw( $queryXML, $pagingCookie = null, $limitCount = null, $pageNumber = null ) {
-        /* Send the sequrity request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
         /* Generate the XML for the Body of a RetrieveMultiple request */
         $executeNode = SoapRequestsGenerator::generateRetrieveMultipleRequest( $queryXML, $pagingCookie, $limitCount, $pageNumber );
         /* Turn this into a SOAP request, and send it */
@@ -1408,13 +1415,13 @@ class Client extends AbstractClient {
         $attemptsLeft = 3;
         while ( $attemptsLeft > 0 ) {
             try {
-                $retrieveMultipleSoapRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'RetrieveMultiple' ), $securityToken, $executeNode );
+                $retrieveMultipleSoapRequest = $this->generateSoapRequest( 'organization', 'RetrieveMultiple', $executeNode );
 
                 /* Execute request to Dynamics CRM Soap web service and get response */
 
                 return $this->getSoapResponse( $this->settings->organizationUrl, $retrieveMultipleSoapRequest );
             } catch ( InvalidSecurityException $e ) {
-                $securityToken = $this->authentication->getOrganizationSecurityToken( true );
+                $this->authentication->invalidateToken( 'organization' );
                 $attemptsLeft--;
             }
         }
@@ -1694,14 +1701,13 @@ class Client extends AbstractClient {
         if ( $entity->ID != self::EmptyGUID ) {
             throw new Exception( 'Cannot Create an Entity that already exists.' );
         }
-        /* Send the security request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
+
         /* Generate the XML for the Body of a Create request */
         $createNode = SoapRequestsGenerator::generateCreateRequest( $entity );
 
         $this->logger->debug( 'Executing Create request', [ 'request' => $createNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
-        $createRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Create' ), $securityToken, $createNode );
+        $createRequest = $this->generateSoapRequest( 'organization', 'Create', $createNode );
 
         $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $createRequest );
 
@@ -1742,14 +1748,13 @@ class Client extends AbstractClient {
         if ( $entity->ID == self::EmptyGUID ) {
             throw new Exception( 'Cannot Update an Entity without an ID.' );
         }
-        /* Send the sequrity request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
+
         /* Generate the XML for the Body of an Update request */
         $updateNode = SoapRequestsGenerator::generateUpdateRequest( $entity );
 
         $this->logger->debug( 'Executing Update request', [ 'request' => $updateNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
-        $updateRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Update' ), $securityToken, $updateNode );
+        $updateRequest = $this->generateSoapRequest( 'organization', 'Update', $updateNode );
         /* Get response */
         $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $updateRequest );
         $this->logger->debug( 'Finished executing Update request', [ 'response' => $soapResponse ] );
@@ -1787,14 +1792,13 @@ class Client extends AbstractClient {
         if ( $entity->ID == self::EmptyGUID ) {
             throw new Exception( 'Cannot Delete an Entity without an ID.' );
         }
-        /* Send the sequrity request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
+
         /* Generate the XML for the Body of a Delete request */
         $deleteNode = SoapRequestsGenerator::generateDeleteRequest( $entity );
 
         $this->logger->debug( 'Executing Delete Request', [ 'request' => $deleteNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
-        $deleteRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Delete' ), $securityToken, $deleteNode );
+        $deleteRequest = $this->generateSoapRequest( 'organization', 'Delete', $deleteNode );
         $soapResponse  = $this->getSoapResponse( $this->settings->organizationUrl, $deleteRequest );
 
         $this->logger->debug( 'Finished executing Delete request', [ 'response' => $soapResponse ] );
@@ -1824,14 +1828,13 @@ class Client extends AbstractClient {
         if ( version_compare( $this->settings->organizationVersion, "7.1.0", "<" ) ) {
             throw new Exception( 'Upsert request is not supported for the organization version lower then 7.1.0' );
         }
-        /* Send the sequrity request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
+
         /* Generate the XML for the Body of an Update request */
         $upsertNode = SoapRequestsGenerator::generateUpsertRequest( $entity );
 
         $this->logger->debug( 'Executing Upsert request', [ 'request' => $upsertNode->C14N() ] );
         /* Turn this into a SOAP request, and send it */
-        $upsertRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $upsertNode );
+        $upsertRequest = $this->generateSoapRequest( 'organization', 'Execute', $upsertNode );
         $soapResponse  = $this->getSoapResponse( $this->settings->organizationUrl, $upsertRequest );
 
         $this->logger->debug( 'Finished executing Upsert request', [ 'request' => $soapResponse ] );
@@ -1874,14 +1877,12 @@ class Client extends AbstractClient {
      */
     public function executeAction( $requestName, $parameters = null, $requestType = null ) {
         try {
-            /* Send the security request and get a security token */
-            $securityToken = $this->authentication->getOrganizationSecurityToken();
             /* Generate the XML for the Body of a Execute Action request */
             $executeActionNode = SoapRequestsGenerator::generateExecuteActionRequest( $requestName, $parameters, $requestType );
 
             $this->logger->debug( 'Executing Execute request', ['request' => $executeActionNode->C14N() ] );
             /* Turn this into a SOAP request, and send it */
-            $executeActionRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $executeActionNode );
+            $executeActionRequest = $this->generateSoapRequest( 'organization', 'Execute', $executeActionNode );
 
             $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $executeActionRequest );
 
@@ -1919,12 +1920,10 @@ class Client extends AbstractClient {
     }
 
     public function retrieveAllEntitiesRaw( $entityFilters = null, $retrieveAsIfPublished = false ) {
-        /* Send the security request and get a security token */
-        $securityToken = $this->authentication->getOrganizationSecurityToken();
         /* Generate the XML for the Body of a RetrieveEntity request */
         $executeNode = SoapRequestsGenerator::generateRetrieveAllEntitiesRequest( $entityFilters, $retrieveAsIfPublished );
         /* Turn this into a SOAP request, and send it */
-        $retrieveEntityRequest = $this->generateSoapRequest( $this->settings->organizationUrl, $this->soapActions->getSoapAction( 'organization', 'Execute' ), $securityToken, $executeNode );
+        $retrieveEntityRequest = $this->generateSoapRequest( 'organization', 'Execute', $executeNode );
         $soapResponse          = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
 
         return $soapResponse;

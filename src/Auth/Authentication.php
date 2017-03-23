@@ -17,16 +17,12 @@
 
 namespace AlexaCRM\CRMToolkit\Auth;
 
+use AlexaCRM\CRMToolkit\SecurityToken;
 use AlexaCRM\CRMToolkit\Settings;
 use AlexaCRM\CRMToolkit\Client;
 
 /**
- * AlexaCRM\CRMToolkit\Auth\AlexaSDK_Authentication.class.php
- *
- * @author alexacrm.com
- * @version 1.0
- * @package AlexaCRM\CRMToolkit\AlexaSDK\Authentication
- * @subpackage Authentication
+ * Handles authentication within Dynamics CRM web services.
  */
 abstract class Authentication extends Client {
 
@@ -45,6 +41,13 @@ abstract class Authentication extends Client {
     protected $client;
 
     /**
+     * Stores security tokens for Organization and Discovery services.
+     *
+     * @var SecurityToken[]
+     */
+    protected $tokens = [];
+
+    /**
      *  Security token for requests to Organization service
      *
      * @var array
@@ -58,25 +61,134 @@ abstract class Authentication extends Client {
      */
     protected $discoverySecurityToken = null;
 
-    public function setCachedSecurityToken( $service, $token ) {
-        if ( $this->client->isCacheEnabled() ) {
-            $cacheKey = $this->getSecurityTokenCacheKey( $service );
-            $this->client->cache->set( $cacheKey, $token, floor( $token['expiryTime'] - time() ) );
-        }
+    /**
+     * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
+     *
+     * @param Settings $settings
+     * @param Client $client
+     */
+    public function __construct( $settings, $client ) {
+        $this->settings = $settings;
+        $this->client   = $client;
     }
 
-    public function getCachedSecurityToken( $service, &$securityToken ) {
-        if ( $this->client->isCacheEnabled() ) {
-            $cacheKey  = $this->getSecurityTokenCacheKey( $service );
-            $isDefined = $this->client->cache->exists( $cacheKey );
-            if ( $isDefined ) {
-                $securityToken = $this->client->cache->get( $cacheKey );
-            }
+    /**
+     * Returns server, endpoint, username, password.
+     *
+     * @param string $service
+     *
+     * @return array
+     */
+    protected abstract function getTokenCredentials( $service );
 
-            return $isDefined;
+    /**
+     * @param string $service
+     *
+     * @return string
+     */
+    protected abstract function generateTokenRequest( $service );
+
+    /**
+     * Generates a Security section for SOAP envelope header.
+     *
+     * @param string $service
+     *
+     * @return \DOMNode
+     */
+    public abstract function generateTokenHeader( $service );
+
+    /**
+     * Retrieves a security token for the specified service.
+     *
+     * @param string $service   Can be 'organization', 'discovery'
+     * @param bool $force       Bypass cache and retrieve a new security token
+     *
+     * @return SecurityToken
+     */
+    public function getToken( $service, $force = false ) {
+        if ( !$force && $this->isTokenLoaded( $service ) && !$this->isTokenExpired( $service ) ) {
+            return $this->tokens[$service];
         }
 
-        return false;
+        $tokenCacheKey = $this->getTokenCacheKey( $service );
+
+        if ( !$force ) {
+            $cachedToken = $this->client->cache->get( $tokenCacheKey );
+            if ( $cachedToken instanceof SecurityToken && !$cachedToken->hasExpired() ) {
+                $this->tokens[$service] = $cachedToken; // save in memory
+
+                return $cachedToken;
+            }
+        }
+
+        $this->tokens[$service] = $newToken = $this->retrieveToken( $service );
+        $this->client->cache->set( $tokenCacheKey, $newToken, floor( $newToken->expiryTime - time() - 60 ) );
+
+        return $newToken;
+    }
+
+    /**
+     * Retrieves the security token from the STS.
+     *
+     * @param string $service
+     *
+     * @return SecurityToken
+     */
+    protected function retrieveToken( $service ) {
+        $tokenRequest = $this->generateTokenRequest( $service );
+        $tokenResponse = $this->client->getSoapResponse( $this->settings->loginUrl, $tokenRequest );
+
+        $securityDOM = new \DOMDocument();
+        $securityDOM->loadXML( $tokenResponse );
+
+        $newToken = new SecurityToken();
+
+        $cipherValues = $securityDOM->getElementsByTagName( 'CipherValue' );
+        $newToken->securityToken0 = $cipherValues->item( 0 )->textContent;
+        $newToken->securityToken1 = $cipherValues->item( 1 )->textContent;
+
+        $newToken->keyIdentifier = $securityDOM->getElementsByTagName( 'KeyIdentifier' )->item( 0 )->textContent;
+
+        $newToken->binarySecret = $securityDOM->getElementsByTagName( 'BinarySecret' )->item( 0 )->textContent;
+
+        if ( $securityDOM->getElementsByTagName( 'SecurityTokenReference' )->item( 0 )->prefix === 'wsse' ) {
+            $securityDOM->getElementsByTagName( 'SecurityTokenReference' )->item( 0 )->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:wsse', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd' );
+        }
+
+        $newToken->securityToken = $securityDOM->saveXML( $securityDOM->getElementsByTagName( "RequestedSecurityToken" )->item( 0 )->firstChild );
+
+        $expiryTime = $securityDOM->getElementsByTagName( "RequestSecurityTokenResponse" )->item( 0 )->getElementsByTagName( 'Expires' )->item( 0 )->textContent;
+        $newToken->expiryTime = self::parseTime( substr( $expiryTime, 0, -1 ), '%Y-%m-%dT%H:%M:%S' );
+
+        $this->client->logger->info( 'Issued a new ' . $service . ' security token - expires at: ' . date( 'r', $newToken->expiryTime ) );
+
+        return $newToken;
+    }
+
+    /**
+     * Tells whether the given service token has expired.
+     *
+     * @param string $service
+     *
+     * @return bool
+     */
+    protected function isTokenExpired( $service ) {
+        if ( !$this->isTokenLoaded( $service ) ) {
+            $this->tokens[$service] = $this->getToken( $service );
+        }
+
+        return $this->tokens[$service]->hasExpired();
+    }
+
+    /**
+     * Checks whether security token for given service is loaded into memory.
+     *
+     * @param string $service
+     *
+     * @return bool
+     */
+    protected function isTokenLoaded( $service ) {
+        return ( array_key_exists( $service, $this->tokens ) && is_array( $this->tokens[$service] ) );
     }
 
     /**
@@ -86,8 +198,22 @@ abstract class Authentication extends Client {
      *
      * @return string
      */
-    protected function getSecurityTokenCacheKey( $service ) {
+    protected function getTokenCacheKey( $service ) {
         return strtolower( $service . '_security_token' );
+    }
+
+    /**
+     * Invalidates the token for a given service.
+     *
+     * @param string $service
+     *
+     * @return void
+     */
+    public function invalidateToken( $service ) {
+        unset( $this->tokens[$service] );
+
+        $cacheKey = $this->getTokenCacheKey( $service );
+        $this->client->cache->delete( $cacheKey );
     }
 
 }
