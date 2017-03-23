@@ -50,7 +50,7 @@ class Client extends AbstractClient {
      *
      * @var Settings
      */
-    private $settings;
+    public $settings;
 
     /**
      * @var SoapActions
@@ -842,11 +842,10 @@ class Client extends AbstractClient {
     public function retrieveEntityRaw( $entityType, $entityId = null, $entityFilters = null, $showUnpublished = false ) {
         /* Generate the XML for the Body of a RetrieveEntity request */
         $executeNode = SoapRequestsGenerator::generateRetrieveEntityRequest( $entityType, $entityId, $entityFilters, $showUnpublished );
-        /* Turn this into a SOAP request, and send it */
-        $retrieveEntityRequest = $this->generateSoapRequest( 'organization', 'Execute', $executeNode );
-        $soapResponse          = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
 
-        return $soapResponse;
+        return $this->attemptSoapResponse( 'organization', function() use ( $executeNode ) {
+            return $this->generateSoapRequest( 'organization', 'Execute', $executeNode );
+        } );
     }
 
     /**
@@ -912,34 +911,22 @@ class Client extends AbstractClient {
             throw new Exception( 'Cannot Retrieve an Entity without an ID or KeyAttributes.' );
         }
 
-        /* Turn this into a SOAP request, and send it */
-        $attemptsLeft = 3;
-        while ( $attemptsLeft > 0 ) {
-            try {
-                $retrieveRequest = $this->generateSoapRequest( 'organization', $action, $executeNode );
-
-                $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveRequest );
-
-                return $soapResponse;
-            } catch ( InvalidSecurityException $e ) {
-                $this->authentication->invalidateToken( 'organization' );
-                $attemptsLeft--;
-            }
-        }
-
-        $this->logger->alert( 'Service returned an InvalidSecurity exception due to invalid security token, and the toolkit was not able to renew the token after 3 attempts.' );
-        throw new InvalidSecurityException( 'InvalidSecurity', 'An error occurred when verifying security for the message.' );
+        return $this->attemptSoapResponse( 'organization', function() use ( $action, $executeNode ) {
+            return $this->generateSoapRequest( 'organization', $action, $executeNode );
+        } );
     }
 
     public function retrieveOrganizations() {
         /* Generate a Soap Request for the Retrieve Organization Request method of the Discovery Service */
-        $discoverySoapRequest = $this->generateSoapRequest( 'discovery', 'Execute', SoapRequestsGenerator::generateRetrieveOrganizationRequest() );
+        $executeNode = SoapRequestsGenerator::generateRetrieveOrganizationRequest();
 
-        $discovery_data = $this->getSoapResponse( $this->settings->discoveryUrl, $discoverySoapRequest );
+        $discoveryData = $this->attemptSoapResponse( 'discovery', function() use ( $executeNode ) {
+            return $this->generateSoapRequest( 'discovery', 'Execute', $executeNode );
+        } );
 
         $organizationDetails = array();
         $discoveryDOM        = new DOMDocument();
-        $discoveryDOM->loadXML( $discovery_data );
+        $discoveryDOM->loadXML( $discoveryData );
 
         if ( $discoveryDOM->getElementsByTagName( 'OrganizationDetail' )->length > 0 ) {
             foreach ( $discoveryDOM->getElementsByTagName( 'OrganizationDetail' ) as $organizationNode ) {
@@ -1049,24 +1036,6 @@ class Client extends AbstractClient {
             return;
         }
         self::$connectorTimeout = $_connectorTimeout;
-    }
-
-    /**
-     * Get the Discovery URL which is currently in use
-     *
-     * @return string the URL of the Discovery Service
-     */
-    public function getDiscoveryURI() {
-        return $this->discoveryURI;
-    }
-
-    /**
-     * Get the Organization Unique Name which is currently in use
-     *
-     * @return string the Unique Name of the Organization
-     */
-    public function getOrganization() {
-        return $this->settings->organizationUniqueName;
     }
 
     /**
@@ -1412,22 +1381,9 @@ class Client extends AbstractClient {
         $executeNode = SoapRequestsGenerator::generateRetrieveMultipleRequest( $queryXML, $pagingCookie, $limitCount, $pageNumber );
         /* Turn this into a SOAP request, and send it */
 
-        $attemptsLeft = 3;
-        while ( $attemptsLeft > 0 ) {
-            try {
-                $retrieveMultipleSoapRequest = $this->generateSoapRequest( 'organization', 'RetrieveMultiple', $executeNode );
-
-                /* Execute request to Dynamics CRM Soap web service and get response */
-
-                return $this->getSoapResponse( $this->settings->organizationUrl, $retrieveMultipleSoapRequest );
-            } catch ( InvalidSecurityException $e ) {
-                $this->authentication->invalidateToken( 'organization' );
-                $attemptsLeft--;
-            }
-        }
-
-        $this->logger->alert( 'Service returned an InvalidSecurity exception due to invalid security token, and the toolkit was not able to renew the token after 3 attempts.' );
-        throw new InvalidSecurityException( 'InvalidSecurity', 'An error occurred when verifying security for the message.' );
+        return $this->attemptSoapResponse( 'organization', function() use ( $executeNode ) {
+            return $this->generateSoapRequest( 'organization', 'RetrieveMultiple', $executeNode );
+        } );
     }
 
     /**
@@ -1706,10 +1662,10 @@ class Client extends AbstractClient {
         $createNode = SoapRequestsGenerator::generateCreateRequest( $entity );
 
         $this->logger->debug( 'Executing Create request', [ 'request' => $createNode->C14N() ] );
-        /* Turn this into a SOAP request, and send it */
-        $createRequest = $this->generateSoapRequest( 'organization', 'Create', $createNode );
 
-        $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $createRequest );
+        $soapResponse = $this->attemptSoapResponse( 'organization', function() use ( $createNode ) {
+            return $this->generateSoapRequest( 'organization', 'Create', $createNode );
+        } );
 
         $this->logger->debug( 'Finished executing Create request', [ 'response' => $soapResponse ] );
 
@@ -1753,10 +1709,11 @@ class Client extends AbstractClient {
         $updateNode = SoapRequestsGenerator::generateUpdateRequest( $entity );
 
         $this->logger->debug( 'Executing Update request', [ 'request' => $updateNode->C14N() ] );
-        /* Turn this into a SOAP request, and send it */
-        $updateRequest = $this->generateSoapRequest( 'organization', 'Update', $updateNode );
-        /* Get response */
-        $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $updateRequest );
+
+        $soapResponse = $this->attemptSoapResponse( 'organization', function() use ( $updateNode ) {
+            return $this->generateSoapRequest( 'organization', 'Update', $updateNode );
+        } );
+
         $this->logger->debug( 'Finished executing Update request', [ 'response' => $soapResponse ] );
 
         /* Load the XML into a DOMDocument */
@@ -1797,9 +1754,10 @@ class Client extends AbstractClient {
         $deleteNode = SoapRequestsGenerator::generateDeleteRequest( $entity );
 
         $this->logger->debug( 'Executing Delete Request', [ 'request' => $deleteNode->C14N() ] );
-        /* Turn this into a SOAP request, and send it */
-        $deleteRequest = $this->generateSoapRequest( 'organization', 'Delete', $deleteNode );
-        $soapResponse  = $this->getSoapResponse( $this->settings->organizationUrl, $deleteRequest );
+
+        $soapResponse = $this->attemptSoapResponse( 'organization', function() use ( $deleteNode ) {
+            return $this->generateSoapRequest( 'organization', 'Delete', $deleteNode );
+        } );
 
         $this->logger->debug( 'Finished executing Delete request', [ 'response' => $soapResponse ] );
         /* Load the XML into a DOMDocument */
@@ -1833,9 +1791,10 @@ class Client extends AbstractClient {
         $upsertNode = SoapRequestsGenerator::generateUpsertRequest( $entity );
 
         $this->logger->debug( 'Executing Upsert request', [ 'request' => $upsertNode->C14N() ] );
-        /* Turn this into a SOAP request, and send it */
-        $upsertRequest = $this->generateSoapRequest( 'organization', 'Execute', $upsertNode );
-        $soapResponse  = $this->getSoapResponse( $this->settings->organizationUrl, $upsertRequest );
+
+        $soapResponse = $this->attemptSoapResponse( 'organization', function() use ( $upsertNode ) {
+            return $this->generateSoapRequest( 'organization', 'Execute', $upsertNode );
+        } );
 
         $this->logger->debug( 'Finished executing Upsert request', [ 'request' => $soapResponse ] );
 
@@ -1881,10 +1840,10 @@ class Client extends AbstractClient {
             $executeActionNode = SoapRequestsGenerator::generateExecuteActionRequest( $requestName, $parameters, $requestType );
 
             $this->logger->debug( 'Executing Execute request', ['request' => $executeActionNode->C14N() ] );
-            /* Turn this into a SOAP request, and send it */
-            $executeActionRequest = $this->generateSoapRequest( 'organization', 'Execute', $executeActionNode );
 
-            $soapResponse = $this->getSoapResponse( $this->settings->organizationUrl, $executeActionRequest );
+            $soapResponse = $this->attemptSoapResponse( 'organization', function() use ( $executeActionNode ) {
+                return $this->generateSoapRequest( 'organization', 'Execute', $executeActionNode );
+            } );
 
             $this->logger->debug( 'Finished executing Execute request', [ 'response' => $soapResponse ] );
 
@@ -1922,11 +1881,10 @@ class Client extends AbstractClient {
     public function retrieveAllEntitiesRaw( $entityFilters = null, $retrieveAsIfPublished = false ) {
         /* Generate the XML for the Body of a RetrieveEntity request */
         $executeNode = SoapRequestsGenerator::generateRetrieveAllEntitiesRequest( $entityFilters, $retrieveAsIfPublished );
-        /* Turn this into a SOAP request, and send it */
-        $retrieveEntityRequest = $this->generateSoapRequest( 'organization', 'Execute', $executeNode );
-        $soapResponse          = $this->getSoapResponse( $this->settings->organizationUrl, $retrieveEntityRequest );
 
-        return $soapResponse;
+        return $this->attemptSoapResponse( 'organization', function() use ( $executeNode ) {
+            return $this->generateSoapRequest( 'organization', 'Execute', $executeNode );
+        } );
     }
 
     /**
@@ -1946,15 +1904,6 @@ class Client extends AbstractClient {
         /* Return the structured object */
 
         return $soapData;
-    }
-
-    /**
-     * Checks whether caching is enabled
-     *
-     * @return bool
-     */
-    public function isCacheEnabled() {
-        return ( $this->cache instanceof CacheInterface );
     }
 
     /**
@@ -2016,5 +1965,42 @@ class Client extends AbstractClient {
         }
 
         return $importXML;
+    }
+
+    /**
+     * Makes a few attempts to retrieve a SOAP response.
+     *
+     * @param string $service 'organization' or 'discovery'
+     * @param \Closure $soapRequest SOAP request generator. Must return a string
+     *
+     * @return string
+     * @throws Exception
+     * @throws InvalidSecurityException
+     */
+    public function attemptSoapResponse( $service, \Closure $soapRequest ) {
+        $attemptsLeft = 3;
+        $lastException = null;
+        while ( $attemptsLeft > 0 ) {
+            try {
+                $soapResponse = $this->getSoapResponse( $this->settings->getServiceEndpoint( $service ), $soapRequest() );
+
+                return $soapResponse;
+            } catch ( InvalidSecurityException $e ) {
+                $this->authentication->invalidateToken( $service );
+                $attemptsLeft--;
+                $lastException = $e;
+            } catch ( Exception $e ) {
+                $attemptsLeft--;
+                $lastException = $e;
+            }
+        }
+
+        if ( $lastException instanceof InvalidSecurityException ) {
+            $this->logger->alert( 'Service returned an InvalidSecurity exception due to invalid security token, and the toolkit was not able to renew the token after 3 attempts.' );
+            throw new InvalidSecurityException( 'InvalidSecurity', 'An error occurred when verifying security for the message.' );
+        }
+
+        $this->logger->alert( 'Could not retrieve a SOAP response after 3 attempts.' );
+        throw new Exception( 'Unable to retrieve data from Dynamics CRM' );
     }
 }

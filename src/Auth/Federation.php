@@ -17,6 +17,7 @@
 
 namespace AlexaCRM\CRMToolkit\Auth;
 
+use AlexaCRM\CRMToolkit\Client;
 use DOMDocument;
 
 /**
@@ -30,7 +31,7 @@ class Federation extends Authentication {
      * @return string
      */
     protected function generateTokenRequest( $service ) {
-        $credentials = $this->getTokenCredentials( $service );
+        $credentials = $this->getTokenCredentials();
 
         $loginSoapRequest = new DOMDocument();
         $loginEnvelope    = $loginSoapRequest->appendChild( $loginSoapRequest->createElementNS( 'http://www.w3.org/2003/05/soap-envelope', 's:Envelope' ) );
@@ -44,8 +45,8 @@ class Federation extends Authentication {
         $loginSecurity->setAttribute( 's:mustUnderstand', "1" );
         $loginTimestamp = $loginSecurity->appendChild( $loginSoapRequest->createElement( 'u:Timestamp' ) );
         $loginTimestamp->setAttribute( 'u:Id', '_0' );
-        $loginTimestamp->appendChild( $loginSoapRequest->createElement( 'u:Created', self::getCurrentTime() . 'Z' ) );
-        $loginTimestamp->appendChild( $loginSoapRequest->createElement( 'u:Expires', self::getExpiryTime() . 'Z' ) );
+        $loginTimestamp->appendChild( $loginSoapRequest->createElement( 'u:Created', Client::getCurrentTime() . 'Z' ) );
+        $loginTimestamp->appendChild( $loginSoapRequest->createElement( 'u:Expires', Client::getExpiryTime() . 'Z' ) );
         $loginUsernameToken = $loginSecurity->appendChild( $loginSoapRequest->createElement( 'o:UsernameToken' ) );
         $loginUsernameToken->setAttribute( 'u:Id', 'user' );
 
@@ -84,8 +85,8 @@ class Federation extends Authentication {
         $securityHeader->setAttribute( 's:mustUnderstand', '1' );
         $headerTimestamp = $securityHeader->appendChild( $securityDOM->createElementNS( 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd', 'u:Timestamp' ) );
         $headerTimestamp->setAttribute( 'u:Id', '_0' );
-        $headerTimestamp->appendChild( $securityDOM->createElement( 'u:Created', self::getCurrentTime() . 'Z' ) );
-        $headerTimestamp->appendChild( $securityDOM->createElement( 'u:Expires', self::getExpiryTime() . 'Z' ) );
+        $headerTimestamp->appendChild( $securityDOM->createElement( 'u:Created', Client::getCurrentTime() . 'Z' ) );
+        $headerTimestamp->appendChild( $securityDOM->createElement( 'u:Expires', Client::getExpiryTime() . 'Z' ) );
 
         $requestedSecurityToken = $securityDOM->createDocumentFragment();
         $requestedSecurityToken->appendXML( $token->securityToken );
@@ -107,27 +108,6 @@ class Federation extends Authentication {
         $securityTokenReferenceNode->appendChild( $securityDOM->createElement( 'o:KeyIdentifier', $token->keyIdentifier ) )->setAttribute( 'ValueType', 'http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.0#SAMLAssertionID' );
 
         return $securityHeader;
-    }
-
-    /**
-     * Returns server, endpoint, username, password.
-     *
-     * @param string $service
-     *
-     * @return array
-     */
-    protected function getTokenCredentials( $service ) {
-        $endpoint = $this->settings->organizationUrl;
-        if ( $service === 'discovery' ) {
-            $endpoint = $this->settings->discoveryUrl;
-        }
-
-        return [
-            'server' => $this->settings->loginUrl,
-            'endpoint' => $endpoint,
-            'username' => $this->settings->username,
-            'password' => $this->settings->password,
-        ];
     }
 
 }

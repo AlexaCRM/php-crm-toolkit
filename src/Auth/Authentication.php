@@ -24,7 +24,7 @@ use AlexaCRM\CRMToolkit\Client;
 /**
  * Handles authentication within Dynamics CRM web services.
  */
-abstract class Authentication extends Client {
+abstract class Authentication {
 
     /**
      * Global SDK settings
@@ -57,15 +57,6 @@ abstract class Authentication extends Client {
         $this->settings = $settings;
         $this->client   = $client;
     }
-
-    /**
-     * Returns server, endpoint, username, password.
-     *
-     * @param string $service
-     *
-     * @return array
-     */
-    protected abstract function getTokenCredentials( $service );
 
     /**
      * @param string $service
@@ -118,8 +109,9 @@ abstract class Authentication extends Client {
      * @return SecurityToken
      */
     protected function retrieveToken( $service ) {
-        $tokenRequest = $this->generateTokenRequest( $service );
-        $tokenResponse = $this->client->getSoapResponse( $this->settings->loginUrl, $tokenRequest );
+        $tokenResponse = $this->client->attemptSoapResponse( 'sts', function() use ( $service ) {
+            return $this->generateTokenRequest( $service );
+        } );
 
         $securityDOM = new \DOMDocument();
         $securityDOM->loadXML( $tokenResponse );
@@ -141,7 +133,7 @@ abstract class Authentication extends Client {
         $newToken->securityToken = $securityDOM->saveXML( $securityDOM->getElementsByTagName( "RequestedSecurityToken" )->item( 0 )->firstChild );
 
         $expiryTime = $securityDOM->getElementsByTagName( "RequestSecurityTokenResponse" )->item( 0 )->getElementsByTagName( 'Expires' )->item( 0 )->textContent;
-        $newToken->expiryTime = self::parseTime( substr( $expiryTime, 0, -1 ), '%Y-%m-%dT%H:%M:%S' );
+        $newToken->expiryTime = Client::parseTime( substr( $expiryTime, 0, -1 ), '%Y-%m-%dT%H:%M:%S' );
 
         $this->client->logger->info( 'Issued a new ' . $service . ' security token - expires at: ' . date( 'r', $newToken->expiryTime ) );
 
@@ -197,6 +189,22 @@ abstract class Authentication extends Client {
 
         $cacheKey = $this->getTokenCacheKey( $service );
         $this->client->cache->delete( $cacheKey );
+
+        $this->client->logger->notice( 'Invalidated token for ' . ucfirst( $service ) . 'Service' );
+    }
+
+    /**
+     * Returns server, endpoint, username, password.
+     *
+     * @return array
+     */
+    protected function getTokenCredentials() {
+        return [
+            'server' => $this->settings->getServiceEndpoint( 'sts' ),
+            'endpoint' => $this->settings->getAuthenticationEndpoint(),
+            'username' => $this->settings->username,
+            'password' => $this->settings->password,
+        ];
     }
 
 }

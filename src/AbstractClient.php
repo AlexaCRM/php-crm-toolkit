@@ -62,7 +62,7 @@ abstract class AbstractClient implements ClientInterface {
      *
      * @return string
      */
-    protected static function getCurrentTime() {
+    public static function getCurrentTime() {
         return substr( gmdate( 'c' ), 0, - 6 ) . ".00";
     }
 
@@ -71,7 +71,7 @@ abstract class AbstractClient implements ClientInterface {
      *
      * @ignore
      */
-    protected static function getExpiryTime() {
+    public static function getExpiryTime() {
         return substr( gmdate( 'c', strtotime( '+5 minutes' ) ), 0, - 6 ) . ".00";
     }
 
@@ -179,7 +179,7 @@ abstract class AbstractClient implements ClientInterface {
      * @return integer PHP Timestamp
      * @ignore
      */
-    protected static function parseTime( $timestamp, $formatString ) {
+    public static function parseTime( $timestamp, $formatString ) {
         /* Quick solution: use strptime */
         if ( function_exists( "strptime" ) == true ) {
             $time_array = strptime( $timestamp, $formatString );

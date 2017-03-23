@@ -313,6 +313,43 @@ class Settings {
     }
 
     /**
+     * Retrieves endpoint URI for the given service.
+     *
+     * @param string $service
+     *
+     * @return string
+     */
+    public function getServiceEndpoint( $service ) {
+        switch ( $service ) {
+            case 'organization':
+                return $this->organizationUrl;
+            case 'discovery':
+                return $this->discoveryUrl;
+            case 'sts':
+            case 'login':
+                return $this->loginUrl;
+            default:
+                throw new \InvalidArgumentException( 'Service <' . $service . '> is not supported' );
+        }
+    }
+
+    /**
+     * Retrieves authentication endpoint for the STS.
+     *
+     * @return string
+     */
+    public function getAuthenticationEndpoint() {
+        switch ( $this->authMode ) {
+            case 'OnlineFederation':
+                return $this->crmRegion;
+            case 'Federation':
+                return $this->organizationUrl;
+            default:
+                throw new \InvalidArgumentException( 'Unsupported authentication mode: ' . $this->authMode );
+        }
+    }
+
+    /**
      * @param $crmRegionId
      *
      * @return string

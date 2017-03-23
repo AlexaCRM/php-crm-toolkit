@@ -65,10 +65,6 @@ class SoapActions {
      * @param SoapActions $soapActions
      */
     private function setCachedSoapActions( $service, $soapActions ) {
-        if ( !$this->client->isCacheEnabled() ) {
-            return;
-        }
-
         $cache = $this->client->cache;
         $cache->set( $service . "_soap_actions", $soapActions, 4*7*24*60*60 ); // four weeks
     }
@@ -81,10 +77,6 @@ class SoapActions {
      * @return array|null Soap Action array of strings, or NULL if action not cached
      */
     private function getCachedSoapActions( $service ) {
-        if ( !$this->client->isCacheEnabled() ) {
-            return null;
-        }
-
         $cache       = $this->client->cache;
         $soapActions = $cache->get( $service . '_soap_actions' );
 
