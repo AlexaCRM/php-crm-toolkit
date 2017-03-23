@@ -169,39 +169,23 @@ class Settings {
      * @throws \InvalidArgumentException
      */
     public function __construct( $settings ) {
-        if ( !isset( $settings["serverUrl"] ) ||
-             !isset( $settings["username"] ) ||
-             !isset( $settings["password"] ) ||
-             !$settings["serverUrl"] ||
-             !$settings["username"] ||
-             !$settings["password"]
-        ) {
-            throw new \InvalidArgumentException( 'Username, password or serverUrl is incorrect' );
+        try {
+            $this->validateInput( $settings );
+        } catch ( \InvalidArgumentException $e ) {
+            throw $e;
         }
 
-        if ( !filter_var( $settings["serverUrl"], FILTER_VALIDATE_URL )
-             || !strpos( $settings["serverUrl"], "." )
-        ) {
-            throw new \InvalidArgumentException( 'Invalid serverUrl has been provided' );
-        }
-
-        $this->serverUrl = $settings["serverUrl"];
-        $this->username  = $settings["username"];
-        $this->password  = $settings["password"];
-        $this->authMode  = $settings["authMode"];
+        $this->serverUrl = $settings['serverUrl'];
+        $this->username  = $settings['username'];
+        $this->password  = $settings['password'];
+        $this->authMode  = $settings['authMode'];
 
         $serverUrlParts = parse_url( $this->serverUrl );
 
-        if ( !is_array( $serverUrlParts ) ) {
-            throw new \InvalidArgumentException( 'Invalid serverUrl has been provided' );
-        }
-
-        if ( !isset( $serverUrlParts["scheme"] ) ) {
-            throw new \InvalidArgumentException( 'serverUrl has been provided without a valid scheme (http:// or https://)' );
-        }
-
-        if ( !isset( $serverUrlParts["host"] ) ) {
-            throw new \InvalidArgumentException( 'Invalid serverUrl has been provided' );
+        try {
+            $this->validateUrl( $serverUrlParts );
+        } catch ( \InvalidArgumentException $e ) {
+            throw $e;
         }
 
         $this->useSsl = ( $serverUrlParts['scheme'] === 'https' );
@@ -214,6 +198,11 @@ class Settings {
         $serverHostParts = explode( '.', $serverUrlParts['host'] );
 
         $organizationName = $serverHostParts[0];
+
+        $this->organizationName       = ( isset( $settings["organizationName"] ) ) ? $settings["organizationName"] : null;
+        $this->organizationUniqueName = ( isset( $settings["organizationUniqueName"] ) ) ? $settings["organizationUniqueName"] : null;
+        $this->organizationId         = ( isset( $settings["organizationId"] ) ) ? $settings["organizationId"] : null;
+        $this->organizationVersion    = ( isset( $settings["organizationVersion"] ) ) ? $settings["organizationVersion"] : null;
 
         if ( $this->authMode === 'OnlineFederation' ) {
             $crmRegionId     = $serverHostParts[1];
@@ -231,23 +220,7 @@ class Settings {
             $this->discoveryUrl        = sprintf( '%s://%s%s/XRMServices/2011/Discovery.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             $this->organizationUrl     = sprintf( '%s://%s%s/XRMServices/2011/Organization.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             // loginUrl is set upon Client instantiation
-        } else {
-            throw new \InvalidArgumentException( 'Unsupported authentication mode: ' . $this->authMode );
         }
-
-        $this->organizationName       = ( isset( $settings["organizationName"] ) ) ? $settings["organizationName"] : null;
-        $this->organizationUniqueName = ( isset( $settings["organizationUniqueName"] ) ) ? $settings["organizationUniqueName"] : null;
-        $this->organizationId         = ( isset( $settings["organizationId"] ) ) ? $settings["organizationId"] : null;
-        $this->organizationVersion    = ( isset( $settings["organizationVersion"] ) ) ? $settings["organizationVersion"] : null;
-
-        $this->oauthResource              = ( isset( $settings["oauthResource"] ) ) ? $settings["oauthResource"] : null;
-        $this->oauthClientId              = ( isset( $settings["oauthClientId"] ) ) ? $settings["oauthClientId"] : null;
-        $this->oauthClientSecret          = ( isset( $settings["oauthClientSecret"] ) ) ? $settings["oauthClientSecret"] : null;
-        $this->oauthGrantType             = ( isset( $settings["oauthGrantType"] ) ) ? $settings["oauthGrantType"] : null;
-        $this->oauthApiVersion            = ( isset( $settings["oauthApiVersion"] ) ) ? $settings["oauthApiVersion"] : null;
-        $this->oauthAuthorizationEndpoint = ( isset( $settings["oauthAuthorizationEndpoint"] ) ) ? $settings["oauthAuthorizationEndpoint"] : null;
-        $this->oauthTokenEndpoint         = ( isset( $settings["oauthTokenEndpoint"] ) ) ? $settings["oauthTokenEndpoint"] : null;
-        $this->oauthMultiTenant           = ( isset( $settings["oauthMultiTenant"] ) ) ? $settings["oauthMultiTenant"] : false;
     }
 
     /**
@@ -257,7 +230,7 @@ class Settings {
      */
     public function isFullSettings() {
         return ( $this->discoveryUrl && $this->username && $this->password && $this->organizationUrl
-                 && $this->loginUrl && ( ( $this->authMode == "OnlineFederation" ) ? $this->crmRegion : true ) );
+                 && $this->loginUrl && ( ( $this->authMode === 'OnlineFederation' ) ? $this->crmRegion : true ) );
     }
 
     /**
@@ -318,6 +291,49 @@ class Settings {
         }
 
         return static::$crmRegionMapping[ $crmRegionId ];
+    }
+
+    /**
+     * Validates settings input.
+     *
+     * @param array $settings
+     */
+    private function validateInput( $settings ) {
+        if ( !isset( $settings["serverUrl"] ) ||
+             !isset( $settings["username"] ) ||
+             !isset( $settings["password"] )
+        ) {
+            throw new \InvalidArgumentException( 'Username, password or serverUrl is incorrect' );
+        }
+
+        if ( !filter_var( $settings["serverUrl"], FILTER_VALIDATE_URL )
+             || strpos( $settings["serverUrl"], "." ) === false
+        ) {
+            throw new \InvalidArgumentException( 'Invalid serverUrl has been provided' );
+        }
+
+        if ( !in_array( $settings['authMode'], [ 'OnlineFederation', 'Federation' ] ) ) {
+            throw new \InvalidArgumentException( 'Provided authentication mode <' . $this->authMode . '> is not supported' );
+        }
+    }
+
+    /**
+     * Validates URL parsing results.
+     *
+     * @param array $urlParts
+     */
+    private function validateUrl( $urlParts ) {
+        if ( !is_array( $urlParts ) ) {
+            throw new \InvalidArgumentException( 'Invalid serverUrl has been provided' );
+        }
+
+        if ( !isset( $urlParts["scheme"] ) ) {
+            throw new \InvalidArgumentException( 'serverUrl has been provided without a valid scheme (http:// or https://)' );
+        }
+
+        if ( !isset( $urlParts["host"] ) ) {
+            throw new \InvalidArgumentException( 'Invalid serverUrl has been provided' );
+        }
     }
 
 }
