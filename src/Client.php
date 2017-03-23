@@ -239,28 +239,9 @@ class Client extends AbstractClient {
                 return $this->discoveryDOM;
             }
 
+            $importXML = $this->retrieveWsdl( $this->settings->discoveryUrl . '?wsdl' );
+
             $discoveryDOM = new DOMDocument();
-
-            $wsdlUrl = $this->settings->discoveryUrl . '?wsdl';
-            $wsdlCurl = curl_init( $wsdlUrl );
-            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
-
-            if ( $this->settings->ignoreSslErrors ) {
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
-            }
-
-            $importXML = curl_exec( $wsdlCurl );
-            $curlInfo = curl_getinfo( $wsdlCurl );
-            curl_close( $wsdlCurl );
-
-            if ( empty( $importXML ) ) {
-                $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
-                throw new Exception( 'Could not retrieve WSDL at ' . $wsdlUrl );
-            }
-
             $discoveryDOM->loadXML( $importXML );
 
             /* Flatten the WSDL and include all the Imports */
@@ -488,32 +469,9 @@ class Client extends AbstractClient {
                         continue; // import URI wasn't found - no import performed then
                     }
 
+                    $importXML = $this->retrieveWsdl( $importURI );
+
                     $importDOM = new DOMDocument();
-
-                    $importXML = $this->cache->get( 'toolkit_wsdl_' . sha1( $importURI ) );
-                    if ( is_null( $importXML ) ) {
-                        $wsdlCurl = curl_init( $importURI );
-                        curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-                        curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-                        curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
-
-                        if ( $this->settings->ignoreSslErrors ) {
-                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                            curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
-                        }
-
-                        $importXML = curl_exec( $wsdlCurl );
-                        $curlInfo = curl_getinfo( $wsdlCurl );
-                        curl_close( $wsdlCurl );
-
-                        if ( empty( $importXML ) ) {
-                            $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
-                            throw new Exception( 'Could not retrieve WSDL at ' . $importURI );
-                        }
-
-                        $this->cache->set( 'toolkit_wsdl_' . sha1( $importURI ), $importXML, 30*24*60*60 );
-                    }
-
                     $importDOM->loadXML( $importXML );
 
                     /* Find the "Definitions" on this imported node */
@@ -715,33 +673,11 @@ class Client extends AbstractClient {
                 $authUri = $this->security[ $service . '_authuri' ];
             }
 
+            $importXML = $this->retrieveWsdl( $authUri );
+
             $authenticationDOM = new DOMDocument();
-
-            $importXML = $this->cache->get( 'toolkit_wsdl_' . sha1( $authUri ) );
-            if ( is_null( $importXML ) ) {
-                $wsdlCurl = curl_init( $authUri );
-                curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-                curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-                curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
-
-                if ( $this->settings->ignoreSslErrors ) {
-                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
-                }
-
-                $importXML = curl_exec( $wsdlCurl );
-                $curlInfo = curl_getinfo( $wsdlCurl );
-                curl_close( $wsdlCurl );
-
-                if ( empty( $importXML ) ) {
-                    $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
-                    throw new Exception( 'Could not retrieve WSDL at ' . $authUri );
-                }
-
-                $this->cache->set( 'toolkit_wsdl_' . sha1( $authUri ), $importXML, 30*24*60*60 );
-            }
-
             $authenticationDOM->loadXML( $importXML );
+
             /* Flatten the WSDL and include all the Imports */
             $this->mergeWSDLImports( $authenticationDOM );
 
@@ -856,34 +792,11 @@ class Client extends AbstractClient {
                 throw new Exception( 'Cannot get Organization DOM before determining Organization URI' );
             }
 
+            $importXML = $this->retrieveWsdl( $this->settings->organizationUrl . '?wsdl' );
+
             $organizationDOM = new DOMDocument();
-
-            $wsdlUrl = $this->settings->organizationUrl . '?wsdl';
-            $importXML = $this->cache->get( 'toolkit_wsdl_' . sha1( $wsdlUrl ) );
-            if ( is_null( $importXML ) ) {
-                $wsdlCurl = curl_init( $wsdlUrl );
-                curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
-                curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
-                curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
-
-                if ( $this->settings->ignoreSslErrors ) {
-                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
-                    curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
-                }
-
-                $importXML = curl_exec( $wsdlCurl );
-                $curlInfo = curl_getinfo( $wsdlCurl );
-                curl_close( $wsdlCurl );
-
-                if ( empty( $importXML ) ) {
-                    $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
-                    throw new Exception( 'Could not retrieve WSDL at ' . $wsdlUrl );
-                }
-
-                $this->cache->set( 'toolkit_wsdl_' . sha1( $wsdlUrl ), $importXML, 30*24*60*60 );
-            }
-
             $organizationDOM->loadXML( $importXML );
+
             /* Flatten the WSDL and include all the Imports */
             $this->mergeWSDLImports( $organizationDOM );
 
@@ -2066,5 +1979,43 @@ class Client extends AbstractClient {
         foreach ( $doomedRecords as $cacheKey ) {
             unset( static::$entityCache[$cacheKey] );
         }
+    }
+
+    /**
+     * Retrieves a WSDL at given URL.
+     *
+     * @param string $wsdlUrl
+     *
+     * @return string
+     * @throws Exception    Exception thrown if the document received is empty
+     */
+    private function retrieveWsdl( $wsdlUrl ) {
+        $cacheKey = 'toolkit_wsdl_' . sha1( $wsdlUrl );
+        $importXML = $this->cache->get( $cacheKey );
+
+        if ( is_null( $importXML ) ) {
+            $wsdlCurl = curl_init( $wsdlUrl );
+            curl_setopt( $wsdlCurl, CURLOPT_RETURNTRANSFER, 1 );
+            curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
+            curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
+
+            if ( $this->settings->ignoreSslErrors ) {
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
+                curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+            }
+
+            $importXML = curl_exec( $wsdlCurl );
+            $curlInfo = curl_getinfo( $wsdlCurl );
+            curl_close( $wsdlCurl );
+
+            if ( empty( $importXML ) ) {
+                $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
+                throw new Exception( 'Could not retrieve WSDL at ' . $wsdlUrl );
+            }
+
+            $this->cache->set( $cacheKey, $importXML, 30*24*60*60 );
+        }
+
+        return $importXML;
     }
 }
