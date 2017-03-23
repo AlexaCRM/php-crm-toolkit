@@ -101,24 +101,21 @@ abstract class Authentication extends Client {
      * Retrieves a security token for the specified service.
      *
      * @param string $service   Can be 'organization', 'discovery'
-     * @param bool $force       Bypass cache and retrieve a new security token
      *
      * @return SecurityToken
      */
-    public function getToken( $service, $force = false ) {
-        if ( !$force && $this->isTokenLoaded( $service ) && !$this->isTokenExpired( $service ) ) {
+    public function getToken( $service ) {
+        if ( $this->isTokenLoaded( $service ) && !$this->isTokenExpired( $service ) ) {
             return $this->tokens[$service];
         }
 
         $tokenCacheKey = $this->getTokenCacheKey( $service );
 
-        if ( !$force ) {
-            $cachedToken = $this->client->cache->get( $tokenCacheKey );
-            if ( $cachedToken instanceof SecurityToken && !$cachedToken->hasExpired() ) {
-                $this->tokens[$service] = $cachedToken; // save in memory
+        $cachedToken = $this->client->cache->get( $tokenCacheKey );
+        if ( $cachedToken instanceof SecurityToken && !$cachedToken->hasExpired() ) {
+            $this->tokens[$service] = $cachedToken; // save in memory
 
-                return $cachedToken;
-            }
+            return $cachedToken;
         }
 
         $this->tokens[$service] = $newToken = $this->retrieveToken( $service );
