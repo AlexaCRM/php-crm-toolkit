@@ -135,46 +135,6 @@ class Settings {
     public $organizationVersion;
 
     /**
-     * @var string
-     */
-    public $oauthResource;
-
-    /**
-     * @var string
-     */
-    public $oauthClientId;
-
-    /**
-     * @var string
-     */
-    public $oauthClientSecret;
-
-    /**
-     * @var string
-     */
-    public $oauthGrantType;
-
-    /**
-     * @var string
-     */
-    public $oauthApiVersion;
-
-    /**
-     * @var string
-     */
-    public $oauthAuthorizationEndpoint;
-
-    /**
-     * @var string
-     */
-    public $oauthTokenEndpoint;
-
-    /**
-     * @var bool
-     */
-    public $oauthMultiTenant = false;
-
-    /**
      * @var bool
      */
     public $ignoreSslErrors = false;
@@ -261,7 +221,6 @@ class Settings {
 
             $this->discoveryUrl        = sprintf( '%s://disco.%s.dynamics.com/XRMServices/2011/Discovery.svc', $serverUrlParts['scheme'], $crmRegionId );
             $this->organizationUrl     = sprintf( '%s://%s.api.%s.dynamics.com/XRMServices/2011/Organization.svc', $serverUrlParts['scheme'], $organizationName, $crmRegionId );
-            $this->organizationDataUrl = sprintf( '%s://%s.%s.dynamics.com/XRMServices/2011/OrganizationData.svc/', $serverUrlParts['scheme'], $organizationName, $crmRegionId );
 
             $this->loginUrl = 'https://login.microsoftonline.com/RST2.srf';
         } elseif ( $this->authMode === 'Federation' ) {
@@ -271,7 +230,6 @@ class Settings {
 
             $this->discoveryUrl        = sprintf( '%s://%s%s/XRMServices/2011/Discovery.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             $this->organizationUrl     = sprintf( '%s://%s%s/XRMServices/2011/Organization.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
-            $this->organizationDataUrl = sprintf( '%s://%s%s/XRMServices/2011/OrganizationData.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             // loginUrl is set upon Client instantiation
         } else {
             throw new \InvalidArgumentException( 'Unsupported authentication mode: ' . $this->authMode );
