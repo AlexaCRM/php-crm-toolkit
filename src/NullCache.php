@@ -52,4 +52,13 @@ class NullCache implements CacheInterface {
      * @return void
      */
     public function cleanup() {}
+
+    /**
+     * Deletes the key from the storage.
+     *
+     * @param string $key Cache item key
+     *
+     * @return void
+     */
+    public function delete( $key ) {}
 }

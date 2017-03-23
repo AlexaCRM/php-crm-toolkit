@@ -43,6 +43,15 @@ interface StorageInterface {
     public function set( $key, $value );
 
     /**
+     * Deletes the key from the storage.
+     *
+     * @param string $key Cache item key
+     *
+     * @return void
+     */
+    public function delete( $key );
+
+    /**
      * Checks whether given cache key exists and is valid
      *
      * @param string $key
