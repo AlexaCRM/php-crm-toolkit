@@ -1121,6 +1121,7 @@ class Client extends AbstractClient {
         /* Check for HTTP errors */
         $httpResponse = curl_getinfo( $cURLHandle, CURLINFO_HTTP_CODE );
         $curlInfo = curl_getinfo( $cURLHandle );
+        $curlErrNo = curl_errno( $cURLHandle );
         curl_close( $cURLHandle );
 
         $this->logger->debug( 'Executed a SOAP request in ' . ( microtime( true ) - $measureStart ) . ' seconds', [
@@ -1129,7 +1130,7 @@ class Client extends AbstractClient {
         ] );
 
         if ( empty( $responseXML ) ) {
-            $this->logger->error( 'Received an empty response from the SOAP service.', [ 'curl' => $curlInfo, 'request' => $content ] );
+            $this->logger->error( 'Received an empty response from the SOAP service.', [ 'curl' => $curlInfo, 'curlErrNo' => $curlErrNo, 'request' => $content ] );
             throw new Exception( 'Empty response from the SOAP service.' );
         }
 
@@ -1954,10 +1955,11 @@ class Client extends AbstractClient {
 
             $importXML = curl_exec( $wsdlCurl );
             $curlInfo = curl_getinfo( $wsdlCurl );
+            $curlErrNo = curl_errno( $wsdlCurl );
             curl_close( $wsdlCurl );
 
             if ( empty( $importXML ) ) {
-                $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo ] );
+                $this->logger->error( 'Could not retrieve a WSDL.', [ 'curl' => $curlInfo, 'curlErrNo' => $curlErrNo ] );
                 throw new Exception( 'Could not retrieve WSDL at ' . $wsdlUrl );
             }
 
