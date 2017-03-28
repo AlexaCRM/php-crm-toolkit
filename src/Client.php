@@ -1989,6 +1989,14 @@ class Client extends AbstractClient {
                 return $soapResponse;
             } catch ( InvalidSecurityException $e ) {
                 $this->authentication->invalidateToken( $service );
+                $attemptsLeft --;
+                $lastException = $e;
+            } catch ( SoapFault $e ) {
+                // entity ID or entitykey is invalid
+                if ( in_array( $e->faultcode, [ '-2147220969', '-2147088239' ] ) ) {
+                    throw $e;
+                }
+
                 $attemptsLeft--;
                 $lastException = $e;
             } catch ( Exception $e ) {

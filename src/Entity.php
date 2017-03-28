@@ -114,9 +114,16 @@ class Entity extends EntityReference {
                     /* Set the ID of Entity record */
                     $this->setID( $IDorKeyAttributes );
                     /* Get the raw XML data */
-                    $rawSoapResponse = $this->client->retrieveRaw( $this, $columnSet );
-                    /* NOTE: ParseRetrieveResponse method of AlexaCRM\CRMToolkit\AlexaSDK_Entity class, not the AlexaCRM\CRMToolkit\AlexaSDK class */
-                    $this->parseRetrieveResponse( $this->client, $this->LogicalName, $rawSoapResponse );
+                    try {
+                        $rawSoapResponse = $this->client->retrieveRaw( $this, $columnSet );
+                        $this->parseRetrieveResponse( $this->client, $this->LogicalName, $rawSoapResponse );
+                    } catch ( SoapFault $sf ) {
+                        $errorCode = $sf->faultcode; // undocumented feature
+                        if ( $errorCode == '-2147220969' ) {
+                            $this->exists = false;
+                        }
+                        /* ToDo: Return exception with user-friendly details, maybe invalid ID */
+                    }
                 } else if ( $IDorKeyAttributes instanceof KeyAttributes ) {
                     if ( version_compare( $this->client->organizationVersion, "7.1.0", "<" ) ) {
                         throw new Exception( 'Entity ID must be a valid GUID for the organization version lower then 7.1.0' );
