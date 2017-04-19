@@ -23,6 +23,7 @@
 namespace AlexaCRM\CRMToolkit;
 
 use DOMNodeList;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
  * Base class for most SDK classes, contains common methods and subsclasses includes
@@ -83,6 +84,24 @@ abstract class AbstractClient implements ClientInterface {
      * @return string
      */
     public static function getUuid( $namespace = '' ) {
+        $secureBytes = null;
+        if ( function_exists( 'random_bytes' ) ) {
+            try {
+                $secureBytes = random_bytes( 16 );
+            } catch ( Exception $e ) {
+                // function may be overridden and throw an exception sometimes
+            }
+        } elseif ( function_exists( 'openssl_random_pseudo_bytes' ) ) {
+            $secureBytes = openssl_random_pseudo_bytes( 16 );
+        }
+
+        if ( $secureBytes ) {
+            $secureBytes[6] = chr( ord( $secureBytes[6] ) & 0x0f | 0x40 ); // set version to 0100
+            $secureBytes[8] = chr( ord( $secureBytes[8] ) & 0x3f | 0x80 ); // set bits 6-7 to 10
+
+            return strtoupper( vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex( $secureBytes ), 4 ) ) );
+        }
+
         static $guid = '';
         $uid                  = uniqid( "", true );
         $data                 = [
