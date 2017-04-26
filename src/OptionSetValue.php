@@ -33,18 +33,18 @@ class OptionSetValue {
 
     /**
      * Value of the option set element
+     * (0,1,2,3 for selects and 0,1 for boolean type)
      *
-     * @var string $value (0,1,2,3 for selects and 0,1 for boolean type)
+     * @var string
      */
-    protected $value = null;
+    public $value = null;
 
     /**
-     * Label of the option set element
-     * Text description of the option set
+     * Text description of the option set value.
      *
-     * @var string $value (0,1,2,3 for selects and 0,1 for boolean type)
+     * @var string
      */
-    protected $label = null;
+    public $label = null;
 
     /**
      * Create a new OptionSetValue
@@ -56,29 +56,6 @@ class OptionSetValue {
         /* Store the details */
         $this->value = $_value;
         $this->label = $_label;
-    }
-
-    /**
-     * Handle the retrieval of properties
-     *
-     * @param String $property
-     */
-    public function __get( $property ) {
-        /* Allow case-insensitive fields */
-        switch ( strtolower( $property ) ) {
-            case 'value':
-                return $this->value;
-                break;
-            case 'label':
-                return $this->label;
-        }
-
-        /* Property doesn't exist - standard error */
-        $trace = debug_backtrace();
-        trigger_error( 'Undefined property via __get(): ' . $property
-                       . ' in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'], E_USER_NOTICE );
-
-        return null;
     }
 
     /**
