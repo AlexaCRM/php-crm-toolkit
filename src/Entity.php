@@ -328,7 +328,7 @@ class Entity extends EntityReference {
                 /* Handle passing an OptionSetValue */
                 if ( $value instanceof OptionSetValue ) {
                     /* Check it's a valid option (by Value) */
-                    if ( array_key_exists( $value->Value, $this->attributes[ $property ]->optionSet->options ) ) {
+                    if ( array_key_exists( $value->value, $this->attributes[ $property ]->optionSet->options ) ) {
                         /* Copy the Value object */
                         $optionSetValue = $value;
                     }
