@@ -159,6 +159,7 @@ class Settings {
         'crm7' => 'crmjpn:dynamics.com',
         'crm8' => 'crmind:dynamics.com',
         'crm9' => 'crmgcc:dynamics.com',
+        'crm11' => 'crmgbr:dynamics.com',
     ];
 
     /**
