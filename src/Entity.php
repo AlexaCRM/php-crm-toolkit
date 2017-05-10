@@ -297,7 +297,7 @@ class Entity extends EntityReference {
             /* If this is an AlexaCRM\CRMToolkit\Entity\OptionSet field, it MUST be set to a valid OptionSetValue
              * according to the definition of the AlexaCRM\CRMToolkit\Entity\OptionSet
              */
-            if ( $this->attributes[ $property ]->optionSet != null ) {
+            if ( $this->attributes[ $property ]->optionSet != null && $this->attributes[$property]->type !== 'Boolean' ) {
                 /* Container for the final value */
                 $optionSetValue = null;
                 /* Handle passing a String value */
@@ -349,6 +349,10 @@ class Entity extends EntityReference {
 
                     return;
                 }
+            }
+
+            if ( $this->attributes[$property]->type === 'Boolean' ) {
+                $value = (bool)$value;
             }
 
             if ( $this->propertyValues[ $property ]['Value'] != $value ) {
@@ -640,7 +644,7 @@ class Entity extends EntityReference {
                                 break;
                             case 'boolean':
                                 /* Boolean - Just get the numerical value */
-                                $xmlValue = $this->propertyValues[ $property ]['Value']->value? '1' : '0';
+                                $xmlValue = $this->propertyValues[ $property ]['Value']? '1' : '0';
 
                                 break;
                             case 'string':
