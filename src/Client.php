@@ -1429,6 +1429,7 @@ class Client extends AbstractClient {
         $responseDataArray['EntityName']   = $retrieveMultipleResultNode->getElementsByTagName( 'EntityName' )->length == 0 ? null : $retrieveMultipleResultNode->getElementsByTagName( 'EntityName' )->item( 0 )->textContent;
         $responseDataArray['MoreRecords']  = ( $retrieveMultipleResultNode->getElementsByTagName( 'MoreRecords' )->item( 0 )->textContent == 'true' );
         $responseDataArray['PagingCookie'] = $retrieveMultipleResultNode->getElementsByTagName( 'PagingCookie' )->length == 0 ? null : $retrieveMultipleResultNode->getElementsByTagName( 'PagingCookie' )->item( 0 )->textContent;
+        $responseDataArray['TotalRecordCount'] = $retrieveMultipleResultNode->getElementsByTagName( 'TotalRecordCount' )->length? (int)($retrieveMultipleResultNode->getElementsByTagName( 'TotalRecordCount' )->item(0)->textContent) : null;
         $responseDataArray['Entities']     = Array();
         /* Loop through the Entities returned */
         foreach ( $retrieveMultipleResultNode->getElementsByTagName( 'Entities' )->item( 0 )->getElementsByTagName( 'Entity' ) as $entityNode ) {
