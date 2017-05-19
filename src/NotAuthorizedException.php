@@ -2,6 +2,6 @@
 
 namespace AlexaCRM\CRMToolkit;
 
-class NotAuthorizedException extends \SoapFault {
+class NotAuthorizedException extends SoapFault {
 
 }

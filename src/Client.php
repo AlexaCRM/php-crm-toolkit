@@ -30,7 +30,6 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use SimpleXMLElement;
-use SoapFault;
 use stdClass;
 
 /**

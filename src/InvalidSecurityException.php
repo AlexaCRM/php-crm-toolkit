@@ -2,6 +2,6 @@
 
 namespace AlexaCRM\CRMToolkit;
 
-class InvalidSecurityException extends \SoapFault {
+class InvalidSecurityException extends SoapFault {
 
 }

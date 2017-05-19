@@ -2,6 +2,6 @@
 
 namespace AlexaCRM\CRMToolkit;
 
-class OrganizationDisabledException extends \SoapFault {
+class OrganizationDisabledException extends SoapFault {
 
 }

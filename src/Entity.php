@@ -24,7 +24,6 @@ use DOMText;
 use AlexaCRM\CRMToolkit\Entity\MetadataCollection;
 use AlexaCRM\CRMToolkit\Entity\EntityReference;
 use Exception;
-use SoapFault;
 
 /**
  * This class used for work with Dynamics CRM entities
