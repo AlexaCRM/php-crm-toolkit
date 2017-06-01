@@ -872,7 +872,7 @@ class Client extends AbstractClient {
         $entity->appendChild( $queryXML->createElement( 'all-attributes' ) );
 
         $order = $entity->appendChild( $queryXML->createElement( 'order' ) );
-        $order->setAttribute( 'attribute', MetadataCollection::instance( $this, $this->cache )->getEntityDefinition( $entityType )->primaryNameAttribute );
+        $order->setAttribute( 'attribute', MetadataCollection::instance( $this )->getEntityDefinition( $entityType )->primaryNameAttribute );
         $order->setAttribute( 'descending', 'false' );
 
         $queryXML->saveXML( $fetch );
