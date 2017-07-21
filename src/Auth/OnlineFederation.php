@@ -78,24 +78,18 @@ class OnlineFederation extends Authentication {
      * @return \DOMNode
      */
     public function generateTokenHeader( $service ) {
-        $securityDOM = new DOMDocument();
-
         $token = $this->getToken( $service );
 
-        $securityHeader = $securityDOM->appendChild( $securityDOM->createElementNS( 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd', 'o:Security' ) );
-        $securityHeader->setAttribute( 's:mustUnderstand', '1' );
+        $tokenHeader = '<o:Security xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" s:mustUnderstand="1" xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">'
+                       . '<u:Timestamp u:Id="_0"><u:Created>' . Client::getCurrentTime() . 'Z</u:Created>'
+                       . '<u:Expires>' . Client::getExpiryTime() . 'Z</u:Expires></u:Timestamp>'
+                       . $token->securityToken
+                       . '</o:Security>';
 
-        $headerTimestamp = $securityHeader->appendChild( $securityDOM->createElement( 'u:Timestamp' ) );
+        $headerDom = new DOMDocument();
+        $headerDom->loadXML( $tokenHeader );
 
-        $headerTimestamp->setAttribute( 'u:Id', '_0' );
-        $headerTimestamp->appendChild( $securityDOM->createElement( 'u:Created', Client::getCurrentTime() . 'Z' ) );
-        $headerTimestamp->appendChild( $securityDOM->createElement( 'u:Expires', Client::getExpiryTime() . 'Z' ) );
-
-        $requestedSecurityToken = $securityDOM->createDocumentFragment();
-        $requestedSecurityToken->appendXML( $token->securityToken );
-        $securityHeader->appendChild( $requestedSecurityToken );
-
-        return $securityHeader;
+        return $headerDom->documentElement;
     }
 
 }
