@@ -163,7 +163,7 @@ abstract class Authentication {
      * @return bool
      */
     protected function isTokenLoaded( $service ) {
-        return ( array_key_exists( $service, $this->tokens ) && is_array( $this->tokens[$service] ) );
+        return ( array_key_exists( $service, $this->tokens ) && ( $this->tokens[$service] instanceof SecurityToken ) );
     }
 
     /**
