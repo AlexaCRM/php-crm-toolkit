@@ -23,7 +23,6 @@
 namespace AlexaCRM\CRMToolkit;
 
 use DOMNodeList;
-use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
  * Base class for most SDK classes, contains common methods and subsclasses includes
@@ -88,7 +87,7 @@ abstract class AbstractClient implements ClientInterface {
         if ( function_exists( 'random_bytes' ) ) {
             try {
                 $secureBytes = random_bytes( 16 );
-            } catch ( Exception $e ) {
+            } catch ( \Exception $e ) {
                 // function may be overridden and throw an exception sometimes
             }
         } elseif ( function_exists( 'openssl_random_pseudo_bytes' ) ) {
