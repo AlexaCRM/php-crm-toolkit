@@ -90,7 +90,9 @@ abstract class AbstractClient implements ClientInterface {
             } catch ( \Exception $e ) {
                 // function may be overridden and throw an exception sometimes
             }
-        } elseif ( function_exists( 'openssl_random_pseudo_bytes' ) ) {
+        }
+
+        if ( $secureBytes === null && function_exists( 'openssl_random_pseudo_bytes' ) ) {
             $secureBytes = openssl_random_pseudo_bytes( 16 );
         }
 
