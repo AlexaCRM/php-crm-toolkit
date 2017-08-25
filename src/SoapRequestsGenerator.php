@@ -629,22 +629,14 @@ class SoapRequestsGenerator {
                 switch ( $xmlType ) {
                     case 'entityreference':
                         /* AlexaCRM\CRMToolkit\Entity\EntityReference - Get a entity xml structure */
-                        $xmlType   = 'EntityReference';
-                        $xmlValue  = null;
-                        $xmlTypeNS = 'http://schemas.microsoft.com/xrm/2011/Contracts';
-
-                        /* if ($xmlValue != NULL) {
-                          $valueNode->setAttribute('i:type', 'b:AlexaCRM\CRMToolkit\Entity\EntityReference');
-                          $valueNode->appendChild($executeActionRequestDOM->createElement('b:Id', ($this->propertyValues[$property]['Value']) ? $this->propertyValues[$property]['Value']->ID : ""));
-                          $valueNode->appendChild($executeActionRequestDOM->createElement('b:LogicalName', ($this->propertyValues[$property]['Value']) ? $this->propertyValues[$property]['Value']->logicalname : ""));
-                          $valueNode->appendChild($executeActionRequestDOM->createElement('b:Name'))->setAttribute('i:nil', 'true');
-                          } else { */
-                        $valueNode->setAttribute( 'i:nil', 'true' );
-                        //}
-                        //$valueNode =
-
-                        $xmlValueChild = $executeActionRequestDOM->createElement( 'b:Value', $parameter["value"] );
-
+                        $xmlType = 'EntityReference';
+                        /** @var Entity $entity */
+                        $entity      = $xmlValue;
+                        $xmlTypeNS   = 'http://schemas.microsoft.com/xrm/2011/Contracts';
+                        $entityValue = $executeActionRequestDOM->createElement('c:value');
+                        $entityValue->appendChild($executeActionRequestDOM->createElement('b:Id', $entity->ID));
+                        $entityValue->appendChild($executeActionRequestDOM->createElement('b:LogicalName', $entity->LogicalName));
+                        $xmlValue = null;
                         break;
                     case 'memo':
                         /* Memo - This gets treated as a normal String */
@@ -691,10 +683,12 @@ class SoapRequestsGenerator {
                         break;
                     default:
                         /* If we're using Default, Warn user that the XML handling is not defined */
-                        trigger_error( 'No Create/Update handling implemented for type ' . $xmlType . ' used by field ' . $property, E_USER_WARNING );
+                        trigger_error( 'No Create/Update handling implemented for type ' . $xmlType . ' used by field ' . $parameter["key"], E_USER_WARNING );
                 }
                 /* Now create the XML Node for the Value */
-                $valueNode = $propertyNode->appendChild( $executeActionRequestDOM->createElement( 'c:value' ) );
+                $valueNode = isset($entityValue) ? $propertyNode->appendChild($entityValue) :
+                    $propertyNode->appendChild($executeActionRequestDOM->createElement('c:value'));
+                $entityValue = null;
                 /* Set the Type of the Value */
                 $valueNode->setAttribute( 'i:type', 'd:' . $xmlType );
                 $valueNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:d', $xmlTypeNS );
