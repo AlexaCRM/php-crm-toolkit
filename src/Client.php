@@ -1983,7 +1983,7 @@ class Client extends AbstractClient {
      * @throws InvalidSecurityException
      */
     public function attemptSoapResponse( $service, \Closure $soapRequest ) {
-        $attemptsLeft = 3;
+        $attemptsLeft = 1; // FIXME: triplicate records created
         $lastException = null;
         while ( $attemptsLeft > 0 ) {
             try {
@@ -2009,11 +2009,11 @@ class Client extends AbstractClient {
         }
 
         if ( $lastException instanceof InvalidSecurityException ) {
-            $this->logger->alert( 'Service returned an InvalidSecurity exception due to invalid security token, and the toolkit was not able to renew the token after 3 attempts.', [ 'service' => $service ] );
-            throw new InvalidSecurityException( 'InvalidSecurity', 'An error occurred when verifying security for the message.' );
+            $this->logger->alert( 'Service returned an InvalidSecurity exception due to invalid security token.', [ 'service' => $service ] );
+            throw $lastException;
         }
 
-        $this->logger->alert( 'Could not retrieve a SOAP response after 3 attempts.', [ 'service' => $service, 'lastException' => $lastException ] );
-        throw new Exception( 'Unable to retrieve data from Dynamics CRM', 0, $lastException );
+        $this->logger->alert( 'Could not retrieve a SOAP response.', [ 'service' => $service, 'lastException' => $lastException ] );
+        throw $lastException;
     }
 }
