@@ -1105,6 +1105,10 @@ class Client extends AbstractClient {
         curl_setopt( $cURLHandle, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt( $cURLHandle, CURLOPT_TIMEOUT, self::$connectorTimeout );
 
+        if ( $this->settings->caPath ) {
+            curl_setopt( $cURLHandle, CURLOPT_CAINFO, $this->settings->caPath );
+        }
+
         if ( $this->settings->ignoreSslErrors ) {
           curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYPEER, 0 );
           curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
@@ -1954,6 +1958,10 @@ class Client extends AbstractClient {
             curl_setopt( $wsdlCurl, CURLOPT_FOLLOWLOCATION, true ); // follow redirects
             curl_setopt( $wsdlCurl, CURLOPT_CONNECTTIMEOUT, self::$connectorTimeout );
             curl_setopt( $wsdlCurl, CURLOPT_TIMEOUT, self::$connectorTimeout );
+
+            if ( $this->settings->caPath ) {
+                curl_setopt( $wsdlCurl, CURLOPT_CAINFO, $this->settings->caPath );
+            }
 
             if ( $this->settings->ignoreSslErrors ) {
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );

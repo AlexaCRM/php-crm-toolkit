@@ -135,6 +135,13 @@ class Settings {
     public $organizationVersion;
 
     /**
+     * Path to the CA bundle.
+     *
+     * @var string
+     */
+    public $caPath;
+
+    /**
      * @var bool
      */
     public $ignoreSslErrors = false;
@@ -221,6 +228,11 @@ class Settings {
             $this->discoveryUrl        = sprintf( '%s://%s%s/XRMServices/2011/Discovery.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             $this->organizationUrl     = sprintf( '%s://%s%s/XRMServices/2011/Organization.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             // loginUrl is set upon Client instantiation
+        }
+
+        // Set the custom CA bundle path.
+        if ( isset( $settings['caPath'] ) && is_readable( $settings['caPath'] ) ) {
+            $this->caPath = $settings['caPath'];
         }
     }
 
