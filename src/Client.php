@@ -1104,8 +1104,12 @@ class Client extends AbstractClient {
         curl_setopt( $cURLHandle, CURLOPT_URL, $soapUrl );
         curl_setopt( $cURLHandle, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt( $cURLHandle, CURLOPT_TIMEOUT, self::$connectorTimeout );
-        curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYPEER, 0 );
-        curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
+
+        if ( $this->settings->ignoreSslErrors ) {
+          curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYPEER, 0 );
+          curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
+        }
+
         curl_setopt( $cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
         curl_setopt( $cURLHandle, CURLOPT_HTTPHEADER, $headers );
         curl_setopt( $cURLHandle, CURLOPT_POST, 1 );
