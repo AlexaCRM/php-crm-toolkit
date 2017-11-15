@@ -270,17 +270,13 @@ class Entity extends EntityReference {
                 return;
             }
 
-            /*
-             * NOTE: For fast work set STRING value with ENTITY ID
-             */
-
             /* If this is a Lookup field, it MUST be set to an Entity of an appropriate type */
             if ( $this->attributes[ $property ]->isLookup && $value != null ) {
                 /* Check the new value is an Entity */
-                if ( !$value instanceOf self ) {
+                if ( !$value instanceOf EntityReference ) {
                     $trace = debug_backtrace();
                     throw new Exception( 'Property ' . $property . ' of the ' . $this->entityLogicalName
-                                         . ' entity must be a object of ' . get_class()
+                                         . ' entity must be a object of Entity or EntityReference'
                                          . ' class in ' . $trace[0]['file'] . ' on line ' . $trace[0]['line'], E_USER_ERROR );
                 }
                 /* Check the new value is the right type of Entity */
@@ -293,8 +289,9 @@ class Entity extends EntityReference {
                 /* Clear any AttributeOf related to this field */
                 $this->clearAttributesOf( $property );
             }
-            /* If this is an AlexaCRM\CRMToolkit\Entity\OptionSet field, it MUST be set to a valid OptionSetValue
-             * according to the definition of the AlexaCRM\CRMToolkit\Entity\OptionSet
+
+            /* If this is an OptionSet field, it MUST be set to a valid OptionSetValue
+             * according to the definition of the OptionSet
              */
             if ( $this->attributes[ $property ]->optionSet != null && $this->attributes[$property]->type !== 'Boolean' ) {
                 /* Container for the final value */
@@ -354,7 +351,16 @@ class Entity extends EntityReference {
                 $value = (bool)$value;
             }
 
-            if ( $this->propertyValues[ $property ]['Value'] != $value ) {
+            if ( $this->attributes[$property]->isLookup ) {
+                if ( $this->propertyValues[$property]['Value'] instanceof EntityReference ) {
+                    if ( $this->propertyValues[$property]['Value']->equals( $value ) ) {
+                        return;
+                    }
+                }
+
+                $this->propertyValues[ $property ]['Value'] = $value;
+                $this->propertyValues[ $property ]['Changed'] = true;
+            } elseif ( $this->propertyValues[ $property ]['Value'] != $value ) {
                 /* Update the property value with whatever value was passed */
                 $this->propertyValues[ $property ]['Value'] = $value;
                 /* Mark the property as changed */
@@ -1305,5 +1311,17 @@ class Entity extends EntityReference {
         }
 
         return sha1( "{$logicalName}_{$id}{$columnSetString}" );
+    }
+
+    /**
+     * Converts the Entity to to a new EntityReference.
+     *
+     * @return EntityReference
+     */
+    public function toEntityReference() {
+        $ref = new EntityReference( $this->entityLogicalName, $this->getID() );
+        $ref->displayName = $this->displayName;
+
+        return $ref;
     }
 }

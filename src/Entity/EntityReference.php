@@ -18,6 +18,7 @@
 namespace AlexaCRM\CRMToolkit\Entity;
 
 use AlexaCRM\CRMToolkit\AbstractClient;
+use AlexaCRM\CRMToolkit\Entity;
 use AlexaCRM\CRMToolkit\KeyAttributes;
 use Exception;
 
@@ -33,14 +34,14 @@ class EntityReference extends AbstractClient {
     /**
      * The ID of the Entity
      *
-     * @var String corresponds GUID structure in Dynamics CRM
+     * @var string corresponds GUID structure in Dynamics CRM
      */
     protected $entityID = null;
 
     /**
-     * entityName, display name of Entity object record
+     * Display name of the Entity object record
      *
-     * @var String
+     * @var string
      */
     protected $displayName = null;
 
@@ -108,21 +109,20 @@ class EntityReference extends AbstractClient {
     /**
      * Private utility function to get the ID field; enforces NULL --> EmptyGUID
      *
-     * @ignore
-     * @return String GUID if it's existing record, empty GUID otherwise
+     * @return string GUID if it's existing record, empty GUID otherwise
      */
     protected function getID() {
         if ( $this->entityID == null ) {
             return self::EmptyGUID;
-        } else {
-            return $this->entityID;
         }
+
+        return $this->entityID;
     }
 
     /**
      * Private utility function to set the ID field; enforces "Set Once" logic
      *
-     * @param String $value
+     * @param string $value
      *
      * @throws Exception if the ID is already set
      * @return void
@@ -132,6 +132,7 @@ class EntityReference extends AbstractClient {
         if ( $this->entityID != null ) {
             throw new Exception( 'Cannot change the ID of an Entity' );
         }
+
         $this->entityID = $value;
     }
 
@@ -150,6 +151,29 @@ class EntityReference extends AbstractClient {
         }
 
         return null;
+    }
+
+    /**
+     * Determines whether two entity references are equal.
+     *
+     * @param mixed $reference
+     *
+     * @return bool
+     */
+    public function equals( $reference ) {
+        if ( !( $reference instanceof EntityReference ) ) {
+            return false;
+        }
+
+        if ( strcasecmp( $this->entityLogicalName, $reference->entityLogicalName ) !== 0 ) {
+            return false;
+        }
+
+        if ( $this->getID() !== $reference->getID() ) {
+            return false;
+        }
+
+        return true;
     }
 
 }
