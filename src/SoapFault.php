@@ -26,6 +26,10 @@ class SoapFault extends \Exception {
         $this->detail = $detail;
         $this->faultname = $faultname;
         $this->headerfault = $headerfault;
+
+        // propagate values into the \Exception properties
+        $this->message = $faultstring;
+        $this->code = $faultcode;
     }
 
 }
