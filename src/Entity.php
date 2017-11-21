@@ -176,6 +176,9 @@ class Entity extends EntityReference {
                     break;
                 case 'DISPLAYNAME':
                     $attribute = $this->metadata()->primaryNameAttribute;
+                    if ( !$attribute ) {
+                        return null;
+                    }
 
                     return ( $this->propertyValues[ $attribute ]['Value'] ) ? $this->propertyValues[ $attribute ]['Value'] : null;
                     break;
