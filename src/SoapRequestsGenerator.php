@@ -188,6 +188,9 @@ class SoapRequestsGenerator {
                         case 'guid':
                             /* No special handling for these types */
                             break;
+                        case 'datetime':
+                            $xmlType = 'dateTime';
+                            break;
                         default:
                             /* If we're using Default, Warn user that the XML handling is not defined */
                             trigger_error( 'No Create/Update handling implemented for type ' . $propertyDetails->type . ' used by field ' . $property, E_USER_WARNING );
