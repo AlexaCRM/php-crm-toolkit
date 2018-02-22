@@ -638,6 +638,18 @@ class SoapRequestsGenerator {
                         $entityValue->appendChild($executeActionRequestDOM->createElement('b:LogicalName', $entity->LogicalName));
                         $xmlValue = null;
                         break;
+                    
+                    case 'arrayofguid':
+						$xmlType = 'ArrayOfguid';
+						$arrayOfguids = $xmlValue;
+						$xmlTypeNS = 'http://schemas.microsoft.com/2003/10/Serialization/Arrays';
+						$entityValue = $executeActionRequestDOM->createElement('c:value');
+						foreach ( $arrayOfguids as $contact_guid ) {
+							$entityValue->appendChild($executeActionRequestDOM->createElement( 'd:guid', $contact_guid ));
+						}; // end foreach
+						$xmlValue = null;
+						break;
+
                     case 'memo':
                         /* Memo - This gets treated as a normal String */
                         $xmlType = 'string';
