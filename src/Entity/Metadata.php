@@ -38,6 +38,8 @@ class Metadata {
 
     public $entityDisplayName;
 
+    public $localizedDisplayName = [];
+
     public $entityDisplayCollectionName;
 
     public $entityDescription;
@@ -123,6 +125,9 @@ class Metadata {
         $this->entityDescription = (String) $entityData->Description->LocalizedLabels->LocalizedLabel->Label;
 
         $this->entityDisplayName = (String) $entityData->DisplayName->LocalizedLabels->LocalizedLabel->Label;
+        foreach ( $entityData->DisplayName->LocalizedLabels->LocalizedLabel as $localizedLabel ) {
+            $this->localizedDisplayName[(int)$localizedLabel->LanguageCode] = (string)$localizedLabel->Label;
+        }
 
         $this->entityDisplayCollectionName = (String) $entityData->DisplayCollectionName->LocalizedLabels->LocalizedLabel->Label;
 

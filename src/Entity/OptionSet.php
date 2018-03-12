@@ -30,9 +30,13 @@ class OptionSet {
 
     public $displayName;
 
+    public $localizedDisplayName = [];
+
     public $description;
 
     public $options;
+
+    public $localizedOptions = [];
 
     public $isGlobal;
 
@@ -52,10 +56,14 @@ class OptionSet {
 
         $this->description = (string) $optionSetNode->Description->UserLocalizedLabel->Label;
 
-        $this->displayName = (string) $optionSetNode->Description->UserLocalizedLabel->Label;
+        $this->displayName = (string) $optionSetNode->DisplayName->UserLocalizedLabel->Label;
+
+        foreach ( $optionSetNode->DisplayName->LocalizedLabels->LocalizedLabel as $localizedLabel ) {
+            $this->localizedDisplayName[(int)$localizedLabel->LanguageCode] = (string)$localizedLabel->Label;
+        }
 
         /* Array to store the Options for this OptionSet */
-        $optionSetValues = [];
+        $optionSetValues = $localizedValues = [];
 
         switch ( $this->type ) {
             case 'Boolean':
@@ -63,6 +71,16 @@ class OptionSet {
                     (int) $optionSetNode->FalseOption->Value => (string) $optionSetNode->FalseOption->Label->UserLocalizedLabel->Label[0],
                     (int) $optionSetNode->TrueOption->Value => (string) $optionSetNode->TrueOption->Label->UserLocalizedLabel->Label[0],
                 ] );
+                $localizedValues = [
+                    (int)$optionSetNode->FalseOption->Value => [],
+                    (int)$optionSetNode->TrueOption->Value => [],
+                ];
+                foreach ( $optionSetNode->FalseOption->Label->LocalizedLabels->LocalizedLabel as $localizedLabel ) {
+                    $localizedValues[(int)$optionSetNode->FalseOption->Value][(int)$localizedLabel->LanguageCode] = (string)$localizedLabel->Label;
+                }
+                foreach ( $optionSetNode->TrueOption->Label->LocalizedLabels->LocalizedLabel as $localizedLabel ) {
+                    $localizedValues[(int)$optionSetNode->TrueOption->Value][(int)$localizedLabel->LanguageCode] = (string)$localizedLabel->Label;
+                }
                 break;
             case 'State':
             case 'Status':
@@ -72,12 +90,17 @@ class OptionSet {
                     /* Parse the Option */
                     $value = (int) $option->Value;
                     $label = (string) $option->Label->UserLocalizedLabel->Label[0];
+                    $localizedLabels = [];
+                    foreach ( $option->Label->LocalizedLabels->LocalizedLabel as $localizedLabel ) {
+                        $localizedLabels[(int)$localizedLabel->LanguageCode] = (string)$localizedLabel->Label;
+                    }
                     /* Check for duplicated Values */
                     if ( array_key_exists( $value, $optionSetValues ) ) {
                         trigger_error( 'Option ' . $label . ' of OptionSet ' . $this->name . ' has the same Value as another Option in this Set', E_USER_WARNING );
                     } else {
                         /* Store the Option */
                         $optionSetValues[ $value ] = $label;
+                        $localizedValues[$value] = $localizedLabels;
                     }
                 }
                 break;
@@ -87,6 +110,7 @@ class OptionSet {
         }
 
         $this->options = $optionSetValues;
+        $this->localizedOptions = $localizedValues;
     }
 
 }

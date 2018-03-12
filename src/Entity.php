@@ -1042,16 +1042,17 @@ class Entity extends EntityReference {
     /**
      * Get the label for a field
      *
-     * @param String $property
+     * @param string $property
+     * @param int $languageCode
      *
      * @return string
      */
-    public function getPropertyLabel( $property ) {
+    public function getPropertyLabel( $property, $languageCode = 1033 ) {
         /* Handle dynamic properties... */
         $property = strtolower( $property );
         /* Only return the value if it exists & is readable */
         if ( array_key_exists( $property, $this->attributes ) ) {
-            return $this->attributes[ $property ]->label;
+            return $this->attributes[ $property ]->getLabel( $languageCode );
         }
         /* Also check for an AliasedValue */
         if ( array_key_exists( $property, $this->localProperties ) ) {

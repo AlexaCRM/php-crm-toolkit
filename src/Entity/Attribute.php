@@ -33,6 +33,11 @@ class Attribute {
     public $label;
 
     /**
+     * @var array
+     */
+    public $localizedLabel = [];
+
+    /**
      * @var string User localized attribute description
      */
     public $description;
@@ -128,6 +133,10 @@ class Attribute {
 
         $this->label = (string) $attribute->DisplayName->UserLocalizedLabel->Label;
 
+        foreach ( $attribute->DisplayName->LocalizedLabels->LocalizedLabel as $localizedLabel ) {
+            $this->localizedLabel[(int)$localizedLabel->LanguageCode] = (string)$localizedLabel->Label;
+        }
+
         $this->description = (string) $attribute->Description->UserLocalizedLabel->Label;
 
         $this->format = (string) $attribute->Format;
@@ -181,5 +190,18 @@ class Attribute {
             /* Not an OptionSet */
             $this->optionSet = null;
         }
+    }
+
+    /**
+     * @param int $languageCode
+     *
+     * @return string
+     */
+    public function getLabel( $languageCode = 1033 ) {
+        if ( !array_key_exists( $languageCode, $this->localizedLabel ) ) {
+            $languageCode = 1033;
+        }
+
+        return $this->localizedLabel[$languageCode];
     }
 }
