@@ -20,6 +20,7 @@ namespace AlexaCRM\CRMToolkit;
 use AlexaCRM\CRMToolkit\Auth\Authentication;
 use AlexaCRM\CRMToolkit\Auth\Federation;
 use AlexaCRM\CRMToolkit\Auth\OnlineFederation;
+use AlexaCRM\CRMToolkit\Entity\EntityReference;
 use BadMethodCallException;
 use DOMDocument;
 use DOMElement;
@@ -1651,6 +1652,48 @@ class Client extends AbstractClient {
         $entity = Entity::FromDom( $client, $entityLogicalName, $retrieveResultNode );
 
         return $entity;
+    }
+
+    /**
+     * Creates a link between records.
+     *
+     * @param string $entityName
+     * @param string $entityId
+     * @param Relationship $relationship
+     * @param EntityReference[] $relatedEntities
+     *
+     * @throws Exception
+     * @throws InvalidSecurityException
+     */
+    public function associate( $entityName, $entityId, Relationship $relationship, $relatedEntities ) {
+        $associateNode = SoapRequestsGenerator::generateAssociateRequest( $entityName, $entityId, $relationship, $relatedEntities );
+
+        $this->attemptSoapResponse( 'organization', function() use ( $associateNode ) {
+            $request = $this->generateSoapRequest( 'organization', 'Associate', $associateNode );
+
+            return $request;
+        } );
+    }
+
+    /**
+     * Deletes a link between records.
+     *
+     * @param string $entityName
+     * @param string $entityId
+     * @param Relationship $relationship
+     * @param EntityReference[] $relatedEntities
+     *
+     * @throws Exception
+     * @throws InvalidSecurityException
+     */
+    public function disassociate($entityName, $entityId, Relationship $relationship, $relatedEntities ) {
+        $disassociateNode = SoapRequestsGenerator::generateDisassociateRequest( $entityName, $entityId, $relationship, $relatedEntities );
+
+        $this->attemptSoapResponse( 'organization', function() use ( $disassociateNode ) {
+            $request = $this->generateSoapRequest( 'organization', 'Disassociate', $disassociateNode );
+
+            return $request;
+        } );
     }
 
     /**

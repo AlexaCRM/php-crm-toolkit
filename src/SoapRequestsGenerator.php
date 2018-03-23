@@ -17,6 +17,7 @@
 
 namespace AlexaCRM\CRMToolkit;
 
+use AlexaCRM\CRMToolkit\Entity\EntityReference;
 use DOMDocument;
 use DOMNode;
 use DOMText;
@@ -707,6 +708,72 @@ class SoapRequestsGenerator {
         $requestNode->appendChild( $executeActionRequestDOM->createElement( 'b:RequestName', $requestName ) );
 
         return $executeActionNode;
+    }
+
+    /**
+     * @param string $entityName
+     * @param string $entityId
+     * @param Relationship $relationship
+     * @param EntityReference[] $relatedEntities
+     * @return DOMNode
+     */
+    public static function generateAssociateRequest( $entityName, $entityId, Relationship $relationship, $relatedEntities ) {
+        return static::generateAssocDisassocRequest( 'Associate', $entityName, $entityId, $relationship, $relatedEntities );
+    }
+
+    /**
+     * @param string $entityName
+     * @param string $entityId
+     * @param Relationship $relationship
+     * @param EntityReference[] $relatedEntities
+     * @return DOMNode
+     */
+    public static function generateDisassociateRequest( $entityName, $entityId, Relationship $relationship, $relatedEntities ) {
+        return static::generateAssocDisassocRequest( 'Disassociate', $entityName, $entityId, $relationship, $relatedEntities );
+    }
+
+    private static function generateAssocDisassocRequest( $messageName, $entityName, $entityId, Relationship $relationship, $relatedEntities ) {
+        $messageDOM = new DOMDocument();
+
+        $messageNode = $messageDOM->appendChild( $messageDOM->createElement( 'srv:' . $messageName ) );
+        $messageNode->setAttribute( 'xmlns:srv', 'http://schemas.microsoft.com/xrm/2011/Contracts/Services' );
+        $messageNode->setAttribute( 'xmlns:cntr', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        $messageNode->setAttribute( 'xmlns:i', 'http://www.w3.org/2001/XMLSchema-instance' );
+
+        $entityNameNode = $messageNode->appendChild( $messageDOM->createElement( 'srv:entityName' ) );
+        $entityNameNode->appendChild( new DOMText( $entityName ) );
+
+        $entityIdNode = $messageNode->appendChild( $messageDOM->createElement( 'srv:entityId' ) );
+        $entityIdNode->appendChild( new DOMText( $entityId ) );
+
+        $relationshipNode = $messageNode->appendChild( $messageDOM->createElement( 'srv:relationship' ) );
+
+        if ( !is_null( $relationship->PrimaryEntityRole ) ) {
+            $primaryEntityRoleNode = $relationshipNode->appendChild( $messageDOM->createElement( 'cntr:PrimaryEntityRole' ) );
+            $primaryEntityRoleNode->appendChild( new DOMText( 'Referenced' ) );
+        }
+
+        $schemaNameNode = $relationshipNode->appendChild( $messageDOM->createElement( 'cntr:SchemaName' ) );
+        $schemaNameNode->appendChild( new DOMText( $relationship->SchemaName ) );
+
+        $relatedEntitiesNode = $messageNode->appendChild( $messageDOM->createElement( 'srv:relatedEntities' ) );
+        foreach ( $relatedEntities as $relatedEntity ) {
+            $referenceNode = $messageDOM->createElement( 'cntr:EntityReference' );
+            $referenceNode->setAttribute( 'i:type', 'cntr:EntityReference' );
+
+            $referenceLogicalNameNode = $messageDOM->createElement( 'cntr:LogicalName' );
+            $referenceLogicalNameNode->appendChild( new DOMText( $relatedEntity->LogicalName ) );
+
+            $referenceIdNode = $messageDOM->createElement( 'cntr:Id' );
+            $referenceIdNode->appendChild( new DOMText( $relatedEntity->Id ) );
+
+            $referenceNode->appendChild( $referenceIdNode );
+            $referenceNode->appendChild( $referenceLogicalNameNode );
+
+            $relatedEntitiesNode->appendChild( $referenceNode );
+        }
+
+        return $messageNode;
     }
 
 }

@@ -18,10 +18,14 @@
 namespace AlexaCRM\CRMToolkit\Entity;
 
 use AlexaCRM\CRMToolkit\AbstractClient;
-use AlexaCRM\CRMToolkit\Entity;
 use AlexaCRM\CRMToolkit\KeyAttributes;
 use Exception;
 
+/**
+ * @property-read string $LogicalName
+ * @property string $Id
+ * @property string $DisplayName
+ */
 class EntityReference extends AbstractClient {
 
     /**
