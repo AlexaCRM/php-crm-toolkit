@@ -381,52 +381,6 @@ class Client extends AbstractClient {
     }
 
     /**
-     * Get the Trust Address for the Trust13UsernameMixed authentication method
-     *
-     * @ignore
-     */
-    protected function getTrust13UsernameAddress( DOMDocument $authenticationDOM ) {
-        return $this->getTrustAddress( $authenticationDOM, 'UserNameWSTrustBinding_IWSTrust13Async' );
-    }
-
-    /**
-     * Search the WSDL from an ADFS server to find the correct end-point for a
-     * call to RequestSecurityToken with a given set of parmameters
-     *
-     * @ignore
-     */
-    protected function getTrustAddress( DOMDocument $authenticationDOM, $trustName ) {
-        try {
-            /* Search the available Ports on the WSDL */
-            $trustAuthNode = null;
-            foreach ( $authenticationDOM->getElementsByTagName( 'port' ) as $portNode ) {
-                if ( $portNode->hasAttribute( 'name' ) && $portNode->getAttribute( 'name' ) == $trustName ) {
-                    $trustAuthNode = $portNode;
-                    break;
-                }
-            }
-            if ( $trustAuthNode == null ) {
-                throw new Exception( 'Could not find Port for trust type <' . $trustName . '> in provided WSDL' );
-            }
-            /* Get the Address from the Port */
-            $authenticationURI = null;
-            if ( $trustAuthNode->getElementsByTagName( 'address' )->length > 0 ) {
-                $authenticationURI = $trustAuthNode->getElementsByTagName( 'address' )->item( 0 )->getAttribute( 'location' );
-            }
-            if ( $authenticationURI == null ) {
-                throw new Exception( 'Could not find Address for trust type <' . $trustName . '> in provided WSDL' );
-            }
-
-            /* Return the found URI */
-
-            return $authenticationURI;
-        } catch ( Exception $e ) {
-            $this->logger->error( 'Caught exception while retrieving token issuer endpoint', [ 'exception' => $e ] );
-            throw $e;
-        }
-    }
-
-    /**
      * Search a WSDL XML DOM for "import" tags and import the files into
      * one large DOM for the entire WSDL structure
      *
@@ -673,18 +627,8 @@ class Client extends AbstractClient {
                 $authUri = $this->security[ $service . '_authuri' ];
             }
 
-            $importXML = $this->retrieveWsdl( $authUri );
-
-            $authenticationDOM = new DOMDocument();
-            $authenticationDOM->loadXML( $importXML );
-
-            /* Flatten the WSDL and include all the Imports */
-            $this->mergeWSDLImports( $authenticationDOM );
-
-            // Note: Find the real end-point to use for my security request - for now, we hard-code to Trust13 Username & Password using known values
-            // See http://code.google.com/p/php-dynamics-crm-2011/issues/detail?id=4
-            $authEndpoint = $this->getTrust13UsernameAddress( $authenticationDOM );
-
+            // Hard-code the usernamemixed token issuance endpoint as the only supported endpoint.
+            $authEndpoint = preg_replace( '~^https?://(.*?)/.*$~', 'https://$1/adfs/services/trust/13/usernamemixed', $authUri );
             $this->security[ $securityEndpointKey ] = $authEndpoint;
 
             return $authEndpoint;
