@@ -273,7 +273,7 @@ class Settings {
             case 'login':
                 return $this->loginUrl;
             default:
-                throw new \InvalidArgumentException( 'Service <' . $service . '> is not supported' );
+                return $service;
         }
     }
 
