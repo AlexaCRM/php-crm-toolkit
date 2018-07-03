@@ -1,5 +1,8 @@
 # php-crm-toolkit
-CRM Toolkit for PHP provides integration with Microsoft Dynamics CRM in PHP applications.
+CRM Toolkit for PHP provides integration with Microsoft Dynamics CRM in PHP applications. 
+
+
+This toolkit supports **only** Dynamics 365 SOAP interface. For PHP implementation of the Dynamics 365 Web API, see [dynamics-webapi-toolkit project](https://github.com/AlexaCRM/dynamics-webapi-toolkit).
 
 ## Installation
 
