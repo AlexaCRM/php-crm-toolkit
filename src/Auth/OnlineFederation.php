@@ -247,6 +247,10 @@ XML;
             curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
         }
 
+        if( $this->settings->proxy ) {
+          curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
+        }
+
         curl_setopt( $cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
         curl_setopt( $cURLHandle, CURLOPT_HTTPHEADER, [ 'Content-Type: application/x-www-form-urlencoded' ] );
         curl_setopt( $cURLHandle, CURLOPT_POST, 1 );

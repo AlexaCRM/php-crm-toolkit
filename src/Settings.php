@@ -151,6 +151,13 @@ class Settings {
      */
     public $cache = array( "server" => "localhost", "port" => 11211 );
 
+  /**
+   * Proxy with port.
+   *
+   * @var string
+   */
+    public $proxy;
+
     /**
      * List of CRM regions
      *
@@ -211,6 +218,7 @@ class Settings {
         $this->organizationUniqueName = ( isset( $settings["organizationUniqueName"] ) ) ? $settings["organizationUniqueName"] : null;
         $this->organizationId         = ( isset( $settings["organizationId"] ) ) ? $settings["organizationId"] : null;
         $this->organizationVersion    = ( isset( $settings["organizationVersion"] ) ) ? $settings["organizationVersion"] : null;
+        $this->proxy    = ( isset( $settings["proxy"] ) ) ? $settings["proxy"] : null;
 
         if ( $this->authMode === 'OnlineFederation' ) {
             $crmRegionId     = $serverHostParts[1];
