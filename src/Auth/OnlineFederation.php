@@ -248,7 +248,7 @@ XML;
         }
 
         if( $this->settings->proxy ) {
-          curl_setopt($cURLHandle, CURLOPT_PROXY, $this->settings->proxy);
+          curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
         }
 
         curl_setopt( $cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
