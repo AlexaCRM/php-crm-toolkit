@@ -1059,6 +1059,10 @@ class Client extends AbstractClient {
           curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
         }
 
+        if( $this->settings->proxy ) {
+          curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
+        }
+
         curl_setopt( $cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
         curl_setopt( $cURLHandle, CURLOPT_HTTPHEADER, $headers );
         curl_setopt( $cURLHandle, CURLOPT_POST, 1 );
@@ -1953,6 +1957,10 @@ class Client extends AbstractClient {
             if ( $this->settings->ignoreSslErrors ) {
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+            }
+
+            if( $this->settings->proxy ) {
+              curl_setopt( $wsdlCurl, CURLOPT_PROXY, $this->settings->proxy );
             }
 
             $importXML = curl_exec( $wsdlCurl );
