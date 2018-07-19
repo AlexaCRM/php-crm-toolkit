@@ -94,6 +94,17 @@ class OnlineFederation extends Authentication {
     protected function extractToken( $tokenXML ) {
         $securityDOM = new \DOMDocument();
         $securityDOM->loadXML( $tokenXML );
+        $q = new \DOMXPath( $securityDOM );
+        $q->registerNamespace( 'S', 'http://www.w3.org/2003/05/soap-envelope' );
+        $q->registerNamespace( 'psf', 'http://schemas.microsoft.com/Passport/SoapServices/SOAPFault' );
+        if ( $q->query( '/S:Envelope/S:Body/S:Fault' )->length > 0 ) {
+            $exceptionString = $q->evaluate( 'string(/S:Envelope/S:Body/S:Fault/S:Reason/S:Text)' );
+            $description = $q->evaluate( 'string(/S:Envelope/S:Body/S:Fault/S:Detail/psf:error/psf:internalerror/psf:text)' );
+            if ( $description !== '' ) {
+                $exceptionString .= '. ' . $description;
+            }
+            throw new \Exception( $exceptionString );
+        }
 
         $newToken = new SecurityToken();
 

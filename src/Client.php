@@ -1118,9 +1118,13 @@ class Client extends AbstractClient {
             throw new Exception( 'Invalid SOAP Response: No SOAP Header! ' . PHP_EOL . $responseXML );
         }
         /* Get the SOAP Action */
-        $actionString = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
+        $actionString = '';
+        $actionNode = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
                                     ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Header' )->item( 0 )
-                                    ->getElementsByTagNameNS( 'http://www.w3.org/2005/08/addressing', 'Action' )->item( 0 )->textContent;
+                                    ->getElementsByTagNameNS( 'http://www.w3.org/2005/08/addressing', 'Action' )->item( 0 );
+        if ( $actionNode instanceof DOMNode ) {
+            $actionString = $actionNode->textContent;
+        }
 
         /* Handle known Error Actions */
         if ( in_array( $actionString, self::$SOAPFaultActions ) && $throwException ) {
