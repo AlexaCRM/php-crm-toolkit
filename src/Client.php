@@ -1059,6 +1059,11 @@ class Client extends AbstractClient {
           curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
         }
 
+        // enforce TLS1.2 for Online deployments
+        if ( $this->settings->authMode === 'OnlineFederation' ) {
+            curl_setopt( $cURLHandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
+        }
+
         if( $this->settings->proxy ) {
           curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
         }
@@ -1957,6 +1962,11 @@ class Client extends AbstractClient {
             if ( $this->settings->ignoreSslErrors ) {
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYPEER, 0 );
                 curl_setopt( $wsdlCurl, CURLOPT_SSL_VERIFYHOST, 0 );
+            }
+
+            // enforce TLS1.2 for Online deployments
+            if ( $this->settings->authMode === 'OnlineFederation' ) {
+                curl_setopt( $wsdlCurl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
             }
 
             if( $this->settings->proxy ) {

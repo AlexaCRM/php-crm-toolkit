@@ -19,12 +19,30 @@ namespace AlexaCRM\CRMToolkit\Auth;
 
 use AlexaCRM\CRMToolkit\Client;
 use AlexaCRM\CRMToolkit\SecurityToken;
+use AlexaCRM\CRMToolkit\Settings;
 use DOMDocument;
 
 /**
  * Handles authentication within Microsoft Dynamics CRM Online / 365
  */
 class OnlineFederation extends Authentication {
+
+    /**
+     * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
+     *
+     * @param Settings $settings
+     * @param Client $client
+     *
+     * @throws \Exception Thrown if TLS 1.2 is not supported by the environment.
+     */
+    public function __construct( Settings $settings, Client $client ) {
+        parent::__construct( $settings, $client );
+
+        $curlVersion = curl_version();
+        if ( version_compare( $curlVersion['version'], '7.34', '<' ) || !defined( 'CURL_SSLVERSION_TLSv1_2' ) ) {
+            throw new \Exception( 'curl version < 7.34 and TLS 1.2 is not supported. Please upgrade curl and/or the TLS library of your choice' );
+        }
+    }
 
     /**
      * Retrieves the security token from the STS.
@@ -230,6 +248,14 @@ XML;
         return $loginSoapRequest->saveXML( $loginEnvelope );
     }
 
+    /**
+     * Retrieves the correct STS endpoint URL. Useful for federated AAD configurations.
+     *
+     * @param $login string
+     *
+     * @return null|string
+     * @throws \Exception
+     */
     protected function getSTSUrl( $login ) {
         $content = [ 'login' => $this->settings->username, 'xml' => 1 ];
 
@@ -246,6 +272,8 @@ XML;
             curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYPEER, 0 );
             curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
         }
+
+        curl_setopt( $cURLHandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
 
         if( $this->settings->proxy ) {
           curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
