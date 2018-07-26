@@ -363,7 +363,7 @@ class Entity extends EntityReference {
 
                 $this->propertyValues[ $property ]['Value'] = $value;
                 $this->propertyValues[ $property ]['Changed'] = true;
-            } elseif ( $this->propertyValues[ $property ]['Value'] != $value ) {
+            } elseif ( $this->propertyValues[ $property ]['Value'] !== $value ) {
                 /* Update the property value with whatever value was passed */
                 $this->propertyValues[ $property ]['Value'] = $value;
                 /* Mark the property as changed */
