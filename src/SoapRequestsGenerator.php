@@ -146,7 +146,11 @@ class SoapRequestsGenerator {
                     if ( $entity->propertyValues[ $property ]['Value'] ) {
                         $valueNode->setAttribute( 'i:type', 'd:OptionSetValue' );
                         $valueNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
-                        $valueNode->appendChild( $executeActionRequestDOM->createElement( 'b:Value', $entity->propertyValues[ $property ]['Value'] ) );
+                        $val = $entity->propertyValues[ $property ]['Value'];
+                        if ( $val instanceof OptionSetValue ) {
+                            $val = $val->value;
+                        }
+                        $valueNode->appendChild( $executeActionRequestDOM->createElement( 'b:Value', $val ) );
                     } else {
                         $valueNode->setAttribute( 'i:nil', 'true' );
                     }
@@ -639,7 +643,7 @@ class SoapRequestsGenerator {
                         $entityValue->appendChild($executeActionRequestDOM->createElement('b:LogicalName', $entity->LogicalName));
                         $xmlValue = null;
                         break;
-                    
+
                     case 'arrayofguid':
 						$xmlType = 'ArrayOfguid';
 						$arrayOfguids = $xmlValue;
