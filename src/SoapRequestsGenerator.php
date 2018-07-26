@@ -184,7 +184,7 @@ class SoapRequestsGenerator {
                             break;
                         case 'boolean':
                             /* Boolean - Just get the numerical value */
-                            $xmlValue = $entity->propertyValues[ $property ]['Value'];
+                            $xmlValue = $entity->propertyValues[ $property ]['Value']? '1' : '0';
                             break;
                         case 'string':
                         case 'int':
