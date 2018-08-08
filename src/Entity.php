@@ -678,6 +678,8 @@ class Entity extends EntityReference {
                         /* If there is a value, set it */
                         if ( $xmlValue != null ) {
                             $valueNode->appendChild( new DOMText( $xmlValue ) );
+                        } elseif ( is_null( $xmlValueChild ) ) {
+                            $valueNode->setAttribute( 'i:nil', 'true' );
                         }
                     }
                 }
