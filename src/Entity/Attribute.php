@@ -115,6 +115,11 @@ class Attribute {
     public $lookupTypes;
 
     /**
+     * @var string
+     */
+    public $dateTimeBehavior;
+
+    /**
      * Attribute constructor.
      *
      * @param SimpleXMLElement $attribute
@@ -152,6 +157,10 @@ class Attribute {
         $this->isPrimaryName = ( (string) $attribute->IsPrimaryName === 'true' );
 
         $this->type = (string) $attribute->AttributeType;
+
+        if ( $this->type === 'DateTime' ) {
+            $this->dateTimeBehavior = (string)$attribute->DateTimeBehavior->Value;
+        }
 
         /* Determine the Type of the Attribute */
         $attributeList = $attribute->attributes();
