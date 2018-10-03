@@ -40,7 +40,7 @@ class OnlineFederation extends Authentication {
 
         $curlVersion = curl_version();
         if ( version_compare( $curlVersion['version'], '7.34', '<' ) || !defined( 'CURL_SSLVERSION_TLSv1_2' ) ) {
-            throw new \Exception( 'curl version < 7.34 and TLS 1.2 is not supported. Please upgrade curl and/or the TLS library of your choice' );
+            $client->logger->critical( 'TLS v1.2 might not be supported by cURL', [ 'curlVersion' => $curlVersion, 'CURL_SSLVERSION_TLSv1_2' => defined( 'CURL_SSLVERSION_TLSv1_2' ) ] );
         }
     }
 
@@ -284,7 +284,7 @@ XML;
             curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
         }
 
-        curl_setopt( $cURLHandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
+        curl_setopt( $cURLHandle, CURLOPT_SSLVERSION, defined( 'CURL_SSLVERSION_TLSv1_2' )? CURL_SSLVERSION_TLSv1_2 : 6 );
 
         if( $this->settings->proxy ) {
           curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );

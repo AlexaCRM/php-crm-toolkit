@@ -56,6 +56,11 @@ abstract class Authentication {
     public function __construct( $settings, $client ) {
         $this->settings = $settings;
         $this->client   = $client;
+
+        $curlVersion = curl_version();
+        $this->client->logger->debug( 'cURL version', [ 'curlVersion' => $curlVersion, 'tls_constants' => [
+            'CURL_SSLVERSION_TLSv1_2' => defined( 'CURL_SSLVERSION_TLSv1_2' ),
+        ] ] );
     }
 
     /**

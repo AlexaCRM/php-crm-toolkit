@@ -1061,7 +1061,7 @@ class Client extends AbstractClient {
 
         // enforce TLS1.2 for Online deployments
         if ( $this->settings->authMode === 'OnlineFederation' ) {
-            curl_setopt( $cURLHandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
+            curl_setopt( $cURLHandle, CURLOPT_SSLVERSION, defined( 'CURL_SSLVERSION_TLSv1_2' )? CURL_SSLVERSION_TLSv1_2 : 6 );
         }
 
         if( $this->settings->proxy ) {
@@ -1970,7 +1970,7 @@ class Client extends AbstractClient {
 
             // enforce TLS1.2 for Online deployments
             if ( $this->settings->authMode === 'OnlineFederation' ) {
-                curl_setopt( $wsdlCurl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 );
+                curl_setopt( $wsdlCurl, CURLOPT_SSLVERSION, defined( 'CURL_SSLVERSION_TLSv1_2' )? CURL_SSLVERSION_TLSv1_2 : 6 );
             }
 
             if( $this->settings->proxy ) {
