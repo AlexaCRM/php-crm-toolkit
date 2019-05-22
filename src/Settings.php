@@ -147,6 +147,18 @@ class Settings {
     public $ignoreSslErrors = false;
 
     /**
+     * Whether to use the literal value of STSAuthURL in GetUserRealm response.
+     *
+     * The toolkit only supports one ADFS endpoint, /adfs/services/trust/13/usernamemixed.
+     * In non-standard environments, STSAuthURL may point to a different endpoint.
+     * The default behavior is to always point to the UsernameMixed endpoint.
+     * This setting allows to override such behavior and instead use the exact presented value.
+     *
+     * @var bool
+     */
+    public $strictFederatedSTS = false;
+
+    /**
      * @var mixed
      */
     public $cache = array( "server" => "localhost", "port" => 11211 );
@@ -228,6 +240,10 @@ class Settings {
             $this->organizationUrl     = sprintf( '%s://%s.api.%s.dynamics.com/XRMServices/2011/Organization.svc', $serverUrlParts['scheme'], $organizationName, $crmRegionId );
 
             $this->loginUrl = 'https://login.microsoftonline.com/RST2.srf';
+
+            if ( isset( $settings['strictFederatedSTS'] ) ) {
+                $this->strictFederatedSTS = $settings['strictFederatedSTS'];
+            }
         } elseif ( $this->authMode === 'Federation' ) {
             $this->crmRegion = null; // not applicable
 

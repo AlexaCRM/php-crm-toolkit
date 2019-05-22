@@ -18,6 +18,7 @@
 namespace AlexaCRM\CRMToolkit\Auth;
 
 use AlexaCRM\CRMToolkit\Client;
+use AlexaCRM\CRMToolkit\InvalidSecurityException;
 use AlexaCRM\CRMToolkit\SecurityToken;
 use AlexaCRM\CRMToolkit\Settings;
 use DOMDocument;
@@ -80,6 +81,11 @@ class OnlineFederation extends Authentication {
     protected function extractAssertToken( $tokenXML ) {
         $securityDOM = new \DOMDocument();
         $securityDOM->loadXML( $tokenXML );
+
+        if ( $securityDOM->getElementsByTagName( 'Fault')->length > 0 ) {
+            $q = new \DOMXPath( $securityDOM );
+            throw new \Exception( $q->query( '/s:Envelope/s:Body/s:Fault/s:Reason/s:Text' )->item( 0 )->nodeValue );
+        }
 
         $newToken = new SecurityToken();
 
@@ -321,6 +327,16 @@ XML;
 
         preg_match( '~<STSAuthURL>(.*?)</STSAuthURL>~', $responseXML, $stsMatch );
         $authUri = $stsMatch[1];
+
+        /*
+         * The toolkit only supports one ADFS endpoint, /adfs/services/trust/13/usernamemixed.
+         * In non-standard environments, STSAuthURL may point to a different endpoint.
+         * The default behavior is to always point to the UsernameMixed endpoint.
+         * This setting allows to override such behavior and instead use the exact presented value.
+         */
+        if ( $this->settings->strictFederatedSTS ) {
+            return $authUri;
+        }
 
         return preg_replace( '~^https?://(.*?)/.*$~', 'https://$1/adfs/services/trust/13/usernamemixed', $authUri );
     }
