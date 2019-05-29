@@ -9,7 +9,7 @@ This toolkit supports **only** Dynamics 365 SOAP interface. For PHP implementati
 Install the latest version with
 
 ```bash
-$ composer require alexacrm/php-crm-toolkit
+$ composer require alexacrm/php-crm-toolkit:dev-master
 ```
 
 # Examples
