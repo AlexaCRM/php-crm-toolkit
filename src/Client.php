@@ -1173,7 +1173,7 @@ class Client extends AbstractClient {
      *
      * @return string
      */
-    protected function generateSoapRequest( $service, $soapAction, DOMNode $bodyContentNode ) {
+    public function generateSoapRequest( $service, $soapAction, DOMNode $bodyContentNode ) {
         $soapRequestDOM = new DOMDocument();
         $soapEnvelope   = $soapRequestDOM->appendChild( $soapRequestDOM->createElementNS( 'http://www.w3.org/2003/05/soap-envelope', 's:Envelope' ) );
         $soapEnvelope->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:a', 'http://www.w3.org/2005/08/addressing' );
