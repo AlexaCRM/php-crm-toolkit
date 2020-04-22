@@ -622,6 +622,16 @@ class Entity extends EntityReference {
                         } else {
                             $valueNode->setAttribute( 'i:nil', 'true' );
                         }
+                    } else if ( $propertyDetails->logicalName === 'entityimage' && strtolower( $propertyDetails->type ) === 'virtual' ) {
+                        $valueNode = $propertyNode->appendChild( $entityDOM->createElement( 'c:value' ) );
+
+                        if ( $this->propertyValues[ $property ]['Value'] ) {
+                            $valueNode->setAttribute( 'i:type', 'e:base64Binary' );
+                            $valueNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:e', 'http://www.w3.org/2001/XMLSchema' );
+                            $valueNode->appendChild( new DOMText( $this->propertyValues[ $property ]['Value'] ) );
+                        } else {
+                            $valueNode->setAttribute( 'i:nil', 'true' );
+                        }
                     } else {
                         /* Determine the Type, Value and XML Namespace for this field */
                         $xmlValue      = $this->propertyValues[ $property ]['Value'];
