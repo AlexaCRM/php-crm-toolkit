@@ -234,7 +234,7 @@ class Settings {
         $this->proxy    = ( isset( $settings["proxy"] ) ) ? $settings["proxy"] : null;
 
         if ( $this->authMode === 'OnlineFederation' ) {
-            $crmRegionId     = $serverHostParts[1];
+            $crmRegionId = array_slice($serverHostParts, -3, 1)[0];
             $this->crmRegion = $this->getCrmRegion( $crmRegionId );
 
             $this->discoveryUrl        = sprintf( '%s://disco.%s.dynamics.com/XRMServices/2011/Discovery.svc', $serverUrlParts['scheme'], $crmRegionId );
