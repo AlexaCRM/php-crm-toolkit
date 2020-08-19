@@ -211,6 +211,11 @@ class Attribute {
             $languageCode = 1033;
         }
 
+        if ( !array_key_exists( $languageCode, $this->localizedLabel ) ) {
+            reset( $this->localizedLabel );
+            $languageCode = key( $this->localizedLabel );
+        }
+
         return $this->localizedLabel[$languageCode];
     }
 }
