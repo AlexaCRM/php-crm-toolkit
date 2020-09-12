@@ -1075,25 +1075,30 @@ class Client extends AbstractClient {
         curl_setopt( $cURLHandle, CURLOPT_FOLLOWLOCATION, true ); // follow redirects
         curl_setopt( $cURLHandle, CURLOPT_POSTREDIR, 7 ); // 1 | 2 | 4 (301, 302, 303 redirects mask)
         curl_setopt( $cURLHandle, CURLOPT_HEADER, false );
+        
         /* Execute the cURL request, get the XML response */
         $responseXML = curl_exec( $cURLHandle );
-        /* Check for cURL errors */
-        if ( curl_errno( $cURLHandle ) != CURLE_OK ) {
-            throw new Exception( 'cURL Error: ' . curl_error( $cURLHandle ) );
-        }
-        /* Check for HTTP errors */
-        $httpResponse = curl_getinfo( $cURLHandle, CURLINFO_HTTP_CODE );
-        $curlInfo = curl_getinfo( $cURLHandle );
-        $curlErrNo = curl_errno( $cURLHandle );
-        curl_close( $cURLHandle );
 
         $this->logger->debug( 'Executed a SOAP request in ' . ( microtime( true ) - $measureStart ) . ' seconds', [
             'request' => $content,
             'response' => $responseXML,
         ] );
+      
+        /* Check for HTTP errors */
+        $httpResponse = curl_getinfo( $cURLHandle, CURLINFO_HTTP_CODE );
+        $curlError = curl_error( $cURLHandle );
+        $curlInfo = curl_getinfo( $cURLHandle );
+        $curlErrNo = curl_errno( $cURLHandle );
+        curl_close( $cURLHandle );
+
+        /* Check for cURL errors */
+        if ( $curlErrNo != CURLE_OK ) {
+            $this->logger->error( 'Received a curl error calling SOAP service.', [ 'curl' => $curlInfo, 'curlErrNo' => $curlErrNo ] );
+            throw new Exception( 'cURL Error: ' . $curlErrNo . ', ' . $curlError );
+        }
 
         if ( empty( $responseXML ) ) {
-            $this->logger->error( 'Received an empty response from the SOAP service.', [ 'curl' => $curlInfo, 'curlErrNo' => $curlErrNo, 'request' => $content ] );
+            $this->logger->error( 'Received an empty response from the SOAP service.', [ 'curl' => $curlInfo, 'curlErrNo' => $curlErrNo ] );
             throw new Exception( 'Empty response from the SOAP service.' );
         }
 
