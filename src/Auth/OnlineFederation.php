@@ -160,8 +160,7 @@ class OnlineFederation extends Authentication {
             </u:Timestamp>
             <o:UsernameToken u:Id="uuid-317d2e39-d05c-46d6-ac19-b43ffe24d6b6-25">
                 <o:Username>{$encUsername}</o:Username>
-                <o:Password
-                        Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">{$encPassword}</o:Password>
+                <o:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText">{$encPassword}</o:Password>
             </o:UsernameToken>
         </o:Security>
     </s:Header>

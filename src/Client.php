@@ -1075,7 +1075,7 @@ class Client extends AbstractClient {
         curl_setopt( $cURLHandle, CURLOPT_FOLLOWLOCATION, true ); // follow redirects
         curl_setopt( $cURLHandle, CURLOPT_POSTREDIR, 7 ); // 1 | 2 | 4 (301, 302, 303 redirects mask)
         curl_setopt( $cURLHandle, CURLOPT_HEADER, false );
-        
+
         /* Execute the cURL request, get the XML response */
         $responseXML = curl_exec( $cURLHandle );
 
@@ -1083,7 +1083,7 @@ class Client extends AbstractClient {
             'request' => $content,
             'response' => $responseXML,
         ] );
-      
+
         /* Check for HTTP errors */
         $httpResponse = curl_getinfo( $cURLHandle, CURLINFO_HTTP_CODE );
         $curlError = curl_error( $cURLHandle );
