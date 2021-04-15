@@ -698,6 +698,10 @@ class SoapRequestsGenerator {
                     case 'double':
                         /* No special handling for these types */
                         break;
+                    case 'endpointaccesstype':
+						$xmlType = 'EndpointAccessType';
+						$xmlTypeNS = 'http://schemas.microsoft.com/xrm/2014/Contracts';
+						break;
                     default:
                         /* If we're using Default, Warn user that the XML handling is not defined */
                         trigger_error( 'No Create/Update handling implemented for type ' . $xmlType . ' used by field ' . $parameter["key"], E_USER_WARNING );
