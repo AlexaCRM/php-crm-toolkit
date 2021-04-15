@@ -910,19 +910,90 @@ class Client extends AbstractClient {
         return $organizationDetails;
     }
 
-    public function retrieveOrganization( $webApplicationUrl ) {
-        $organizationDetails = null;
-        $parsedUrl           = parse_url( $webApplicationUrl );
+    public function retrieveOrganization( $webApplicationUrl = null ) {
+        $organization = null;
+        //$parsedUrl           = parse_url( $webApplicationUrl );
 
-        $organizations = $this->retrieveOrganizations();
+        $parameters = array(
+            array(
+                'key'   => 'AccessType',
+                'value' => 'Default',
+                'type'  => 'EndpointAccessType'
+            )
+        );
 
-        foreach ( $organizations as $organization ) {
-            if ( substr_count( $organization["Endpoints"]["WebApplication"], $parsedUrl["host"] ) ) {
-                $organizationDetails = $organization;
+        try {
+            /* Generate the XML for the Body of a Execute Action request */
+            $executeActionNode = SoapRequestsGenerator::generateExecuteActionRequest( 'RetrieveCurrentOrganization', $parameters, null );
+
+            $this->logger->debug( 'Executing Execute request', ['request' => $executeActionNode->C14N() ] );
+
+            $soapResponse = $this->attemptSoapResponse( 'organization', function() use ( $executeActionNode ) {
+                return $this->generateSoapRequest( 'organization', 'Execute', $executeActionNode );
+            } );
+
+            $this->logger->debug( 'Finished executing Execute request', [ 'response' => $soapResponse ] );
+
+            /* Load the XML into a DOMDocument */
+            $soapResponseDOM = new DOMDocument();
+            $soapResponseDOM->loadXML( $soapResponse );
+            /* Find the UpdateResponse */
+            $executeResultNode = null;
+            foreach ( $soapResponseDOM->getElementsByTagName( 'ExecuteResult' ) as $node ) {
+                $executeResultNode = $node;
+                break;
             }
+            unset( $node );
+            if ( $executeResultNode == null ) {
+                throw new Exception( 'Could not find ExecuteResult node in XML returned from Server' );
+            }
+            $keyValueNode = $executeResultNode->getElementsByTagName( 'KeyValuePairOfstringanyType' );
+            if ( $keyValueNode == null ) {
+                throw new Exception( 'Could not find KeyValuePairOfstringanyType node in XML returned from Server' );
+            }
+            $organizationNode = $keyValueNode->item( 0 )->getElementsByTagName( 'value' )->item( 0 );
+            if ( $organizationNode == null ) {
+                throw new Exception( 'Could not find OrganizationDetails node in XML returned from Server' );
+            }
+
+            $organization = array();
+            foreach ( $organizationNode->getElementsByTagName( 'Endpoints' )->item( 0 )->getElementsByTagName( 'KeyValuePairOfEndpointTypestringyDL0RVHi' ) as $endpointDOM ) {
+                $organization["Endpoints"][ $endpointDOM->getElementsByTagName( 'key' )->item( 0 )->textContent ] = $endpointDOM->getElementsByTagName( 'value' )->item( 0 )->textContent;
+            }
+
+            if ( $organizationNode->getElementsByTagName( 'FriendlyName' )->length > 0 ) {
+                $organization["FriendlyName"] = $organizationNode->getElementsByTagName( 'FriendlyName' )->item( 0 )->textContent;
+            }
+
+            if ( $organizationNode->getElementsByTagName( 'OrganizationId' )->length > 0 ) {
+                $organization["OrganizationId"] = $organizationNode->getElementsByTagName( 'OrganizationId' )->item( 0 )->textContent;
+            }
+
+            if ( $organizationNode->getElementsByTagName( 'OrganizationVersion' )->length > 0 ) {
+                $organization["OrganizationVersion"] = $organizationNode->getElementsByTagName( 'OrganizationVersion' )->item( 0 )->textContent;
+            }
+
+            if ( $organizationNode->getElementsByTagName( 'State' )->length > 0 ) {
+                $organization["State"] = $organizationNode->getElementsByTagName( 'State' )->item( 0 )->textContent;
+            }
+
+            if ( $organizationNode->getElementsByTagName( 'UniqueName' )->length > 0 ) {
+                $organization["UniqueName"] = $organizationNode->getElementsByTagName( 'UniqueName' )->item( 0 )->textContent;
+            }
+
+            if ( $organizationNode->getElementsByTagName( 'UrlName' )->length > 0 ) {
+                $organization["UrlName"] = $organizationNode->getElementsByTagName( 'UrlName' )->item( 0 )->textContent;
+            }
+        } catch ( Exception $ex ) {
+            $this->logger->error( 'Caught exception during Execute request', [ 'exception' => $ex ] );
+            throw $ex;
         }
 
-        return $organizationDetails;
+/*        if ( substr_count( $organization["Endpoints"]["WebApplication"], $parsedUrl["host"] ) ) {
+            $organizationDetails = $organization;
+        }
+*/
+        return $organization;
     }
 
     /**
