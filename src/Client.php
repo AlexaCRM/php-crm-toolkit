@@ -163,7 +163,12 @@ class Client extends AbstractClient {
             $this->soapActions = new SoapActions( $this );
 
             if ( !$this->settings->hasOrganizationData() ) {
-                $organizationDetails                    = $this->retrieveOrganization( $this->settings->serverUrl );
+                if ( $this->settings->useDiscovery ) {
+                    $organizationDetails = $this->retrieveOrganization( $this->settings->serverUrl );
+                } else {
+                    $organizationDetails = $this->retrieveOrganizationNoDiscovery();
+                }
+
                 $this->settings->organizationId         = $organizationDetails['OrganizationId'];
                 $this->settings->organizationName       = $organizationDetails['FriendlyName'];
                 $this->settings->organizationUniqueName = $organizationDetails['UniqueName'];
@@ -919,14 +924,37 @@ class Client extends AbstractClient {
     }
 
     /**
-     * Retrieve organization data.
+     * Retrieve organization using Discovery service.
+     * Deprecated due to Discovery service deprecation since April 21, 2021.
      *
-     * @param string $webApplicationUrl Deprecated.
+     * @param $webApplicationUrl
+     *
+     * @return mixed|null
+     * @throws InvalidSecurityException
+     * @deprecated
+     */
+    public function retrieveOrganization( $webApplicationUrl ) {
+        $organizationDetails = null;
+        $parsedUrl           = parse_url( $webApplicationUrl );
+
+        $organizations = $this->retrieveOrganizations();
+
+        foreach ( $organizations as $organization ) {
+            if ( substr_count( $organization["Endpoints"]["WebApplication"], $parsedUrl["host"] ) ) {
+                $organizationDetails = $organization;
+            }
+        }
+
+        return $organizationDetails;
+    }
+
+    /**
+     * Retrieve organization data using RetrieveCurrentOrganizationRequest.
      *
      * @return array
      * @throws InvalidSecurityException
      */
-    public function retrieveOrganization( $webApplicationUrl = null ) {
+    public function retrieveOrganizationNoDiscovery() {
         $organization = null;
 
         $parameters = array(

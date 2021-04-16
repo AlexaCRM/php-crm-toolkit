@@ -87,6 +87,13 @@ class Settings {
     public $discoveryUrl;
 
     /**
+     * Determines whether to use the Discovery Service.
+     *
+     * @var bool
+     */
+    public $useDiscovery;
+
+    /**
      * Organization Service Url
      *
      * @var string
@@ -245,6 +252,8 @@ class Settings {
             if ( isset( $settings['strictFederatedSTS'] ) ) {
                 $this->strictFederatedSTS = $settings['strictFederatedSTS'];
             }
+
+            $this->useDiscovery = false;
         } elseif ( $this->authMode === 'Federation' ) {
             $this->crmRegion = null; // not applicable
 
@@ -253,6 +262,8 @@ class Settings {
             $this->discoveryUrl        = sprintf( '%s://%s%s/XRMServices/2011/Discovery.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             $this->organizationUrl     = sprintf( '%s://%s%s/XRMServices/2011/Organization.svc', $serverUrlParts['scheme'], $serverUrlParts['host'], $urlPort );
             // loginUrl is set upon Client instantiation
+
+            $this->useDiscovery = isset( $settings['useDiscovery'] ) ? $settings['useDiscovery'] : true;
         }
 
         // Set the custom CA bundle path.
