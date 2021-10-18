@@ -20,6 +20,7 @@ namespace AlexaCRM\CRMToolkit;
 use AlexaCRM\CRMToolkit\Auth\Authentication;
 use AlexaCRM\CRMToolkit\Auth\Federation;
 use AlexaCRM\CRMToolkit\Auth\OnlineFederation;
+use AlexaCRM\CRMToolkit\Auth\OnlineS2SAuth;
 use AlexaCRM\CRMToolkit\Entity\EntityReference;
 use BadMethodCallException;
 use DOMDocument;
@@ -48,7 +49,7 @@ class Client extends AbstractClient {
     /**
      * Object of settings class
      *
-     * @var Settings
+     * @var AbstractSettings
      */
     public $settings;
 
@@ -124,18 +125,31 @@ class Client extends AbstractClient {
     public $callerAADObjectId = null;
 
     /**
+     * @var bool
+     */
+    private $useSharedSecredAuth;
+
+    /**
+     * @var string
+     */
+    private $currentSoapAction;
+
+    /**
      * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
      *
-     * @param Settings $settings
+     * @param AbstractSettings $settings
      * @param CacheInterface $cache
      * @param LoggerInterface $logger
      *
      * @throws Exception
      */
-    function __construct( Settings $settings, CacheInterface $cache = null, LoggerInterface $logger = null ) {
+    function __construct( AbstractSettings $settings, CacheInterface $cache = null, LoggerInterface $logger = null ) {
         try {
             // Create settings object
             $this->settings = $settings;
+
+            // Whether we use an AppID + SharedSecret method
+            $this->useSharedSecredAuth = $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE;
 
             // Inject CacheInterface implementation
             $this->cache = $cache;
@@ -153,6 +167,9 @@ class Client extends AbstractClient {
 
             /* If either mandatory parameter is NULL, throw an Exception */
             if ( !$this->checkConnectionSettings() ) {
+                if ( $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE ){
+                    throw new BadMethodCallException( get_class( $this ) . ' requires Application ID and Client Secret' );
+                }
                 switch ( $this->settings->authMode ) {
                     case "OnlineFederation":
                         throw new BadMethodCallException( get_class( $this ) . ' constructor requires Username and Password' );
@@ -163,8 +180,11 @@ class Client extends AbstractClient {
             /* Create authentication class to connect to CRM Online or Internet facing deployment via ADFS */
             switch ( $this->settings->authMode ) {
                 case "OnlineFederation":
-                    $this->authentication = new OnlineFederation( $this->settings, $this );
-                    break;
+	                if ( isset( $this->settings->authMethod ) && $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE ) {
+		                $this->authentication = new OnlineS2SAuth( $this->settings, $this );
+	                } else {
+		                $this->authentication = new OnlineFederation( $this->settings, $this );
+	                }                    break;
                 case "Federation":
                     $this->settings->loginUrl = $this->getFederationSecurityURI( 'organization' );
                     $this->authentication     = new Federation( $this->settings, $this );
@@ -1135,16 +1155,14 @@ class Client extends AbstractClient {
      */
     private static function formatHeaders( $soapUrl, $content, $requestType = "POST" ) {
         $scheme = parse_url( $soapUrl );
-        /* Setup headers array */
-        $headers = array(
-            $requestType . " " . $scheme["path"] . " HTTP/1.1",
-            "Host: " . $scheme["host"],
-            'Connection: Keep-Alive',
-            "Content-type: application/soap+xml; charset=UTF-8",
-            "Content-length: " . strlen( $content ),
-        );
 
-        return $headers;
+        return [
+            '' => $requestType . " " . $scheme["path"] . " HTTP/1.1",
+            'Host' => $scheme['host'],
+            'Connection' => 'Keep-Alive',
+            'Content-type' => 'application/soap+xml; charset=UTF-8',
+            'Content-length' => strlen( $content ),
+        ];
     }
 
     /**
@@ -1164,6 +1182,20 @@ class Client extends AbstractClient {
 
         /* Format cUrl headers */
         $headers = self::formatHeaders( $soapUrl, $content );
+
+        if ( $this->useSharedSecredAuth ){
+            $token = $this->authentication->acquireToken();
+            $soapUrlParsed = parse_url($soapUrl);
+            $resourceUrlParsed = parse_url($token->resource);
+
+            $headers[''] = 'POST /XRMServices/2011/Organization.svc/web HTTP/1.1';
+            $headers['Authorization'] = 'Bearer ' . $token->token;
+            $headers['Host'] = $resourceUrlParsed["host"];
+            $headers['Content-type'] = 'text/xml; charset=utf-8';
+            $headers['SOAPAction'] = $this->currentSoapAction;
+
+            $soapUrl = $soapUrlParsed["scheme"] . '://' . parse_url($token->resource)["host"] . $soapUrlParsed["path"] . '/web';
+        }
 
         $cURLHandle = curl_init();
         curl_setopt( $cURLHandle, CURLOPT_URL, $soapUrl );
@@ -1187,6 +1219,14 @@ class Client extends AbstractClient {
         if( $this->settings->proxy ) {
           curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
         }
+
+        $headers = array_map(
+            function ( $key, $value ) {
+                return !empty( $key ) ? "$key: $value" : $value;
+            },
+            array_keys( $headers ),
+            array_values( $headers )
+        );
 
         curl_setopt( $cURLHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
         curl_setopt( $cURLHandle, CURLOPT_HTTPHEADER, $headers );
@@ -1226,7 +1266,7 @@ class Client extends AbstractClient {
         $responseDOM = new DOMDocument();
         $responseDOM->loadXML( $responseXML );
         /* Check we have a SOAP Envelope */
-        if ( $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->length < 1 ) {
+        if ( !$this->useSharedSecredAuth && $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->length < 1 ) {
             throw new Exception( 'Invalid SOAP Response: HTTP Response ' . $httpResponse . PHP_EOL . $responseXML );
         }
         /* Authentication error */
@@ -1237,18 +1277,23 @@ class Client extends AbstractClient {
             }
         }
         /* Check we have a SOAP Header */
-        if ( $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
+        if ( !$this->useSharedSecredAuth && $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
                          ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Header' )->length < 1
         ) {
             throw new Exception( 'Invalid SOAP Response: No SOAP Header! ' . PHP_EOL . $responseXML );
         }
         /* Get the SOAP Action */
         $actionString = '';
-        $actionNode = $responseDOM->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
-                                    ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Header' )->item( 0 )
-                                    ->getElementsByTagNameNS( 'http://www.w3.org/2005/08/addressing', 'Action' )->item( 0 );
-        if ( $actionNode instanceof DOMNode ) {
-            $actionString = $actionNode->textContent;
+
+        if (!$this->useSharedSecredAuth) {
+            $actionNode = $responseDOM
+                ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Envelope' )->item( 0 )
+                ->getElementsByTagNameNS( 'http://www.w3.org/2003/05/soap-envelope', 'Header' )->item( 0 )
+                ->getElementsByTagNameNS( 'http://www.w3.org/2005/08/addressing', 'Action' )->item( 0 );
+
+            if ( $actionNode instanceof DOMNode ) {
+                $actionString = $actionNode->textContent;
+            }
         }
 
         /* Handle known Error Actions */
@@ -1300,12 +1345,21 @@ class Client extends AbstractClient {
      */
     public function generateSoapRequest( $service, $soapAction, DOMNode $bodyContentNode ) {
         $soapRequestDOM = new DOMDocument();
-        $soapEnvelope   = $soapRequestDOM->appendChild( $soapRequestDOM->createElementNS( 'http://www.w3.org/2003/05/soap-envelope', 's:Envelope' ) );
-        $soapEnvelope->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:a', 'http://www.w3.org/2005/08/addressing' );
-        $soapEnvelope->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:u', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd' );
-        /* Get the SOAP Header */
-        $soapHeaderNode = $this->generateSoapHeader( $service, $soapAction );
-        $soapEnvelope->appendChild( $soapRequestDOM->importNode( $soapHeaderNode, true ) );
+
+        if ( $this->useSharedSecredAuth ) {
+            $soapEnvelope   = $soapRequestDOM->appendChild( $soapRequestDOM->createElementNS( 'http://schemas.xmlsoap.org/soap/envelope/', 's:Envelope' ) );
+
+            $soapHeaderNode = $this->generateSoapHeaderV9( $service, $soapAction );
+            $soapEnvelope->appendChild( $soapRequestDOM->importNode( $soapHeaderNode, true ) );
+        }else{
+            $soapEnvelope   = $soapRequestDOM->appendChild( $soapRequestDOM->createElementNS( 'http://www.w3.org/2003/05/soap-envelope', 's:Envelope' ) );
+            $soapEnvelope->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:a', 'http://www.w3.org/2005/08/addressing' );
+            $soapEnvelope->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:u', 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd' );
+
+            $soapHeaderNode = $this->generateSoapHeader( $service, $soapAction );
+            $soapEnvelope->appendChild( $soapRequestDOM->importNode( $soapHeaderNode, true ) );
+        }
+
         /* Create the SOAP Body */
         $soapBodyNode = $soapEnvelope->appendChild( $soapRequestDOM->createElement( 's:Body' ) );
         $soapBodyNode->appendChild( $soapRequestDOM->importNode( $bodyContentNode, true ) );
@@ -1354,6 +1408,28 @@ class Client extends AbstractClient {
         return $headerNode;
     }
 
+    protected function generateSoapHeaderV9( $service, $soapAction ) {
+        // SOAP Action URI
+        $this->currentSoapAction = $this->soapActions->getSoapAction( $service, $soapAction );
+
+        $soapHeaderDOM = new DOMDocument();
+        $headerNode    = $soapHeaderDOM->appendChild( $soapHeaderDOM->createElement( 's:Header' ) );
+
+        $headerNode->appendChild( $soapHeaderDOM->createElement( 'UserType', "CrmUser" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        $headerNode->appendChild( $soapHeaderDOM->createElement( 'SdkClientVersion', "9.2.46.5279" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        $headerNode->appendChild( $soapHeaderDOM->createElement( 'x-ms-client-request-id', "330e0f1b-dd05-4b03-b29d-ebebae3fa039" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+
+        if ( !empty( $this->callerId ) ) {
+            $headerNode->appendChild( $soapHeaderDOM->createElement( 'MSCRMCallerID', $this->callerId ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        }
+
+        if ( !empty( $this->callerAADObjectId ) ) {
+            $headerNode->appendChild( $soapHeaderDOM->createElement( 'CallerObjectId', $this->callerAADObjectId ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        }
+
+        return $headerNode;
+    }
+
     /**
      * Utility function that checks base CRM Connection settings
      * Checks the Discovery URL, username and password in provided settings and verifies all the necessary data exists
@@ -1362,13 +1438,19 @@ class Client extends AbstractClient {
      * @ignore
      */
     private function checkConnectionSettings() {
-        /* username and password are common for authentication modes */
-        if ( $this->settings->username == null || $this->settings->password == null ) {
-            return false;
-        }
-        if ( $this->settings->authMode == "Federation" && $this->settings->discoveryUrl == null ) {
-            return false;
-        }
+	    if ( isset( $this->settings->authMethod ) && $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE ) {
+		    if ( $this->settings->applicationId == null || $this->settings->clientSecret == null ) {
+			    return false;
+		    }
+	    } else {
+		    /* username and password are common for authentication modes */
+		    if ( $this->settings->username == null || $this->settings->password == null ) {
+			    return false;
+		    }
+		    if ( $this->settings->authMode == "Federation" && $this->settings->discoveryUrl == null ) {
+			    return false;
+		    }
+	    }
 
         return true;
     }

@@ -17,6 +17,7 @@
 
 namespace AlexaCRM\CRMToolkit\Auth;
 
+use AlexaCRM\CRMToolkit\AbstractSettings;
 use AlexaCRM\CRMToolkit\Client;
 use AlexaCRM\CRMToolkit\InvalidSecurityException;
 use AlexaCRM\CRMToolkit\SecurityToken;
@@ -31,14 +32,13 @@ class OnlineFederation extends Authentication {
     /**
      * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
      *
-     * @param Settings $settings
+     * @param AbstractSettings $settings
      * @param Client $client
      *
      * @throws \Exception Thrown if TLS 1.2 is not supported by the environment.
      */
-    public function __construct( Settings $settings, Client $client ) {
+    public function __construct( AbstractSettings $settings, Client $client ) {
         parent::__construct( $settings, $client );
-
         $curlVersion = curl_version();
         if ( version_compare( $curlVersion['version'], '7.34', '<' ) || !defined( 'CURL_SSLVERSION_TLSv1_2' ) ) {
             $client->logger->critical( 'TLS v1.2 might not be supported by cURL', [ 'curlVersion' => $curlVersion, 'CURL_SSLVERSION_TLSv1_2' => defined( 'CURL_SSLVERSION_TLSv1_2' ) ] );
