@@ -114,6 +114,16 @@ class Client extends AbstractClient {
     public $logger;
 
     /**
+     * @var string
+     */
+    public $callerId = null;
+
+    /**
+     * @var string
+     */
+    public $callerAADObjectId = null;
+
+    /**
      * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
      *
      * @param Settings $settings
@@ -1332,6 +1342,14 @@ class Client extends AbstractClient {
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:To', $serviceEndpoint ) )->setAttribute( 's:mustUnderstand', '1' );
         $securityHeaderNode = $this->authentication->generateTokenHeader( $service );
         $headerNode->appendChild( $soapHeaderDOM->importNode( $securityHeaderNode, true ) );
+
+        if ( !empty( $this->callerId ) ) {
+            $headerNode->appendChild( $soapHeaderDOM->createElement( 'MSCRMCallerID', $this->callerId ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        }
+
+        if ( !empty( $this->callerAADObjectId ) ) {
+            $headerNode->appendChild( $soapHeaderDOM->createElement( 'CallerObjectId', $this->callerAADObjectId ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        }
 
         return $headerNode;
     }
