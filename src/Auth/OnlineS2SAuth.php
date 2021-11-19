@@ -104,22 +104,6 @@ class OnlineS2SAuth {
 	}
 
 	/**
-	 * Constructs an HTTP client for the middleware.
-	 */
-	protected function getHttpClient() {
-		if ( $this->httpClient instanceof HttpClient ) {
-			return $this->httpClient;
-		}
-
-		$this->httpClient = new HttpClient( [
-			'verify' => $this->settings->caPath,
-		] );
-
-		return $this->httpClient;
-	}
-
-
-	/**
 	 * Detects the instance tenant ID by probing the API without authorization.
 	 *
 	 * @param string $endpointUri
@@ -157,13 +141,13 @@ class OnlineS2SAuth {
 			foreach($data as $part){
 				$middle = explode(":",$part,2);
 				if ( !isset($middle[1]) ) { $middle[1] = null; }
-				$headers[trim($middle[0])] = trim($middle[1]);
+				$headers[ strtolower(trim($middle[0])) ] = trim($middle[1]);
 			}
 		} catch ( HttpClientException $e ) {
 			// Always returns 401 Unauthorized, but we only need 'WWW-Authenticate' header to use it below
 		}
 
-		preg_match( '~/([a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12})/~', $headers['WWW-Authenticate'], $tenantMatch );
+		preg_match( '~/([a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12})/~', $headers['www-authenticate'], $tenantMatch );
 		$tenantID = $tenantMatch[1];
 
 		$this->client->logger->debug( "Probed {$endpointUri} for tenant ID {{$tenantID}}" );
