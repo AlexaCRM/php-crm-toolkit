@@ -432,7 +432,21 @@ class Entity extends EntityReference {
      */
     public function __toString() {
         /* Does this Entity have a DisplayName part? */
-        return ( $this->propertyValues[ $this->metadata()->primaryNameAttribute ]['Value'] );
+        $primaryNameAttribute = $this->metadata()->primaryNameAttribute;
+
+        if ( empty( $primaryNameAttribute ) ) {
+            return '';
+        }
+
+        if ( empty( $this->propertyValues[ $primaryNameAttribute ] ) ) {
+            return '';
+        }
+
+        if ( empty( $this->propertyValues[ $primaryNameAttribute ]['Value'] ) ) {
+            return '';
+        }
+
+        return ( $this->propertyValues[ $primaryNameAttribute ]['Value'] );
     }
 
     /**
