@@ -17,6 +17,7 @@
 
 namespace AlexaCRM\CRMToolkit;
 
+use AlexaCRM\CRMToolkit\Entity\Attribute;
 use AlexaCRM\CRMToolkit\Entity\EntityReference;
 use DOMDocument;
 use DOMNode;
@@ -100,6 +101,7 @@ class SoapRequestsGenerator {
         $attributeNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic' );
 
         foreach ( $entity->properties as $property => $propertyDetails ) {
+            /** @var Attribute $propertyDetails */
             /* Only include changed properties */
             if ( $entity->propertyValues[ $property ]['Changed'] ) {
                 /* Create a Key/Value Pair of String/Any Type */
@@ -141,6 +143,7 @@ class SoapRequestsGenerator {
                         $valueNode->setAttribute( 'i:nil', 'true' );
                     }
                 } else if ( strtolower( $propertyDetails->type ) == "picklist" ) {
+                    /* $property is OptionSetValue */
                     $valueNode = $propertyNode->appendChild( $executeActionRequestDOM->createElement( 'c:value' ) );
 
                     if ( $entity->propertyValues[ $property ]['Value'] ) {
@@ -151,6 +154,32 @@ class SoapRequestsGenerator {
                             $val = $val->value;
                         }
                         $valueNode->appendChild( $executeActionRequestDOM->createElement( 'b:Value', $val ) );
+                    } else {
+                        $valueNode->setAttribute( 'i:nil', 'true' );
+                    }
+                } elseif (
+                    strtolower( $propertyDetails->type ) == "virtual"
+                    && !empty( $propertyDetails->optionSet )
+                    && strtolower( $propertyDetails->optionSet->type ) == 'picklist'
+                ) {
+                    /* $property is OptionSetValueCollection */
+                    $valueNode = $propertyNode->appendChild( $executeActionRequestDOM->createElement( 'c:value' ) );
+
+                    if ( $entity->propertyValues[ $property ]['Value'] ) {
+                        $valueNode->setAttribute( 'i:type', 'd:OptionSetValueCollection' );
+                        $valueNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://schemas.microsoft.com/xrm/9.0/Contracts' );
+
+                        $val = $entity->propertyValues[ $property ]['Value'];
+                        if ( $val instanceof OptionSetValueCollection ) {
+                            $val = $val->value;
+                        }
+
+                        foreach ($val as $v){
+                            $vNode = $executeActionRequestDOM->createElement( 'b:Value', $v );
+                            $osNode = $executeActionRequestDOM->createElement( 'd:OptionSetValue' );
+                            $osNode->appendChild( $vNode );
+                            $valueNode->appendChild( $osNode );
+                        }
                     } else {
                         $valueNode->setAttribute( 'i:nil', 'true' );
                     }

@@ -11,6 +11,14 @@ use Psr\Log\LoggerInterface;
  * @package AlexaCRM\CRMToolkit
  */
 abstract class AbstractSettings {
+
+    /**
+     * Force using specific client version for connection.
+     *
+     * @var string
+     */
+    public $clientVersion = null;
+
 	/**
 	 * Type of online authentication. Can be 'defaultAuth' or 'secretShared'
 	 * Used only when $authMode === 'OnlineFederation'

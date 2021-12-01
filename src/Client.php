@@ -39,6 +39,10 @@ use stdClass;
  */
 class Client extends AbstractClient {
 
+    const ONLINE_CLIENT_VERSION = '9.1';
+
+    const ONPREMISES_CLIENT_VERSION = '8.1.0.383';
+
     /**
      * Object of authentication class
      *
@@ -1381,6 +1385,14 @@ class Client extends AbstractClient {
             $serviceEndpoint = $this->settings->discoveryUrl;
         }
 
+        if ( !empty( $this->settings->clientVersion ) ) {
+            $clientVersion = $this->settings->clientVersion;
+        } else {
+            $clientVersion = $this->settings->authMode == 'OnlineFederation'
+                ? self::ONLINE_CLIENT_VERSION
+                : self::ONPREMISES_CLIENT_VERSION;
+        }
+
         // SOAP Action URI
         $actionUri = $this->soapActions->getSoapAction( $service, $soapAction );
 
@@ -1388,7 +1400,7 @@ class Client extends AbstractClient {
         $headerNode    = $soapHeaderDOM->appendChild( $soapHeaderDOM->createElement( 's:Header' ) );
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:Action', $actionUri ) )->setAttribute( 's:mustUnderstand', '1' );
 
-        $headerNode->appendChild( $soapHeaderDOM->createElement( 'SdkClientVersion', "8.1.0.383" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        $headerNode->appendChild( $soapHeaderDOM->createElement( 'SdkClientVersion', $clientVersion ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'UserType', "CrmUser" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
 
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'a:ReplyTo' ) )->appendChild( $soapHeaderDOM->createElement( 'a:Address', 'http://www.w3.org/2005/08/addressing/anonymous' ) );
@@ -1408,7 +1420,20 @@ class Client extends AbstractClient {
         return $headerNode;
     }
 
+    /**
+     * Generate a Soap Header only to use with SharedSecret auth method.
+     *
+     * @param $service
+     * @param $soapAction
+     *
+     * @return DOMElement|DOMNode|false
+     * @throws \DOMException
+     */
     protected function generateSoapHeaderV9( $service, $soapAction ) {
+        $clientVersion = !empty( $this->settings->clientVersion )
+            ? $this->settings->clientVersion
+            : self::ONLINE_CLIENT_VERSION;
+
         // SOAP Action URI
         $this->currentSoapAction = $this->soapActions->getSoapAction( $service, $soapAction );
 
@@ -1416,7 +1441,7 @@ class Client extends AbstractClient {
         $headerNode    = $soapHeaderDOM->appendChild( $soapHeaderDOM->createElement( 's:Header' ) );
 
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'UserType', "CrmUser" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
-        $headerNode->appendChild( $soapHeaderDOM->createElement( 'SdkClientVersion', "9.2.46.5279" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
+        $headerNode->appendChild( $soapHeaderDOM->createElement( 'SdkClientVersion', $clientVersion ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
         $headerNode->appendChild( $soapHeaderDOM->createElement( 'x-ms-client-request-id', "330e0f1b-dd05-4b03-b29d-ebebae3fa039" ) )->setAttribute( 'xmlns', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
 
         if ( !empty( $this->callerId ) ) {

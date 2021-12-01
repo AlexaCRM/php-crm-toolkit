@@ -316,6 +316,7 @@ class Entity extends EntityReference {
                         }
                     }
                 }
+
                 /* Handle passing an Integer value */
                 if ( is_int( $value ) || is_bool( $value ) ) {
                     /* Look for an option with this value */
@@ -324,6 +325,7 @@ class Entity extends EntityReference {
                         $optionSetValue = new OptionSetValue( (int)$value, $this->attributes[ $property ]->optionSet->options[ (int)$value ] );
                     }
                 }
+
                 /* Handle passing an OptionSetValue */
                 if ( $value instanceof OptionSetValue ) {
                     /* Check it's a valid option (by Value) */
@@ -332,6 +334,39 @@ class Entity extends EntityReference {
                         $optionSetValue = $value;
                     }
                 }
+
+                /* Handle passing an Array */
+                if ( is_array( $value ) ) {
+                    $collection = [];
+
+                    foreach ( $value as $v ) {
+                        if ( array_key_exists( (int)$v, $this->attributes[ $property ]->optionSet->options ) ) {
+                            $collection[] = (int)$v;
+                        }
+                    }
+
+                    if ( !empty( $collection ) ) {
+                        $label = array_filter(
+                            $this->metadata()->attributes[ $property ]->optionSet->options,
+                            function ( $k ) use ($collection) {
+                                return in_array($k, $collection);
+                            },
+                            ARRAY_FILTER_USE_KEY
+                        );
+
+                        $optionSetValue = new OptionSetValueCollection( $collection, implode('; ', $label) );
+                    }
+                }
+
+                /* Handle passing an OptionSetValueCollection */
+                if ( $value instanceof OptionSetValueCollection ) {
+                    $unexistedValues = array_diff( $value->value, array_keys( $this->attributes[ $property ]->optionSet->options ) );
+                    if ( count( $unexistedValues ) == 0 ) {
+                        /* Copy the Value object */
+                        $optionSetValue = $value;
+                    }
+                }
+
                 /* Check we found a valid OptionSetValue */
                 if ( $optionSetValue != null ) {
                     /* Set the value to be retained */
@@ -636,6 +671,32 @@ class Entity extends EntityReference {
                         } else {
                             $valueNode->setAttribute( 'i:nil', 'true' );
                         }
+                    } elseif (
+                        strtolower( $propertyDetails->type ) == "virtual"
+                        && !empty( $propertyDetails->optionSet )
+                        && strtolower( $propertyDetails->optionSet->type ) == 'picklist'
+                    ) {
+                        /* $property is OptionSetValueCollection */
+                        $valueNode = $propertyNode->appendChild( $entityDOM->createElement( 'c:value' ) );
+
+                        if ( $this->propertyValues[ $property ]['Value'] ) {
+                            $valueNode->setAttribute( 'i:type', 'd:OptionSetValueCollection' );
+                            $valueNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:d', 'http://schemas.microsoft.com/xrm/9.0/Contracts' );
+
+                            $val = $this->propertyValues[ $property ]['Value'];
+                            if ( $val instanceof OptionSetValueCollection ) {
+                                $val = $val->value;
+                            }
+
+                            foreach ($val as $v){
+                                $vNode = $entityDOM->createElement( 'b:Value', $v );
+                                $osNode = $entityDOM->createElement( 'd:OptionSetValue' );
+                                $osNode->appendChild( $vNode );
+                                $valueNode->appendChild( $osNode );
+                            }
+                        } else {
+                            $valueNode->setAttribute( 'i:nil', 'true' );
+                        }
                     } else if ( $propertyDetails->logicalName === 'entityimage' && strtolower( $propertyDetails->type ) === 'virtual' ) {
                         $valueNode = $propertyNode->appendChild( $entityDOM->createElement( 'c:value' ) );
 
@@ -899,6 +960,14 @@ class Entity extends EntityReference {
                                 $this->propertyValues[ $attributeKey . 'name' ]['Value'] = $formattedValues[ $attributeKey ];
                             }
                         }
+                        break;
+                    case 'OptionSetValueCollection':
+                        $value = [];
+                        $nodesList = $keyValueNode->getElementsByTagName( 'value' )->item( 0 )->getElementsByTagName( 'OptionSetValue' );
+                        foreach ( $nodesList as $node ) {
+                            $value[] = $node->getElementsByTagName( 'Value' )->item( 0 )->textContent;
+                        }
+                        $storedValue = new OptionSetValueCollection( $value, $formattedValues[ $attributeKey ] );
                         break;
                     case 'base64Binary':
                         $storedValue = $attributeValue;
@@ -1344,7 +1413,7 @@ class Entity extends EntityReference {
     }
 
     /**
-     * Converts the Entity to to a new EntityReference.
+     * Converts the Entity to a new EntityReference.
      *
      * @return EntityReference
      */
