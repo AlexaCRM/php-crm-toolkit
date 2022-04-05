@@ -24,12 +24,25 @@ use AlexaCRM\CRMToolkit\Client as OrganizationService;
 use AlexaCRM\CRMToolkit\Settings;
 
 $contactId = '1d2fc62f-1c56-448b-b546-edfb6d6fec5c';
+/* 
+* WS-Trust is now deprecated 
+
 $options = [
     'serverUrl' => 'https://org.crmN.dynamics.com',
     'username' => 'portal@org.onmicrosoft.com',
     'password' => 'portalPassword',
     'authMode' => 'OnlineFederation',
 ];
+
+*/
+
+$options = [
+	'serverUrl' => 'https://org.crmN.dynamics.com',
+	'applicationId' => '1111c62f-dead-beef-dead-edfbffffec5c',
+	'clientSecret' => 'whateveristhesecretgenerated',
+	'authMode' => 'sharedSecretAuth',
+];
+
 
 $serviceSettings = new Settings( $options );
 $service = new OrganizationService( $serviceSettings );
