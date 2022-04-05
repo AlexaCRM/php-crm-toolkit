@@ -34,17 +34,19 @@ $options = [
     'authMode' => 'OnlineFederation',
 ];
 
+$serviceSettings = new Settings( $options );
+
 */
 
 $options = [
 	'serverUrl' => 'https://org.crmN.dynamics.com',
 	'applicationId' => '1111c62f-dead-beef-dead-edfbffffec5c',
 	'clientSecret' => 'whateveristhesecretgenerated',
-	'authMode' => 'sharedSecretAuth',
+	'authMode' => 'OnlineFederation',
+	'authMethod' => 'sharedSecretAuth',
 ];
 
-
-$serviceSettings = new Settings( $options );
+$serviceSettings = new OnlineS2SSecretAuthenticationSettings( $options );
 $service = new OrganizationService( $serviceSettings );
 
 // retrieve a contact and update its fields
