@@ -44,8 +44,12 @@ $options = [
 	'clientSecret' => 'whateveristhesecretgenerated',
 	'authMode' => 'OnlineFederation',
 	'authMethod' => 'sharedSecretAuth',
+	'cache' => new AlexaCRM\CRMToolkit\NullCache(),
 ];
 
+// This code uses NullCache which allows to connect and run the operations 
+// but it is very inefficient and should not be used in production. 
+// You can use any PSR-6 compliant cache implementation. 
 $serviceSettings = new OnlineS2SSecretAuthenticationSettings( $options );
 $service = new OrganizationService( $serviceSettings );
 
