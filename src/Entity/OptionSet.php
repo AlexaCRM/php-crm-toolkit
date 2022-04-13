@@ -38,6 +38,11 @@ class OptionSet {
 
     public $localizedOptions = [];
 
+    /**
+     * @var Option[]
+     */
+    public $optionsMetadata = [];
+
     public $isGlobal;
 
     /**
@@ -63,7 +68,7 @@ class OptionSet {
         }
 
         /* Array to store the Options for this OptionSet */
-        $optionSetValues = $localizedValues = [];
+        $optionSetValues = $localizedValues = $optionsMetadata = [];
 
         switch ( $this->type ) {
             case 'Boolean':
@@ -88,11 +93,11 @@ class OptionSet {
                 /* Loop through the available Options */
                 foreach ( $optionSetNode->Options->OptionMetadata as $option ) {
                     /* Parse the Option */
-                    $value = (int) $option->Value;
-                    $label = (string) $option->Label->UserLocalizedLabel->Label[0];
+                    $value = (int)$option->Value;
+                    $label = (string)$option->Label->UserLocalizedLabel->Label[0];
                     $localizedLabels = [];
                     foreach ( $option->Label->LocalizedLabels->LocalizedLabel as $localizedLabel ) {
-                        $localizedLabels[(int)$localizedLabel->LanguageCode] = (string)$localizedLabel->Label;
+                        $localizedLabels[ (int)$localizedLabel->LanguageCode ] = (string)$localizedLabel->Label;
                     }
                     /* Check for duplicated Values */
                     if ( array_key_exists( $value, $optionSetValues ) ) {
@@ -100,7 +105,13 @@ class OptionSet {
                     } else {
                         /* Store the Option */
                         $optionSetValues[ $value ] = $label;
-                        $localizedValues[$value] = $localizedLabels;
+                        $localizedValues[ $value ] = $localizedLabels;
+
+                        $optionMd = new Option();
+                        $optionMd->Value = $value;
+                        $optionMd->State = (string)$option->State;
+                        $optionMd->DefaultStatus = (string)$option->DefaultStatus;
+                        $optionsMetadata[ $value ] = $optionMd;
                     }
                 }
                 break;
@@ -111,6 +122,7 @@ class OptionSet {
 
         $this->options = $optionSetValues;
         $this->localizedOptions = $localizedValues;
+        $this->optionsMetadata = $optionsMetadata;
     }
 
 }
