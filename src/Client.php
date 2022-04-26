@@ -184,11 +184,11 @@ class Client extends AbstractClient {
             /* Create authentication class to connect to CRM Online or Internet facing deployment via ADFS */
             switch ( $this->settings->authMode ) {
                 case "OnlineFederation":
-	                if ( isset( $this->settings->authMethod ) && $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE ) {
-		                $this->authentication = new OnlineS2SAuth( $this->settings, $this );
-	                } else {
-		                $this->authentication = new OnlineFederation( $this->settings, $this );
-	                }                    break;
+                    if ( isset( $this->settings->authMethod ) && $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE ) {
+                        $this->authentication = new OnlineS2SAuth( $this->settings, $this );
+                    } else {
+                        $this->authentication = new OnlineFederation( $this->settings, $this );
+                    }                    break;
                 case "Federation":
                     $this->settings->loginUrl = $this->getFederationSecurityURI( 'organization' );
                     $this->authentication     = new Federation( $this->settings, $this );
@@ -1211,8 +1211,8 @@ class Client extends AbstractClient {
         }
 
         if ( $this->settings->ignoreSslErrors ) {
-          curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYPEER, 0 );
-          curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
+            curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYPEER, 0 );
+            curl_setopt( $cURLHandle, CURLOPT_SSL_VERIFYHOST, 0 );
         }
 
         // enforce TLS1.2 for Online deployments
@@ -1221,7 +1221,7 @@ class Client extends AbstractClient {
         }
 
         if( $this->settings->proxy ) {
-          curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
+            curl_setopt( $cURLHandle, CURLOPT_PROXY, $this->settings->proxy );
         }
 
         $headers = array_map(
@@ -1463,19 +1463,19 @@ class Client extends AbstractClient {
      * @ignore
      */
     private function checkConnectionSettings() {
-	    if ( isset( $this->settings->authMethod ) && $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE ) {
-		    if ( $this->settings->applicationId == null || $this->settings->clientSecret == null ) {
-			    return false;
-		    }
-	    } else {
-		    /* username and password are common for authentication modes */
-		    if ( $this->settings->username == null || $this->settings->password == null ) {
-			    return false;
-		    }
-		    if ( $this->settings->authMode == "Federation" && $this->settings->discoveryUrl == null ) {
-			    return false;
-		    }
-	    }
+        if ( isset( $this->settings->authMethod ) && $this->settings->authMethod === OnlineS2SSecretAuthenticationSettings::SETTINGS_TYPE ) {
+            if ( $this->settings->applicationId == null || $this->settings->clientSecret == null ) {
+                return false;
+            }
+        } else {
+            /* username and password are common for authentication modes */
+            if ( $this->settings->username == null || $this->settings->password == null ) {
+                return false;
+            }
+            if ( $this->settings->authMode == "Federation" && $this->settings->discoveryUrl == null ) {
+                return false;
+            }
+        }
 
         return true;
     }
@@ -1930,8 +1930,14 @@ class Client extends AbstractClient {
             break;
         }
         unset( $node );
+
         if ( $createResponseNode == null ) {
-            throw new Exception( 'Could not find CreateResponse node in XML returned from Server' );
+            $errorMessage = $this->searchErrorMessage( $soapResponseDOM );
+            if ( $errorMessage === null ) {
+                $errorMessage = 'Could not find CreateResponse node in XML returned from Server';
+            }
+
+            throw new Exception( $errorMessage );
         }
         /* Get the EntityID from the CreateResult tag */
         $entityID   = $createResponseNode->getElementsByTagName( 'CreateResult' )->item( 0 )->textContent;
@@ -2214,7 +2220,7 @@ class Client extends AbstractClient {
             }
 
             if( $this->settings->proxy ) {
-              curl_setopt( $wsdlCurl, CURLOPT_PROXY, $this->settings->proxy );
+                curl_setopt( $wsdlCurl, CURLOPT_PROXY, $this->settings->proxy );
             }
 
             $importXML = curl_exec( $wsdlCurl );
@@ -2231,6 +2237,29 @@ class Client extends AbstractClient {
         }
 
         return $importXML;
+    }
+
+    /**
+     * Searchs for the error message in the given document. Returns null if nothing forund.
+     *
+     * @param DOMDocument $document
+     *
+     * @return string|null
+     */
+    private function searchErrorMessage( DOMDocument $document ) {
+        $fault = $document->getElementsByTagName( 'Fault' );
+
+        if ( $fault->length == 0 ) {
+            return null;
+        }
+
+        $message = $fault->item( 0 )->getElementsByTagName( 'faultstring' );
+
+        if ( $message->length == 0 ) {
+            return null;
+        }
+
+        return $message->item( 0 )->textContent;
     }
 
     /**
