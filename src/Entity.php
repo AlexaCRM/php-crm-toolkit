@@ -919,8 +919,9 @@ class Entity extends EntityReference {
                         /* Date/Time - Parse this into a PHP Date/Time */
                         //$storedValue = date("m/d/y", self::parseTime($attributeValue, '%Y-%m-%dT%H:%M:%SZ'));
                         $dateTimeFormat = '%Y-%m-%dT%H:%M:%SZ';
-                        if ( $this->attributes[ $attributeKey ]->format === 'DateOnly' ) {
-                            $dateTimeFormat = '%Y-%m-%dT%H:%M:%S'; // DateOnly is time- and timezone-agnostic
+                        if ( $this->attributes[ $attributeKey ]->dateTimeBehavior === 'DateOnly' ||
+                             $this->attributes[ $attributeKey ]->dateTimeBehavior === 'TimeZoneIndependent' ) {
+                            $dateTimeFormat = '%Y-%m-%dT%H:%M:%S'; // dateonly and tzi do not have timezone information
                         }
                         $storedValue = self::parseTime( $attributeValue, $dateTimeFormat );
                         break;
