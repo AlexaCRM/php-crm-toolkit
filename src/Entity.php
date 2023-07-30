@@ -617,6 +617,7 @@ class Entity extends EntityReference {
             $entityDOM  = new DOMDocument();
             $entityNode = $entityDOM->appendChild( $entityDOM->createElement( 'entity' ) );
             $entityNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:i', 'http://www.w3.org/2001/XMLSchema-instance' );
+            $entityNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:b', 'http://schemas.microsoft.com/xrm/2011/Contracts' );
             $attributeNode = $entityNode->appendChild( $entityDOM->createElementNS( 'http://schemas.microsoft.com/xrm/2011/Contracts', 'b:Attributes' ) );
             $attributeNode->setAttributeNS( 'http://www.w3.org/2000/xmlns/', 'xmlns:c', 'http://schemas.datacontract.org/2004/07/System.Collections.Generic' );
             /* Loop through all the attributes of this Entity */
