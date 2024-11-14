@@ -191,7 +191,7 @@ abstract class AbstractClient implements ClientInterface {
     }
 
     /**
-     * Utility function to parse time from XML - includes handling Windows systems with no strptime
+     * Utility function to parse time from XML, manual parsing.
      *
      * @param String $timestamp
      * @param String $formatString
@@ -200,32 +200,27 @@ abstract class AbstractClient implements ClientInterface {
      * @ignore
      */
     public static function parseTime( $timestamp, $formatString ) {
-        /* Quick solution: use strptime */
-        if ( function_exists( "strptime" ) == true ) {
-            $time_array = strptime( $timestamp, $formatString );
-        } else {
-            $masks = Array(
-                '%d' => '(?P<d>[0-9]{2})',
-                '%m' => '(?P<m>[0-9]{2})',
-                '%Y' => '(?P<Y>[0-9]{4})',
-                '%H' => '(?P<H>[0-9]{2})',
-                '%M' => '(?P<M>[0-9]{2})',
-                '%S' => '(?P<S>[0-9]{2})',
-                // usw..
-            );
-            $rexep = "#" . strtr( preg_quote( $formatString ), $masks ) . "#";
-            if ( !preg_match( $rexep, $timestamp, $out ) ) {
-                return false;
-            }
-            $time_array = Array(
-                "tm_sec"  => (int) $out['S'],
-                "tm_min"  => (int) $out['M'],
-                "tm_hour" => (int) $out['H'],
-                "tm_mday" => (int) $out['d'],
-                "tm_mon"  => $out['m'] ? $out['m'] - 1 : 0,
-                "tm_year" => $out['Y'] > 1900 ? $out['Y'] - 1900 : 0,
-            );
+        $masks = Array(
+            '%d' => '(?P<d>[0-9]{2})',
+            '%m' => '(?P<m>[0-9]{2})',
+            '%Y' => '(?P<Y>[0-9]{4})',
+            '%H' => '(?P<H>[0-9]{2})',
+            '%M' => '(?P<M>[0-9]{2})',
+            '%S' => '(?P<S>[0-9]{2})',
+            // usw..
+        );
+        $rexep = "#" . strtr( preg_quote( $formatString ), $masks ) . "#";
+        if ( ! preg_match( $rexep, $timestamp, $out ) ) {
+            return false;
         }
+        $time_array = Array(
+            "tm_sec" => (int) $out['S'],
+            "tm_min" => (int) $out['M'],
+            "tm_hour" => (int) $out['H'],
+            "tm_mday" => (int) $out['d'],
+            "tm_mon" => $out['m'] ? $out['m'] - 1 : 0,
+            "tm_year" => $out['Y'] > 1900 ? $out['Y'] - 1900 : 0,
+        );
         $phpTimestamp = gmmktime( $time_array['tm_hour'], $time_array['tm_min'], $time_array['tm_sec'], $time_array['tm_mon'] + 1, $time_array['tm_mday'], 1900 + $time_array['tm_year'] );
 
         return $phpTimestamp;
