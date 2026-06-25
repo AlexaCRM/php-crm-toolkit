@@ -139,6 +139,64 @@ class Client extends AbstractClient {
     private $currentSoapAction;
 
     /**
+     * Serialized XML representation of $organizationDOM for serialization support.
+     *
+     * @var string|null
+     */
+    private $organizationDOMXml;
+
+    /**
+     * Serialized XML representation of $discoveryDOM for serialization support.
+     *
+     * @var string|null
+     */
+    private $discoveryDOMXml;
+
+    /**
+     * Prepare the object for serialization.
+     * DOMDocument cannot be serialized, so we convert them to XML strings.
+     *
+     * @return array
+     */
+    public function __sleep() {
+        if ( $this->organizationDOM instanceof \DOMDocument ) {
+            $this->organizationDOMXml = $this->organizationDOM->saveXML();
+        } else {
+            $this->organizationDOMXml = null;
+        }
+        if ( $this->discoveryDOM instanceof \DOMDocument ) {
+            $this->discoveryDOMXml = $this->discoveryDOM->saveXML();
+        } else {
+            $this->discoveryDOMXml = null;
+        }
+
+        $properties = array_keys( get_object_vars( $this ) );
+
+        return array_diff( $properties, [
+            'organizationDOM',
+            'discoveryDOM',
+            'organizationSecurityPolicy',
+            'discoverySecurityPolicy',
+        ] );
+    }
+
+    /**
+     * Restore DOMDocument objects after unserialization.
+     */
+    public function __wakeup() {
+        if ( $this->organizationDOMXml !== null ) {
+            $this->organizationDOM = new \DOMDocument();
+            $this->organizationDOM->loadXML( $this->organizationDOMXml );
+            $this->organizationDOMXml = null;
+        }
+        if ( $this->discoveryDOMXml !== null ) {
+            $this->discoveryDOM = new \DOMDocument();
+            $this->discoveryDOM->loadXML( $this->discoveryDOMXml );
+            $this->discoveryDOMXml = null;
+        }
+    }
+
+    /**
      * Create a new instance of the AlexaCRM\CRMToolkit\AlexaSDK
      *
      * @param AbstractSettings $settings
